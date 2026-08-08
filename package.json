@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:backend": "node backend/src/index.js",
+    "seed:backend": "node backend/src/seed.js",
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview"
