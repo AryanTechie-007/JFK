@@ -14,23 +14,32 @@ import {
   Utensils,
   ShieldCheck,
   CheckCircle2,
-  XCircle
+  XCircle,
+  Plus,
+  History
 } from 'lucide-react';
 import { 
-  USER_PROFILE, 
   AGENTS, 
   SAMPLE_QUERIES, 
   runOrchestratorQuery 
 } from '../data/mockFinancialData';
 import { askGeminiJohn } from '../services/geminiService';
+import { conversationService } from '../services/conversationService';
 import FormattedText from './FormattedText';
 
-export default function JohnCoachDashboard({ goals, onAcceptGoal, setActiveTab }) {
+export default function JohnCoachDashboard({ userProfile, goals, onAcceptGoal, setActiveTab }) {
+  const userName = userProfile?.name || 'User';
+  const surplus = userProfile?.currentSavings || (userProfile?.monthlyIncome - userProfile?.fixedExpenses) || 0;
+  const currency = userProfile?.currency || '₹';
+
+  const [activeConversationId, setActiveConversationId] = useState(null);
+  const [conversations, setConversations] = useState([]);
+  
   const [messages, setMessages] = useState([
     {
       id: 'init-1',
       sender: 'john',
-      text: `Hello ${USER_PROFILE.name}! 👋 I am **John**, your Master AI Financial Coach powered by Gemini.\n\nI have analyzed your recent transactions alongside **Sentinel**, **Iris**, **Atlas**, and **Nova**:\n\n- **Monthly Net Surplus**: ₹20,800 (27.7% rate)\n- **Financial Health Score**: **84/100** (Excellent)\n- **Sentinel Alert**: Predicted car insurance bill of ₹12,000 due next month.\n\nHow can our team help guide your money decisions today?`,
+      text: `Hello ${userName}! 👋 I am **John**, your Master AI Financial Coach.\n\nI have analyzed your cash flow alongside **Sentinel**, **Iris**, **Atlas**, and **Nova**:\n\n- **Monthly Net Income**: ${currency}${userProfile?.monthlyIncome?.toLocaleString() || '0'}\n- **Monthly Net Surplus**: ${currency}${surplus.toLocaleString()}\n- **Financial Health Score**: **${userProfile?.healthScore || 84}/100**\n\nHow can our team help guide your money decisions today?`,
       hasIntervenerCard: true,
       intervenerData: {
         agent: "INTERVENER AGENT",
@@ -49,6 +58,28 @@ export default function JohnCoachDashboard({ goals, onAcceptGoal, setActiveTab }
   const [declinedGoals, setDeclinedGoals] = useState({});
   const chatEndRef = useRef(null);
 
+  // Load conversation history on mount
+  useEffect(() => {
+    async function loadHistory() {
+      try {
+        const res = await conversationService.getConversations();
+        if (res.success && res.conversations.length > 0) {
+          setConversations(res.conversations);
+          const latestId = res.conversations[0].id;
+          setActiveConversationId(latestId);
+          
+          const convRes = await conversationService.getConversation(latestId);
+          if (convRes.success && convRes.conversation?.messages) {
+            setMessages(convRes.conversation.messages);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load conversations from backend:', err);
+      }
+    }
+    loadHistory();
+  }, []);
+
   const scrollToBottom = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -58,8 +89,9 @@ export default function JohnCoachDashboard({ goals, onAcceptGoal, setActiveTab }
   }, [messages, isThinking]);
 
   const handleSend = async (textToSend) => {
-    const queryText = textToSend || inputQuery;
-    if (!queryText.trim()) return;
+    const rawVal = textToSend || inputQuery;
+    const queryText = typeof rawVal === 'string' ? rawVal : (rawVal?.query || rawVal?.label || '');
+    if (!queryText || !queryText.trim()) return;
 
     const userMsg = {
       id: `user-${Date.now()}`,
@@ -72,22 +104,25 @@ export default function JohnCoachDashboard({ goals, onAcceptGoal, setActiveTab }
     if (!textToSend) setInputQuery('');
     setIsThinking(true);
 
-    // Run local orchestrator engine to generate agent traces & proposed goals
-    const localResult = runOrchestratorQuery(queryText);
+    // Send through API service layer (which proxies to backend AI orchestrator)
+    const geminiResult = await askGeminiJohn(queryText, userProfile, goals, activeConversationId);
 
-    // Call Gemini API powered by user key
-    const geminiResult = await askGeminiJohn(queryText, USER_PROFILE, goals);
-
-    const johnText = geminiResult.success ? geminiResult.text : localResult.johnResponse;
+    const johnText = geminiResult.text;
+    const traces = geminiResult.traces || [];
+    const proposedGoal = geminiResult.proposedGoal;
 
     const johnMsg = {
       id: `john-${Date.now()}`,
       sender: 'john',
       text: johnText,
-      traces: localResult.traces,
-      proposedGoal: localResult.proposedGoal,
+      traces: traces.length > 0 ? traces : undefined,
+      proposedGoal: proposedGoal || undefined,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
+
+    if (geminiResult.conversationId) {
+      setActiveConversationId(geminiResult.conversationId);
+    }
 
     setMessages(prev => [...prev, johnMsg]);
     setIsThinking(false);
@@ -101,7 +136,7 @@ export default function JohnCoachDashboard({ goals, onAcceptGoal, setActiveTab }
       priority: proposedGoal.priority || "MEDIUM PRIORITY",
       current: 0,
       target: proposedGoal.target,
-      targetDate: "Expected by Dec 2026",
+      targetDate: "Expected in 12 months",
       category: proposedGoal.category || "Asset",
       iconType: proposedGoal.iconType || "target",
       monthlyAdd: proposedGoal.monthlyAdd || 5000
@@ -113,6 +148,26 @@ export default function JohnCoachDashboard({ goals, onAcceptGoal, setActiveTab }
 
   const handleDeclineProposal = (msgId) => {
     setDeclinedGoals(prev => ({ ...prev, [msgId]: true }));
+  };
+
+  const handleNewConversation = async () => {
+    try {
+      const res = await conversationService.createConversation('New Financial Session');
+      if (res.success && res.conversation) {
+        setActiveConversationId(res.conversation.id);
+        setConversations(prev => [res.conversation, ...prev]);
+      }
+    } catch (err) {
+      // Fallback
+    }
+    setMessages([
+      {
+        id: `init-${Date.now()}`,
+        sender: 'john',
+        text: `Hello ${userName}! 👋 New coaching session started. How can John and the agent team assist you?`,
+        timestamp: 'Just now'
+      }
+    ]);
   };
 
   return (
@@ -138,31 +193,39 @@ export default function JohnCoachDashboard({ goals, onAcceptGoal, setActiveTab }
               <div style={{
                 width: '32px',
                 height: '32px',
-                borderRadius: '50%',
-                backgroundColor: '#d1fae5',
+                borderRadius: '8px',
+                backgroundColor: '#005f41',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#059669'
+                color: '#ffffff'
               }}>
                 <Bot size={18} />
               </div>
               <div>
-                <div style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a', letterSpacing: '0.04em', fontFamily: 'var(--font-mono)' }}>
-                  COACH AI (GEMINI POWERED)
-                </div>
-                <div style={{ fontSize: '11px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <span className="status-dot active"></span> Active & Monitoring
+                <h3 style={{ fontSize: '15px', fontWeight: '700', color: '#0f172a', fontFamily: 'var(--font-serif)' }}>
+                  John — Master AI Coach
+                </h3>
+                <div style={{ fontSize: '11px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Sparkles size={11} color="#059669" /> Backend Multi-Agent System Active
                 </div>
               </div>
             </div>
 
-            <div style={{ fontSize: '11px', color: '#059669', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px', fontFamily: 'var(--font-mono)' }}>
-              <Sparkles size={13} /> Gemini 1.5 Flash Active
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button 
+                onClick={handleNewConversation}
+                className="btn btn-secondary"
+                style={{ fontSize: '12px', padding: '6px 12px' }}
+                title="Start new conversation"
+              >
+                <Plus size={14} /> New Chat
+              </button>
+              <span className="badge badge-emerald">ACTIVE SESSION</span>
             </div>
           </div>
 
-          {/* Messages Container */}
+          {/* Chat Messages Body */}
           <div style={{
             flex: 1,
             overflowY: 'auto',
@@ -172,363 +235,309 @@ export default function JohnCoachDashboard({ goals, onAcceptGoal, setActiveTab }
             gap: '20px',
             backgroundColor: '#f8fafc'
           }}>
-            {messages.map((msg) => (
-              <div 
-                key={msg.id}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: msg.sender === 'user' ? 'flex-end' : 'flex-start'
-                }}
-              >
-                {/* Message Bubble with FormattedText component to fix LaTeX/bolding glitches */}
-                <div style={{
-                  maxWidth: '85%',
-                  backgroundColor: msg.sender === 'user' ? '#005f41' : '#ffffff',
-                  color: msg.sender === 'user' ? '#ffffff' : '#0f172a',
-                  padding: '16px 20px',
-                  borderRadius: msg.sender === 'user' ? '18px 18px 2px 18px' : '18px 18px 18px 2px',
-                  border: msg.sender === 'user' ? 'none' : '1px solid #e2e8f0',
-                  fontSize: '13px',
-                  boxShadow: msg.sender === 'user' ? 'none' : '0 1px 3px rgba(0,0,0,0.04)'
-                }}>
-                  <FormattedText text={msg.text} />
+            {messages.map((msg) => {
+              const isUser = msg.sender === 'user';
+              return (
+                <div 
+                  key={msg.id}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: isUser ? 'flex-end' : 'flex-start',
+                    maxWidth: '85%',
+                    alignSelf: isUser ? 'flex-end' : 'flex-start'
+                  }}
+                >
+                  {/* Sender Label */}
+                  <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    {!isUser && <Bot size={12} color="#059669" />}
+                    <span>{isUser ? 'You' : 'John (Master Coach)'}</span>
+                    <span>•</span>
+                    <span>{msg.timestamp}</span>
+                  </div>
 
-                  {/* Inline Intervener Card */}
-                  {msg.hasIntervenerCard && (
-                    <div style={{
-                      marginTop: '14px',
-                      padding: '14px',
-                      backgroundColor: '#f1f5f9',
-                      borderRadius: '8px',
-                      border: '1px solid #cbd5e1'
-                    }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                        <span style={{ fontSize: '10px', fontWeight: '700', color: '#64748b', fontFamily: 'var(--font-mono)', letterSpacing: '0.05em' }}>
-                          {msg.intervenerData.agent}
-                        </span>
-                        <TrendingUp size={14} color="#d97706" />
-                      </div>
-                      <div style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a' }}>
-                        {msg.intervenerData.title}
-                      </div>
-                      <div style={{ fontSize: '12px', color: '#475569', marginTop: '4px' }}>
-                        {msg.intervenerData.detail}
-                      </div>
-                      <button 
-                        onClick={() => handleSend("Show me the breakdown of those subscriptions.")}
-                        className="btn btn-emerald btn-sm"
-                        style={{ marginTop: '10px' }}
-                      >
-                        {msg.intervenerData.action}
-                      </button>
-                    </div>
-                  )}
+                  {/* Message Bubble */}
+                  <div style={{
+                    padding: '16px 20px',
+                    borderRadius: isUser ? '16px 16px 2px 16px' : '16px 16px 16px 2px',
+                    backgroundColor: isUser ? '#005f41' : '#ffffff',
+                    color: isUser ? '#ffffff' : '#1e293b',
+                    boxShadow: isUser ? 'none' : '0 2px 8px rgba(0, 0, 0, 0.04)',
+                    border: isUser ? 'none' : '1px solid #e2e8f0',
+                    fontSize: '14px',
+                    lineHeight: '1.6',
+                    fontFamily: 'var(--font-sans)'
+                  }}>
+                    <FormattedText text={msg.text} />
 
-                  {/* Proposed Goal Option Card (Asking User Consent) */}
-                  {msg.proposedGoal && (
-                    <div style={{
-                      marginTop: '14px',
-                      padding: '16px',
-                      backgroundColor: acceptedGoals[msg.id] ? '#d1fae5' : declinedGoals[msg.id] ? '#f1f5f9' : '#f8fafc',
-                      borderRadius: '12px',
-                      border: `1px solid ${acceptedGoals[msg.id] ? '#a7f3d0' : '#cbd5e1'}`
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-                        <Target size={16} color="#059669" />
-                        <span style={{ fontSize: '11px', fontWeight: '700', color: '#059669', fontFamily: 'var(--font-mono)', letterSpacing: '0.05em' }}>
-                          JOHN PROPOSES A SAVINGS GOAL
-                        </span>
-                      </div>
-
-                      <div style={{ fontSize: '14px', fontWeight: '700', color: '#0f172a' }}>
-                        {msg.proposedGoal.name}
-                      </div>
-                      
-                      <div style={{ fontSize: '12px', color: '#475569', marginTop: '4px', display: 'flex', gap: '12px' }}>
-                        <span>Target: <strong className="mono" style={{ color: '#059669' }}>₹{msg.proposedGoal.target.toLocaleString()}</strong></span>
-                        <span>Monthly: <strong className="mono" style={{ color: '#059669' }}>₹{msg.proposedGoal.monthlyAdd.toLocaleString()}/mo</strong></span>
-                      </div>
-
-                      {acceptedGoals[msg.id] ? (
-                        <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '6px', color: '#065f46', fontWeight: '700', fontSize: '12px' }}>
-                          <CheckCircle2 size={16} />
-                          <span>Goal Accepted & Added to Saving Strategist!</span>
-                          <button onClick={() => setActiveTab('atlas')} className="btn btn-emerald btn-sm" style={{ marginLeft: 'auto' }}>
-                            View in Goals →
-                          </button>
-                        </div>
-                      ) : declinedGoals[msg.id] ? (
-                        <div style={{ marginTop: '10px', color: '#64748b', fontSize: '12px', fontStyle: 'italic' }}>
-                          Goal Proposal Declined.
-                        </div>
-                      ) : (
-                        <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-                          <button 
-                            onClick={() => handleAcceptProposal(msg.id, msg.proposedGoal)}
-                            className="btn btn-emerald btn-sm"
-                          >
-                            <CheckCircle2 size={14} />
-                            <span>Accept & Create Goal</span>
-                          </button>
-
-                          <button 
-                            onClick={() => handleDeclineProposal(msg.id)}
-                            className="btn btn-secondary btn-sm"
-                          >
-                            <span>Decline</span>
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Reasoning Trace Accordion with clean arrow symbols */}
-                {msg.traces && (
-                  <div style={{ maxWidth: '85%', marginTop: '8px', width: '100%' }}>
-                    <button
-                      onClick={() => setExpandedTraceId(expandedTraceId === msg.id ? null : msg.id)}
-                      style={{
-                        width: '100%',
-                        padding: '8px 12px',
-                        backgroundColor: '#ffffff',
-                        border: '1px solid #e2e8f0',
-                        borderRadius: 'var(--radius-sm)',
+                    {/* Intervener Card */}
+                    {msg.hasIntervenerCard && msg.intervenerData && (
+                      <div style={{
+                        marginTop: '14px',
+                        padding: '12px 16px',
+                        backgroundColor: '#fffbeb',
+                        border: '1px solid #fef3c7',
+                        borderRadius: 'var(--radius-md)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        cursor: 'pointer',
-                        fontSize: '12px',
-                        color: '#475569'
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <Sparkles size={13} color="#059669" />
-                        <span style={{ fontWeight: '600' }}>Multi-Agent Reasoning Trace (Sentinel → Iris → Atlas → Nova)</span>
-                      </div>
-                      {expandedTraceId === msg.id ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                    </button>
-
-                    {expandedTraceId === msg.id && (
-                      <div style={{
-                        marginTop: '6px',
-                        padding: '12px',
-                        backgroundColor: '#ffffff',
-                        border: '1px solid #cbd5e1',
-                        borderRadius: 'var(--radius-sm)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '8px'
+                        color: '#92400e',
+                        fontSize: '12px'
                       }}>
-                        {msg.traces.map((trace, idx) => (
-                          <div 
-                            key={idx}
-                            style={{
-                              padding: '8px 10px',
-                              backgroundColor: '#f8fafc',
-                              borderRadius: '6px',
-                              borderLeft: `3px solid ${trace.agent.color}`
-                            }}
-                          >
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                              <span style={{ fontSize: '11px', fontWeight: '700', color: trace.agent.color }}>
-                                {trace.agent.avatar} {trace.title}
-                              </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <Tv size={16} color="#d97706" />
+                          <div>
+                            <div style={{ fontWeight: '700', fontSize: '11px', letterSpacing: '0.05em', color: '#b45309' }}>
+                              {msg.intervenerData.agent}
                             </div>
-                            <p style={{ fontSize: '11px', color: '#475569', marginTop: '2px' }}>
-                              {trace.insight}
-                            </p>
+                            <div style={{ fontWeight: '600' }}>{msg.intervenerData.title}</div>
+                            <div style={{ color: '#b45309' }}>{msg.intervenerData.detail}</div>
                           </div>
-                        ))}
+                        </div>
+                        <button 
+                          onClick={() => setActiveTab('iris')}
+                          style={{
+                            padding: '6px 12px',
+                            backgroundColor: '#d97706',
+                            color: '#ffffff',
+                            border: 'none',
+                            borderRadius: 'var(--radius-sm)',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            fontSize: '11px'
+                          }}
+                        >
+                          {msg.intervenerData.action}
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Reasoning Trace Accordion */}
+                    {msg.traces && msg.traces.length > 0 && (
+                      <div style={{ marginTop: '16px', borderTop: '1px dashed #cbd5e1', paddingTop: '12px' }}>
+                        <button 
+                          onClick={() => setExpandedTraceId(expandedTraceId === msg.id ? null : msg.id)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#059669',
+                            fontSize: '12px',
+                            fontWeight: '700',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            padding: 0
+                          }}
+                        >
+                          <Sparkles size={13} />
+                          <span>Multi-Agent Reasoning Trace ({msg.traces.length} Agents)</span>
+                          {expandedTraceId === msg.id ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                        </button>
+
+                        {expandedTraceId === msg.id && (
+                          <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {msg.traces.map((trace, idx) => {
+                              const agentStr = typeof trace.agent === 'string' ? trace.agent : (trace.agent?.id || trace.agent?.name || 'john');
+                              const agentKey = agentStr.toLowerCase();
+                              const agentDisplay = agentStr.toUpperCase();
+                              const agentColor = AGENTS[agentKey]?.color || '#059669';
+                              return (
+                                <div 
+                                  key={idx}
+                                  style={{
+                                    padding: '10px 12px',
+                                    backgroundColor: '#f1f5f9',
+                                    borderRadius: 'var(--radius-sm)',
+                                    borderLeft: `3px solid ${agentColor}`,
+                                    fontSize: '12px'
+                                  }}
+                                >
+                                  <div style={{ fontWeight: '700', color: agentColor, marginBottom: '2px' }}>
+                                    {agentDisplay} ({trace.role || 'Specialist'})
+                                  </div>
+                                  <div style={{ color: '#334155' }}>{trace.thought}</div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Proposed Savings Goal Card */}
+                    {msg.proposedGoal && (
+                      <div style={{
+                        marginTop: '16px',
+                        padding: '16px',
+                        backgroundColor: '#f0fdf4',
+                        border: '1px solid #bbf7d0',
+                        borderRadius: 'var(--radius-md)',
+                        color: '#166534'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                          <Target size={18} color="#059669" />
+                          <span style={{ fontWeight: '700', fontSize: '13px' }}>John Proposes a New Savings Objective</span>
+                        </div>
+                        <div style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a' }}>
+                          {msg.proposedGoal.name}
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#475569', marginTop: '4px' }}>
+                          Target Amount: <strong>{currency}{msg.proposedGoal.target.toLocaleString()}</strong> • Priority: {msg.proposedGoal.priority || 'MEDIUM'}
+                        </div>
+
+                        {/* Proposal Actions */}
+                        <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
+                          {acceptedGoals[msg.id] ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#059669', fontWeight: '700' }}>
+                              <CheckCircle2 size={16} /> Goal Added to Atlas Strategist!
+                            </div>
+                          ) : declinedGoals[msg.id] ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#94a3b8' }}>
+                              <XCircle size={16} /> Proposal Declined
+                            </div>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => handleAcceptProposal(msg.id, msg.proposedGoal)}
+                                className="btn btn-emerald"
+                                style={{ fontSize: '12px', padding: '6px 12px' }}
+                              >
+                                Accept & Create Goal
+                              </button>
+                              <button
+                                onClick={() => handleDeclineProposal(msg.id)}
+                                className="btn btn-secondary"
+                                style={{ fontSize: '12px', padding: '6px 12px' }}
+                              >
+                                Decline
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
-                )}
-              </div>
-            ))}
+                </div>
+              );
+            })}
 
+            {/* Thinking Indicator */}
             {isThinking && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px' }}>
-                <span className="status-dot active"></span>
-                <span style={{ fontSize: '12px', color: '#64748b' }}>John (Gemini 1.5 Flash) is synthesizing agent intelligence...</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#64748b', fontSize: '13px' }}>
+                <Bot size={18} color="#059669" />
+                <span className="spin">⚡</span>
+                <span>John (Master Coach) is synthesizing agent intelligence via backend API...</span>
               </div>
             )}
             <div ref={chatEndRef} />
           </div>
 
-          {/* Quick Prompts */}
-          <div style={{
-            padding: '10px 16px',
-            backgroundColor: '#ffffff',
-            borderTop: '1px solid #e2e8f0',
-            display: 'flex',
-            gap: '8px',
-            overflowX: 'auto'
-          }}>
-            {SAMPLE_QUERIES.map((sq, i) => (
-              <button
-                key={i}
-                onClick={() => handleSend(sq.query)}
-                className="btn btn-secondary btn-sm"
-                style={{ flexShrink: 0, fontSize: '11px' }}
+          {/* Chat Input Bar */}
+          <div style={{ padding: '16px 24px', backgroundColor: '#ffffff', borderTop: '1px solid #e2e8f0' }}>
+            <form 
+              onSubmit={(e) => { e.preventDefault(); handleSend(); }}
+              style={{ display: 'flex', gap: '10px' }}
+            >
+              <input
+                type="text"
+                className="input"
+                placeholder="Ask John about your spending, budget, or savings goals..."
+                value={inputQuery}
+                onChange={(e) => setInputQuery(e.target.value)}
+                disabled={isThinking}
+                style={{ flex: 1 }}
+              />
+              <button 
+                type="submit" 
+                className="btn btn-emerald"
+                disabled={isThinking || !inputQuery.trim()}
               >
-                <span>{sq.label}</span>
+                <Send size={16} />
               </button>
-            ))}
+            </form>
           </div>
 
-          {/* Input Box */}
-          <div style={{
-            padding: '16px 20px',
-            borderTop: '1px solid #e2e8f0',
-            display: 'flex',
-            gap: '12px',
-            backgroundColor: '#ffffff',
-            borderRadius: '0 0 var(--radius-lg) var(--radius-lg)'
-          }}>
-            <input
-              type="text"
-              className="input"
-              style={{ borderRadius: '24px', paddingLeft: '18px' }}
-              placeholder="Ask John (Gemini AI) about your spending, budget, or savings..."
-              value={inputQuery}
-              onChange={(e) => setInputQuery(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            />
-            <button 
-              onClick={() => handleSend()}
-              className="btn btn-emerald"
-              style={{ borderRadius: '50%', width: '42px', height: '42px', padding: 0, flexShrink: 0 }}
-            >
-              <Send size={16} />
-            </button>
-          </div>
         </div>
 
-        {/* Right Column: Observer & Predictor Stat Cards */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        {/* Right Column: Suggested Queries & Agent Overview */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            <div className="card" style={{ padding: '16px', borderLeft: '3px solid #64748b' }}>
-              <div style={{ fontSize: '10px', fontWeight: '700', color: '#64748b', fontFamily: 'var(--font-mono)' }}>
-                OBSERVER AGENT
-              </div>
-              <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>Monthly Income</div>
-              <div className="mono" style={{ fontSize: '20px', fontWeight: '700', color: '#0f172a', marginTop: '4px' }}>
-                ₹75,000
-              </div>
-            </div>
-
-            <div className="card" style={{ padding: '16px', borderLeft: '3px solid #dc2626' }}>
-              <div style={{ fontSize: '10px', fontWeight: '700', color: '#64748b', fontFamily: 'var(--font-mono)' }}>
-                OBSERVER AGENT
-              </div>
-              <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>Current Spending</div>
-              <div className="mono" style={{ fontSize: '20px', fontWeight: '700', color: '#0f172a', marginTop: '4px' }}>
-                ₹52,400
-              </div>
-            </div>
-          </div>
-
-          <div className="card" style={{ padding: '18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <div style={{ fontSize: '10px', fontWeight: '700', color: '#64748b', fontFamily: 'var(--font-mono)' }}>
-                PREDICTOR AI (BACKGROUND)
-              </div>
-              <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>Savings Rate</div>
-              <div className="mono" style={{ fontSize: '24px', fontWeight: '700', color: '#0f172a', marginTop: '4px' }}>
-                30%
-              </div>
-            </div>
-            <div style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '8px',
-              backgroundColor: '#d1fae5',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#059669'
-            }}>
-              <TrendingUp size={20} />
+          {/* Sample Prompts */}
+          <div className="card">
+            <h4 style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px', fontFamily: 'var(--font-serif)' }}>
+              <Lightbulb size={16} color="#d97706" /> Sample Coaching Questions
+            </h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {SAMPLE_QUERIES.map((q, idx) => {
+                const queryLabel = typeof q === 'string' ? q : (q.label || q.query);
+                const queryText = typeof q === 'string' ? q : (q.query || q.label);
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => handleSend(queryText)}
+                    style={{
+                      textAlign: 'left',
+                      padding: '10px 12px',
+                      backgroundColor: '#f8fafc',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: 'var(--radius-sm)',
+                      fontSize: '12px',
+                      color: '#334155',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.borderColor = '#059669'}
+                    onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e2e8f0'}
+                  >
+                    <span>"{queryLabel}"</span>
+                    <ArrowRight size={12} color="#94a3b8" />
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          <div className="card" style={{ padding: '18px' }}>
-            <div style={{ fontSize: '10px', fontWeight: '700', color: '#64748b', fontFamily: 'var(--font-mono)' }}>
-              LEARNER AI
-            </div>
-            <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>Financial Health Score</div>
-            <div className="mono" style={{ fontSize: '32px', fontWeight: '700', color: '#059669', marginTop: '6px' }}>
-              82 <span style={{ fontSize: '14px', color: '#64748b' }}>/ 100</span>
-            </div>
-            <div className="progress-track" style={{ height: '8px', marginTop: '10px' }}>
-              <div className="progress-fill" style={{ width: '82%', backgroundColor: '#059669' }} />
-            </div>
-          </div>
-
-          <div className="card" style={{ padding: '18px' }}>
-            <div style={{ fontSize: '11px', fontWeight: '700', color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: 'var(--font-mono)' }}>
-              JOHN'S RECOMMENDATIONS
-            </div>
-
-            <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              
-              <div style={{
-                padding: '12px',
-                backgroundColor: '#f8fafc',
-                borderRadius: '8px',
-                border: '1px solid #e2e8f0',
-                display: 'flex',
-                gap: '12px',
-                alignItems: 'center'
-              }}>
-                <div style={{ width: '32px', height: '32px', borderRadius: '6px', backgroundColor: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Tv size={16} color="#475569" />
+          {/* Underlying Specialist Team */}
+          <div className="card">
+            <h4 style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a', marginBottom: '12px', fontFamily: 'var(--font-serif)' }}>
+              Specialist Agent Team
+            </h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {Object.values(AGENTS).filter(a => a.id !== 'john').map((agent) => (
+                <div 
+                  key={agent.id}
+                  onClick={() => setActiveTab(agent.id)}
+                  style={{
+                    padding: '10px 12px',
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: 'var(--radius-sm)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ fontSize: '18px' }}>{agent.avatar}</span>
+                    <div>
+                      <div style={{ fontSize: '12px', fontWeight: '700', color: agent.color }}>
+                        {agent.name}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#64748b' }}>
+                        {agent.role}
+                      </div>
+                    </div>
+                  </div>
+                  <span className={`badge ${agent.badgeClass}`} style={{ fontSize: '10px' }}>
+                    READY
+                  </span>
                 </div>
-                <div>
-                  <div style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a' }}>Reduce Subscriptions</div>
-                  <div style={{ fontSize: '11px', color: '#64748b' }}>Potential save: <strong style={{ color: '#059669' }}>₹1,200/mo</strong></div>
-                </div>
-              </div>
-
-              <div style={{
-                padding: '12px',
-                backgroundColor: '#f8fafc',
-                borderRadius: '8px',
-                border: '1px solid #e2e8f0',
-                display: 'flex',
-                gap: '12px',
-                alignItems: 'center'
-              }}>
-                <div style={{ width: '32px', height: '32px', borderRadius: '6px', backgroundColor: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <ShieldCheck size={16} color="#475569" />
-                </div>
-                <div>
-                  <div style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a' }}>Increase Emergency Fund</div>
-                  <div style={{ fontSize: '11px', color: '#64748b' }}>Shift ₹2,000 from discretionary</div>
-                </div>
-              </div>
-
-              <div style={{
-                padding: '12px',
-                backgroundColor: '#f8fafc',
-                borderRadius: '8px',
-                border: '1px solid #e2e8f0',
-                display: 'flex',
-                gap: '12px',
-                alignItems: 'center'
-              }}>
-                <div style={{ width: '32px', height: '32px', borderRadius: '6px', backgroundColor: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Utensils size={16} color="#475569" />
-                </div>
-                <div>
-                  <div style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a' }}>Optimize Food Spending</div>
-                  <div style={{ fontSize: '11px', color: '#64748b' }}>Dining out is up 15% this week</div>
-                </div>
-              </div>
-
+              ))}
             </div>
           </div>
 

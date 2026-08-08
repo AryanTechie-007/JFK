@@ -10,8 +10,10 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import { TRANSACTIONS, AGENTS } from '../data/mockFinancialData';
+import { transactionService } from '../services/transactionService';
 
 export default function NovaGuardianView({ budgets, setBudgets, userProfile, setUserProfile }) {
+  const currency = userProfile?.currency || '₹';
   const [recentTxs, setRecentTxs] = useState(TRANSACTIONS);
 
   // New Quick Transaction logger state
@@ -19,7 +21,7 @@ export default function NovaGuardianView({ budgets, setBudgets, userProfile, set
   const [newAmount, setNewAmount] = useState('');
   const [newCat, setNewCat] = useState('Food & Dining');
 
-  const handleAddTransaction = (e) => {
+  const handleAddTransaction = async (e) => {
     e.preventDefault();
     if (!newDesc || !newAmount) return;
 
@@ -34,14 +36,16 @@ export default function NovaGuardianView({ budgets, setBudgets, userProfile, set
       type: 'debit'
     };
 
-    setRecentTxs([newTx, ...recentTxs]);
+    setRecentTxs(prev => [newTx, ...prev]);
+    await transactionService.createTransaction(newTx);
 
     // Update total spent & surplus in user profile dynamically
     if (setUserProfile) {
       setUserProfile(prev => {
-        const newSpent = prev.totalSpentThisMonth + amt;
-        const newSurplus = prev.monthlyIncome - newSpent;
-        const newRate = Number(((newSurplus / prev.monthlyIncome) * 100).toFixed(1));
+        const income = prev.monthlyIncome || 0;
+        const newSpent = (prev.totalSpentThisMonth || 0) + amt;
+        const newSurplus = Math.max(0, income - newSpent);
+        const newRate = income > 0 ? Number(((newSurplus / income) * 100).toFixed(1)) : 0;
         return {
           ...prev,
           totalSpentThisMonth: newSpent,
@@ -52,17 +56,25 @@ export default function NovaGuardianView({ budgets, setBudgets, userProfile, set
     }
 
     // Update budget category progress dynamically
-    setBudgets(prev => prev.map(b => {
+    const updatedBudgets = budgets.map(b => {
       if (b.category === newCat) {
         const newSpent = b.spent + amt;
         const newPct = Math.round((newSpent / b.limit) * 100);
         let newStatus = 'normal';
         if (newPct >= 100) newStatus = 'exceeded';
-        else if (newPct >= 85) newStatus = 'warning';
-        return { ...b, spent: newSpent, percent: newPct, status: newStatus };
+        else if (newPct >= 80) newStatus = 'warning';
+        return {
+          ...b,
+          spent: newSpent,
+          percentage: newPct,
+          status: newStatus
+        };
       }
       return b;
-    }));
+    });
+
+    setBudgets(updatedBudgets);
+    await transactionService.updateBudgets(updatedBudgets);
 
     setNewDesc('');
     setNewAmount('');
@@ -136,10 +148,10 @@ export default function NovaGuardianView({ budgets, setBudgets, userProfile, set
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginTop: '8px' }}>
                     <span style={{ color: '#64748b' }}>
-                      Spent: <strong className="mono" style={{ color: '#0f172a' }}>₹{b.spent.toLocaleString()}</strong>
+                      Spent: <strong className="mono" style={{ color: '#0f172a' }}>₹{(b?.spent || 0).toLocaleString()}</strong>
                     </span>
                     <span style={{ color: '#64748b' }}>
-                      Limit: <strong className="mono" style={{ color: '#0f172a' }}>₹{b.limit.toLocaleString()}</strong>
+                      Limit: <strong className="mono" style={{ color: '#0f172a' }}>₹{(b?.limit || 0).toLocaleString()}</strong>
                     </span>
                   </div>
                 </div>

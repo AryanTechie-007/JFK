@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Receipt, 
   UploadCloud, 
@@ -7,14 +7,31 @@ import {
   Sparkles, 
   Tag, 
   ArrowRight,
-  Filter
+  Filter,
+  Download
 } from 'lucide-react';
 import { TRANSACTIONS } from '../data/mockFinancialData';
+import { transactionService } from '../services/transactionService';
 
-export default function TransactionCategorizerView() {
+export default function TransactionCategorizerView({ userProfile }) {
+  const currency = userProfile?.currency || '₹';
   const [statementText, setStatementText] = useState('');
   const [categorizedList, setCategorizedList] = useState(TRANSACTIONS);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  useEffect(() => {
+    async function loadTxs() {
+      try {
+        const res = await transactionService.getTransactions();
+        if (res.success && res.transactions.length > 0) {
+          setCategorizedList(res.transactions);
+        }
+      } catch (err) {
+        console.warn('Backend transactions fetch offline, using fallback list.');
+      }
+    }
+    loadTxs();
+  }, []);
 
   const classifyTransaction = (rawText) => {
     const text = rawText.toUpperCase();
@@ -45,7 +62,7 @@ export default function TransactionCategorizerView() {
 
     setIsProcessing(true);
 
-    setTimeout(() => {
+    setTimeout(async () => {
       const lines = statementText.split('\n').filter(l => l.trim().length > 0);
       const newItems = lines.map((line, idx) => {
         const parts = line.split(',');
@@ -59,15 +76,23 @@ export default function TransactionCategorizerView() {
           merchant: desc.split(' ')[0],
           amount: Math.abs(amt),
           category: cls.category,
-          tagColor: cls.tagColor,
           type: 'debit'
         };
       });
 
-      setCategorizedList([...newItems, ...categorizedList]);
-      setStatementText('');
+      setCategorizedList(prev => [...newItems, ...prev]);
+
+      for (const tx of newItems) {
+        await transactionService.createTransaction(tx);
+      }
+
       setIsProcessing(false);
-    }, 800);
+      setStatementText('');
+    }, 600);
+  };
+
+  const handleExportCSV = async () => {
+    await transactionService.exportTransactions();
   };
 
   const categoryTotals = categorizedList.reduce((acc, tx) => {

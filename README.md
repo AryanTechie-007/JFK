@@ -1,6 +1,6 @@
 # FinMate AI — Personal Financial Coaching Platform (FinHack)
 
-**FinMate AI** is an intelligent personal financial coaching platform built for **FinHack**. It combines a Master AI Financial Coach (**John**, powered by Google Gemini 1.5 Flash) with four specialized underlying AI agents (**Iris**, **Atlas**, **Nova**, and **Sentinel**).
+**FinMate AI** is an intelligent personal financial coaching platform built for **FinHack**. It combines a Master AI Financial Coach (**John**) with four specialized underlying AI agents (**Iris**, **Atlas**, **Nova**, and **Sentinel**).
 
 ---
 
@@ -11,7 +11,7 @@
                                 |
                                 v
                      JOHN (Master AI Coach)
-                   [Gemini 1.5 Flash Engine]
+                   [Master Orchestration Engine]
                                 |
    +----------------------------+----------------------------+
    |                            |                            |
@@ -23,7 +23,7 @@ SENTINEL (Predictor)  ---> IRIS (Advisor)    ---> ATLAS (Strategist) & NOVA (Gua
 
 1. **John — Master Financial Coach (`JohnCoachDashboard.jsx`)**:
    - **Role**: Central AI orchestrator synthesizing insights into unified, actionable financial advice.
-   - **AI Engine**: Integrated with **Google Gemini 1.5 Flash** API via the `GEMINI_API_KEY` environment variable.
+   - **AI Engine**: Integrated via Backend AI Orchestrator API (`/api/ai/chat`).
    - **Multi-Agent Reasoning Traces**: Shows step-by-step trace accordions (`Sentinel → Iris → Atlas → Nova`) for user clarity.
    - **User-Consent Goal Proposals**: When John suggests a savings objective (e.g. *iPhone 16 Purchase Reserve* or *September Insurance Fund*), an **Interactive Proposal Card** renders with options: `[ Accept & Create Goal ]` and `[ Decline ]`. Accepting appends the goal directly to Atlas.
 

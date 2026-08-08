@@ -11,10 +11,13 @@ import {
   Wallet
 } from 'lucide-react';
 
+import { profileService } from '../services/profileService';
+import { transactionService } from '../services/transactionService';
+
 export default function SettingsView({ userProfile, setUserProfile, budgets, setBudgets, showNotification }) {
-  const [name, setName] = useState(userProfile.name);
-  const [income, setIncome] = useState(userProfile.monthlyIncome);
-  const [fixedExpenses, setFixedExpenses] = useState(userProfile.fixedExpenses);
+  const [name, setName] = useState(userProfile?.name || '');
+  const [income, setIncome] = useState(userProfile?.monthlyIncome || 0);
+  const [fixedExpenses, setFixedExpenses] = useState(userProfile?.fixedExpenses || 0);
   
   // Custom budget limits per category
   const [foodLimit, setFoodLimit] = useState(budgets.find(b => b.category === "Food & Dining")?.limit || 10000);
@@ -23,45 +26,48 @@ export default function SettingsView({ userProfile, setUserProfile, budgets, set
   const [transportLimit, setTransportLimit] = useState(budgets.find(b => b.category === "Transport")?.limit || 5000);
   const [utilitiesLimit, setUtilitiesLimit] = useState(budgets.find(b => b.category === "Bills & Utilities")?.limit || 5000);
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
 
     const numIncome = Number(income);
     const numFixed = Number(fixedExpenses);
+    const totalSpent = userProfile?.totalSpentThisMonth || 0;
 
     // Recalculate net surplus
-    const newNetSurplus = numIncome - userProfile.totalSpentThisMonth;
-    const newSavingsRate = Number(((newNetSurplus / numIncome) * 100).toFixed(1));
+    const newNetSurplus = Math.max(0, numIncome - totalSpent);
+    const newSavingsRate = numIncome > 0 ? Number(((newNetSurplus / numIncome) * 100).toFixed(1)) : 0;
 
-    // Update user profile
-    setUserProfile(prev => ({
-      ...prev,
+    const updatedProfile = {
+      ...userProfile,
       name,
       monthlyIncome: numIncome,
       fixedExpenses: numFixed,
       currentSavings: newNetSurplus,
       savingsRate: newSavingsRate
-    }));
+    };
+
+    // Update user profile locally and send to backend
+    setUserProfile(updatedProfile);
+    await profileService.updateProfile(updatedProfile);
 
     // Update budgets
-    setBudgets(prev => prev.map(b => {
-      if (b.category === "Food & Dining") {
-        return { ...b, limit: Number(foodLimit), percent: Math.round((b.spent / Number(foodLimit)) * 100) };
-      }
-      if (b.category === "Shopping & Lifestyle") {
-        return { ...b, limit: Number(shoppingLimit), percent: Math.round((b.spent / Number(shoppingLimit)) * 100) };
-      }
-      if (b.category === "Subscriptions") {
-        return { ...b, limit: Number(subLimit), percent: Math.round((b.spent / Number(subLimit)) * 100) };
-      }
-      if (b.category === "Transport") {
-        return { ...b, limit: Number(transportLimit), percent: Math.round((b.spent / Number(transportLimit)) * 100) };
-      }
-      if (b.category === "Bills & Utilities") {
-        return { ...b, limit: Number(utilitiesLimit), percent: Math.round((b.spent / Number(utilitiesLimit)) * 100) };
-      }
-      return b;
-    }));
+    const updatedBudgets = budgets.map(b => {
+      let newLimit = b.limit;
+      if (b.category === "Food & Dining") newLimit = Number(foodLimit);
+      if (b.category === "Shopping & Lifestyle") newLimit = Number(shoppingLimit);
+      if (b.category === "Subscriptions") newLimit = Number(subLimit);
+      if (b.category === "Transport") newLimit = Number(transportLimit);
+      if (b.category === "Bills & Utilities") newLimit = Number(utilitiesLimit);
+
+      return {
+        ...b,
+        limit: newLimit,
+        percentage: Math.round((b.spent / newLimit) * 100)
+      };
+    });
+
+    setBudgets(updatedBudgets);
+    await transactionService.updateBudgets(updatedBudgets);
 
     if (showNotification) {
       showNotification("Profile Updated!", "John and all specialist agents have synced to your custom financial inputs.");
@@ -77,7 +83,7 @@ export default function SettingsView({ userProfile, setUserProfile, budgets, set
           Financial Profile & Settings
         </h1>
         <p style={{ fontSize: '14px', color: '#64748b', marginTop: '4px' }}>
-          Customize your income, fixed housing bills, and monthly category caps. John (Gemini AI) and all agents use these live inputs.
+          Customize your income, fixed housing bills, and monthly category caps. John and all agents use these live inputs.
         </p>
       </div>
 
@@ -147,7 +153,7 @@ export default function SettingsView({ userProfile, setUserProfile, budgets, set
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
               <span style={{ fontSize: '13px', color: '#475569' }}>Calculated Net Surplus:</span>
               <span className="mono" style={{ fontSize: '18px', fontWeight: '700', color: '#059669' }}>
-                ₹{(Number(income) - userProfile.totalSpentThisMonth).toLocaleString()}/mo
+                ₹{(Number(income) - (userProfile?.totalSpentThisMonth || 0)).toLocaleString()}/mo
               </span>
             </div>
           </div>

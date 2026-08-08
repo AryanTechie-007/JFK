@@ -137,7 +137,7 @@ export default function Sidebar({ activeTab, setActiveTab, userProfile, onLogout
             {profile.name}
           </div>
           <div className="mono" style={{ fontSize: '11px', color: '#64748b', fontFamily: 'var(--font-sans)' }}>
-            Income: ₹{profile.monthlyIncome.toLocaleString()}/mo
+            Income: ₹{(profile?.monthlyIncome || 0).toLocaleString()}/mo
           </div>
         </div>
 

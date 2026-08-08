@@ -1,20 +1,21 @@
 // FinMate AI Mock Financial Dataset & Multi-Agent Orchestrator Logic
 
 export const USER_PROFILE = {
-  name: "Aryan",
+  name: "User",
+  occupation: "Account Holder",
   currency: "₹",
-  monthlyIncome: 75000,
-  fixedExpenses: 25000,
-  variableExpenses: 29200,
-  totalSpentThisMonth: 54200,
-  currentSavings: 20800,
-  savingsRate: 27.7,
-  healthScore: 84,
+  monthlyIncome: 0,
+  fixedExpenses: 0,
+  variableExpenses: 0,
+  totalSpentThisMonth: 0,
+  currentSavings: 0,
+  savingsRate: 0,
+  healthScore: 80,
   scoreBreakdown: {
-    savingBehavior: 88,
-    budgetDiscipline: 78,
-    spendingControl: 82,
-    futurePlanning: 88
+    savingBehavior: 80,
+    budgetDiscipline: 80,
+    spendingControl: 80,
+    futurePlanning: 80
   }
 };
 

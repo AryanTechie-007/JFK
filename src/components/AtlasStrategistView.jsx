@@ -14,9 +14,13 @@ import {
   DollarSign,
   Trash2
 } from 'lucide-react';
-import { USER_PROFILE, AGENTS } from '../data/mockFinancialData';
+import { AGENTS } from '../data/mockFinancialData';
+import { goalService } from '../services/goalService';
 
-export default function AtlasStrategistView({ goals, setGoals }) {
+export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
+  const userName = userProfile?.name || 'User';
+  const currency = userProfile?.currency || '₹';
+
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingGoal, setEditingGoal] = useState(null);
 
@@ -52,35 +56,33 @@ export default function AtlasStrategistView({ goals, setGoals }) {
     setAddFundsAmount('');
   };
 
-  const handleSaveEdit = (e) => {
+  const handleSaveEdit = async (e) => {
     e.preventDefault();
     if (!editingGoal) return;
 
     const extraMoney = Number(addFundsAmount) || 0;
     const finalCurrent = Number(editCurrent) + extraMoney;
 
-    setGoals(prev => prev.map(g => {
-      if (g.id === editingGoal.id) {
-        return {
-          ...g,
-          name: editName,
-          current: finalCurrent,
-          target: Number(editTarget),
-          priority: editPriority
-        };
-      }
-      return g;
-    }));
+    const updatedGoal = {
+      ...editingGoal,
+      name: editName,
+      current: finalCurrent,
+      target: Number(editTarget),
+      priority: editPriority
+    };
 
+    setGoals(prev => prev.map(g => g.id === editingGoal.id ? updatedGoal : g));
+    await goalService.updateGoal(editingGoal.id, updatedGoal);
     setEditingGoal(null);
   };
 
-  const handleDeleteGoal = (goalId) => {
+  const handleDeleteGoal = async (goalId) => {
     setGoals(prev => prev.filter(g => g.id !== goalId));
+    await goalService.deleteGoal(goalId);
     setEditingGoal(null);
   };
 
-  const handleAddGoal = (e) => {
+  const handleAddGoal = async (e) => {
     e.preventDefault();
     if (!newGoalName || !newGoalTarget) return;
 
@@ -90,12 +92,14 @@ export default function AtlasStrategistView({ goals, setGoals }) {
       priority: 'MEDIUM PRIORITY',
       current: 0,
       target: Number(newGoalTarget),
-      targetDate: 'Expected by Dec 2026',
+      targetDate: 'Expected in 12 months',
       iconType: 'target',
       monthlyAdd: Number(newGoalAdd) || 3000
     };
 
-    setGoals([newGoal, ...goals]);
+    setGoals(prev => [newGoal, ...prev]);
+    await goalService.createGoal(newGoal);
+
     setNewGoalName('');
     setNewGoalTarget('');
     setNewGoalAdd('');
@@ -162,10 +166,10 @@ export default function AtlasStrategistView({ goals, setGoals }) {
 
                     <div style={{ marginTop: '14px', display: 'flex', alignItems: 'baseline', gap: '6px' }}>
                       <span className="mono" style={{ fontSize: '24px', fontWeight: '700', color: '#0f172a', fontFamily: 'var(--font-serif)' }}>
-                        ₹{g.current.toLocaleString()}
+                        ₹{(g?.current || 0).toLocaleString()}
                       </span>
                       <span className="mono" style={{ fontSize: '12px', color: '#64748b', fontFamily: 'var(--font-serif)' }}>
-                        / ₹{g.target.toLocaleString()}
+                        / ₹{(g?.target || 0).toLocaleString()}
                       </span>
                     </div>
 

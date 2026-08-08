@@ -10,9 +10,10 @@ import {
   Sliders,
   DollarSign
 } from 'lucide-react';
-import { USER_PROFILE, AGENTS } from '../data/mockFinancialData';
+import { AGENTS } from '../data/mockFinancialData';
 
-export default function IrisAdvisorView() {
+export default function IrisAdvisorView({ userProfile }) {
+  const currency = userProfile?.currency || '₹';
   const [foodOrderSlider, setFoodOrderSlider] = useState(6);
 
   const initialOrders = 18;

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Activity, 
   ShieldCheck, 
@@ -8,18 +8,40 @@ import {
   CheckCircle2, 
   ArrowUpRight 
 } from 'lucide-react';
-import { USER_PROFILE, AGENTS } from '../data/mockFinancialData';
+import { AGENTS } from '../data/mockFinancialData';
+import { profileService } from '../services/profileService';
 
 export default function FinancialHealthView({ userProfile }) {
-  const profile = userProfile || USER_PROFILE;
-  const breakdown = profile.scoreBreakdown || { savingBehavior: 88, budgetDiscipline: 78, spendingControl: 82, futurePlanning: 88 };
+  const [healthData, setHealthData] = useState(null);
+
+  useEffect(() => {
+    async function fetchHealth() {
+      try {
+        const res = await profileService.getFinancialHealth();
+        if (res.success && res.health) {
+          setHealthData(res.health);
+        }
+      } catch (err) {
+        console.warn('Backend health API offline, using profile state.');
+      }
+    }
+    fetchHealth();
+  }, []);
+
+  const healthScore = healthData?.score || userProfile?.healthScore || 80;
+  const breakdown = healthData?.scoreBreakdown || userProfile?.scoreBreakdown || { 
+    savingBehavior: 80, 
+    budgetDiscipline: 78, 
+    spendingControl: 82, 
+    futurePlanning: 85 
+  };
 
   const timelineSteps = [
-    { title: 'Started Financial Journey', date: 'Jan 2026', status: 'Completed', detail: 'Connected bank feeds & initialized John AI Master Agent.' },
-    { title: 'Habit Leak Identified', date: 'Mar 2026', status: 'Completed', detail: 'Iris detected ₹5,000/mo spike in Swiggy food delivery.' },
-    { title: 'Emergency Liquidity Vault Created', date: 'May 2026', status: 'Completed', detail: 'Atlas configured automatic ₹10,000 SIP into liquid funds.' },
-    { title: 'Current Status (Aug 2026)', date: 'Aug 2026', status: 'Active', detail: 'Score at 84/100. Preparing for Sentinel Sep Insurance bill.' },
-    { title: 'Full Safety Reserve Milestone', date: 'Dec 2026', status: 'Target', detail: 'On track to reach ₹1,20,000 Emergency Reserve Target.' }
+    { title: 'Account Onboarding & Setup', date: 'Recent', status: 'Completed', detail: `Registered user ${userProfile?.name || ''}. Initialized John AI Master Coach.` },
+    { title: 'Habit & Budget Auditing', date: 'Active', status: 'Completed', detail: 'Iris and Nova actively auditing spending streams.' },
+    { title: 'Goal & Strategy Setup', date: 'Active', status: 'Completed', detail: 'Atlas configured goal tracking pathways.' },
+    { title: 'Current Wellness Status', date: 'Now', status: 'Active', detail: `Current Health Score: ${healthScore}/100.` },
+    { title: 'Full Reserve Target', date: 'Upcoming', status: 'Target', detail: 'On track to reach primary financial goal target.' }
   ];
 
   return (
@@ -47,7 +69,7 @@ export default function FinancialHealthView({ userProfile }) {
         }}>
           <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '600', fontFamily: 'var(--font-sans)' }}>Overall Health Rating</div>
           <div className="mono" style={{ fontSize: '28px', fontWeight: '700', color: '#059669', fontFamily: 'var(--font-serif)' }}>
-            {profile.healthScore || 84} <span style={{ fontSize: '14px', color: '#64748b' }}>/ 100</span>
+            {healthScore} <span style={{ fontSize: '14px', color: '#64748b' }}>/ 100</span>
           </div>
         </div>
       </div>
@@ -66,7 +88,7 @@ export default function FinancialHealthView({ userProfile }) {
               </span>
             </div>
             <p style={{ fontSize: '12px', color: '#64748b', marginTop: '4px', fontFamily: 'var(--font-sans)' }}>
-              Saving {profile.savingsRate || 27.7}% of gross income (₹{(profile.currentSavings || 20800).toLocaleString()}/mo). Atlas benchmark recommendation is 30%.
+              Saving {userProfile?.savingsRate || 27.7}% of gross income (₹{(userProfile?.currentSavings || 20800).toLocaleString()}/mo). Atlas benchmark recommendation is 30%.
             </p>
             <div className="progress-track" style={{ height: '8px', marginTop: '10px' }}>
               <div className="progress-fill" style={{ width: `${breakdown.savingBehavior}%`, backgroundColor: '#059669' }} />

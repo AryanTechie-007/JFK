@@ -19,9 +19,10 @@ import {
   ShieldAlert,
   ArrowUpRight
 } from 'lucide-react';
-import { SENTINEL_FORECAST, AGENTS, USER_PROFILE } from '../data/mockFinancialData';
+import { SENTINEL_FORECAST, AGENTS } from '../data/mockFinancialData';
 
-export default function SentinelPredictorView() {
+export default function SentinelPredictorView({ userProfile }) {
+  const currency = userProfile?.currency || '₹';
   // Combine historical and prediction data for chart
   const combinedChartData = [
     ...SENTINEL_FORECAST.historical.map(item => ({
