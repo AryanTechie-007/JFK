@@ -25,12 +25,32 @@ export default function SettingsView({ userProfile, setUserProfile, budgets, set
   const [subLimit, setSubLimit] = useState(budgets.find(b => b.category === "Subscriptions")?.limit || 3000);
   const [transportLimit, setTransportLimit] = useState(budgets.find(b => b.category === "Transport")?.limit || 5000);
   const [utilitiesLimit, setUtilitiesLimit] = useState(budgets.find(b => b.category === "Bills & Utilities")?.limit || 5000);
+  
+  const [errorMsg, setErrorMsg] = useState('');
 
   const handleSave = async (e) => {
     e.preventDefault();
+    setErrorMsg('');
 
     const numIncome = Number(income);
     const numFixed = Number(fixedExpenses);
+
+    if (isNaN(numIncome) || numIncome <= 0) {
+      setErrorMsg('Monthly Income must be a positive number.');
+      return;
+    }
+
+    if (numFixed > numIncome) {
+      setErrorMsg(`Fixed Monthly Expenses (₹${numFixed.toLocaleString()}) cannot exceed total Monthly Earnings (₹${numIncome.toLocaleString()}). Please set a valid expense threshold.`);
+      return;
+    }
+
+    const totalCategoryLimits = Number(foodLimit) + Number(shoppingLimit) + Number(subLimit) + Number(transportLimit) + Number(utilitiesLimit);
+    if (totalCategoryLimits > numIncome) {
+      setErrorMsg(`Combined Category Budget Caps (₹${totalCategoryLimits.toLocaleString()}) cannot exceed total Monthly Earnings (₹${numIncome.toLocaleString()}).`);
+      return;
+    }
+
     const totalSpent = userProfile?.totalSpentThisMonth || 0;
 
     // Recalculate net surplus
@@ -86,6 +106,23 @@ export default function SettingsView({ userProfile, setUserProfile, budgets, set
           Customize your income, fixed housing bills, and monthly category caps. John and all agents use these live inputs.
         </p>
       </div>
+
+      {/* Validation Error Alert */}
+      {errorMsg && (
+        <div style={{
+          padding: '12px 16px',
+          backgroundColor: '#fef2f2',
+          border: '1px solid #fecaca',
+          borderRadius: 'var(--radius-md)',
+          color: '#dc2626',
+          fontSize: '13px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          <span>⚠️ {errorMsg}</span>
+        </div>
+      )}
 
       <form onSubmit={handleSave} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
         

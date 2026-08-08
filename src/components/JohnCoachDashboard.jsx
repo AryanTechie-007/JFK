@@ -89,6 +89,7 @@ export default function JohnCoachDashboard({ userProfile, goals, onAcceptGoal, s
   }, [messages, isThinking]);
 
   const handleSend = async (textToSend) => {
+    if (isThinking) return;
     const rawVal = textToSend || inputQuery;
     const queryText = typeof rawVal === 'string' ? rawVal : (rawVal?.query || rawVal?.label || '');
     if (!queryText || !queryText.trim()) return;

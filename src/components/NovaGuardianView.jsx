@@ -26,6 +26,7 @@ export default function NovaGuardianView({ budgets, setBudgets, userProfile, set
     if (!newDesc || !newAmount) return;
 
     const amt = Number(newAmount);
+    if (isNaN(amt) || amt <= 0) return;
     const newTx = {
       id: `tx-${Date.now()}`,
       date: new Date().toISOString().split('T')[0],

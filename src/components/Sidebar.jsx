@@ -2,12 +2,11 @@ import React from 'react';
 import { 
   LayoutGrid, 
   Bot, 
-  Receipt, 
+  BarChart3, 
   Sparkles, 
   ShieldCheck, 
   Target, 
   Activity, 
-  Plus, 
   Settings, 
   LogOut,
   ChevronRight
@@ -19,7 +18,7 @@ export default function Sidebar({ activeTab, setActiveTab, userProfile, onLogout
 
   const navItems = [
     { id: 'john', label: 'John AI Coach', icon: Bot, color: '#059669' },
-    { id: 'categorizer', label: 'Expense Categorizer', icon: Receipt, color: '#475569' },
+    { id: 'analyser', label: 'Spending Analyser', icon: BarChart3, color: '#005f41' },
     { id: 'iris', label: 'Spending Advisor', icon: Sparkles, color: '#d97706' },
     { id: 'nova', label: 'Budget Guardian', icon: ShieldCheck, color: '#dc2626' },
     { id: 'atlas', label: 'Saving Strategist', icon: Target, color: '#059669' },
@@ -39,7 +38,7 @@ export default function Sidebar({ activeTab, setActiveTab, userProfile, onLogout
     }}>
       {/* Brand Header */}
       <div style={{
-        padding: '24px 20px 16px 20px',
+        padding: '24px 20px 20px 20px',
         display: 'flex',
         alignItems: 'center',
         gap: '12px'
@@ -64,18 +63,6 @@ export default function Sidebar({ activeTab, setActiveTab, userProfile, onLogout
             FinHack Financial Mentor
           </div>
         </div>
-      </div>
-
-      {/* New Simulation Button */}
-      <div style={{ padding: '0 20px 16px 20px' }}>
-        <button 
-          onClick={() => setActiveTab('john')}
-          className="btn btn-emerald"
-          style={{ width: '100%', justifyContent: 'center', padding: '10px 16px' }}
-        >
-          <Plus size={16} />
-          <span>New Simulation</span>
-        </button>
       </div>
 
       {/* Navigation Links */}

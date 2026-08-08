@@ -30,11 +30,19 @@ async function request(endpoint, options = {}) {
   const config = {
     ...options,
     headers,
-    credentials: 'omit', // change to 'include' if using cookie sessions
+    credentials: 'omit',
   };
 
   try {
-    const response = await fetch(url, config);
+    let response;
+    try {
+      response = await fetch(url, config);
+    } catch (fetchErr) {
+      const netError = new Error('Network error: Unable to reach API server.');
+      netError.isNetworkError = true;
+      netError.originalError = fetchErr;
+      throw netError;
+    }
 
     // Handle HTTP errors
     if (!response.ok) {

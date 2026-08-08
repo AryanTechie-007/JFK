@@ -6,7 +6,7 @@ import SentinelPredictorView from './components/SentinelPredictorView';
 import IrisAdvisorView from './components/IrisAdvisorView';
 import AtlasStrategistView from './components/AtlasStrategistView';
 import NovaGuardianView from './components/NovaGuardianView';
-import TransactionCategorizerView from './components/TransactionCategorizerView';
+import SpendingAnalyserView from './components/SpendingAnalyserView';
 import FinancialHealthView from './components/FinancialHealthView';
 import SettingsView from './components/SettingsView';
 import AuthView from './components/AuthView';
@@ -282,8 +282,8 @@ export default function App() {
         return <AtlasStrategistView goals={goals} setGoals={setGoals} userProfile={userProfile} />;
       case 'nova':
         return <NovaGuardianView budgets={budgets} setBudgets={setBudgets} userProfile={userProfile} setUserProfile={setUserProfile} />;
-      case 'categorizer':
-        return <TransactionCategorizerView userProfile={userProfile} />;
+      case 'analyser':
+        return <SpendingAnalyserView userProfile={userProfile} />;
       case 'health':
         return <FinancialHealthView userProfile={userProfile} />;
       case 'settings':

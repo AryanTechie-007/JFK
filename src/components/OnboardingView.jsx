@@ -55,12 +55,20 @@ export default function OnboardingView({ initialData, onCompleteOnboarding }) {
       setValidationError('Fixed expenses cannot exceed your total monthly income.');
       return;
     }
+    if (numFixed + numVar > numIncome) {
+      setValidationError(`Total monthly expenses (₹${(numFixed + numVar).toLocaleString()}) cannot exceed your total monthly income (₹${numIncome.toLocaleString()}).`);
+      return;
+    }
     if (isNaN(numTarget) || numTarget <= 0) {
       setValidationError('Target goal amount must be a positive number.');
       return;
     }
     if (isNaN(numMonthlyAlloc) || numMonthlyAlloc < 0) {
       setValidationError('Monthly goal allocation must be a non-negative number.');
+      return;
+    }
+    if (numMonthlyAlloc > numTarget) {
+      setValidationError(`Monthly goal allocation (₹${numMonthlyAlloc.toLocaleString()}) cannot exceed the target goal amount (₹${numTarget.toLocaleString()}).`);
       return;
     }
 

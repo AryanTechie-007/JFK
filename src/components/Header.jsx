@@ -13,8 +13,8 @@ export default function Header({ activeTab, onSync }) {
         return { title: 'Atlas — Saving Strategist', subtitle: 'Wealth planner managing liquidity goals, SIP investment engines, and asset timelines', agent: AGENTS.atlas };
       case 'nova':
         return { title: 'Nova — Real-Time Budget Guardian', subtitle: 'Active security sentinel enforcing spending caps, alerting on limit breaches', agent: AGENTS.nova };
-      case 'categorizer':
-        return { title: 'Transaction Intelligence & Categorizer', subtitle: 'Automatic NLP transaction classifier, statement parsing, and merchant tagging', agent: null };
+      case 'analyser':
+        return { title: 'Spending & Trend Analyser', subtitle: 'Interactive monthly and annual spending trend analysis fed into John Master Agent', agent: null };
       case 'health':
         return { title: 'Financial Health Scorecard', subtitle: 'Comprehensive financial wellness diagnostic across saving, spending, and planning', agent: null };
       case 'settings':

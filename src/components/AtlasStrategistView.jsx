@@ -20,6 +20,9 @@ import { goalService } from '../services/goalService';
 export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
   const userName = userProfile?.name || 'User';
   const currency = userProfile?.currency || '₹';
+  const income = userProfile?.monthlyIncome || 0;
+  const fixedExp = userProfile?.fixedExpenses || 0;
+  const netSurplus = Math.max(0, income - fixedExp);
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingGoal, setEditingGoal] = useState(null);
@@ -37,6 +40,7 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
   const [editPriority, setEditPriority] = useState('MEDIUM PRIORITY');
 
   const [isCommitted, setIsCommitted] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
   const getIcon = (type) => {
     switch (type) {
@@ -54,20 +58,33 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
     setEditTarget(goal.target);
     setEditPriority(goal.priority || 'MEDIUM PRIORITY');
     setAddFundsAmount('');
+    setErrorMsg('');
   };
 
   const handleSaveEdit = async (e) => {
     e.preventDefault();
+    setErrorMsg('');
     if (!editingGoal) return;
 
     const extraMoney = Number(addFundsAmount) || 0;
     const finalCurrent = Number(editCurrent) + extraMoney;
+    const numTarget = Number(editTarget);
+
+    if (numTarget <= 0) {
+      setErrorMsg('Target savings amount must be greater than zero.');
+      return;
+    }
+
+    if (finalCurrent > numTarget) {
+      setErrorMsg(`Total saved amount (₹${finalCurrent.toLocaleString()}) cannot exceed the target goal amount (₹${numTarget.toLocaleString()}).`);
+      return;
+    }
 
     const updatedGoal = {
       ...editingGoal,
       name: editName,
       current: finalCurrent,
-      target: Number(editTarget),
+      target: numTarget,
       priority: editPriority
     };
 
@@ -84,17 +101,31 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
 
   const handleAddGoal = async (e) => {
     e.preventDefault();
+    setErrorMsg('');
     if (!newGoalName || !newGoalTarget) return;
+
+    const numTarget = Number(newGoalTarget);
+    const numAdd = Number(newGoalAdd) || 3000;
+
+    if (numTarget <= 0) {
+      setErrorMsg('Target savings amount must be greater than zero.');
+      return;
+    }
+
+    if (numAdd > numTarget) {
+      setErrorMsg(`Monthly savings contribution (₹${numAdd.toLocaleString()}) cannot exceed the target goal amount (₹${numTarget.toLocaleString()}).`);
+      return;
+    }
 
     const newGoal = {
       id: `goal-${Date.now()}`,
       name: newGoalName,
       priority: 'MEDIUM PRIORITY',
       current: 0,
-      target: Number(newGoalTarget),
+      target: numTarget,
       targetDate: 'Expected in 12 months',
       iconType: 'target',
-      monthlyAdd: Number(newGoalAdd) || 3000
+      monthlyAdd: numAdd
     };
 
     setGoals(prev => [newGoal, ...prev]);
@@ -282,10 +313,11 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
           zIndex: 100
         }}>
           <div className="card" style={{ width: '440px', backgroundColor: '#ffffff' }}>
-            <div className="card-title" style={{ justifyContent: 'space-between', marginBottom: '16px' }}>
-              <span>Edit Goal & Add Money</span>
-              <button onClick={() => setEditingGoal(null)} className="btn btn-ghost btn-sm">✕</button>
-            </div>
+            {errorMsg && (
+              <div style={{ padding: '10px 12px', backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '6px', color: '#dc2626', fontSize: '12px' }}>
+                ⚠️ {errorMsg}
+              </div>
+            )}
 
             <form onSubmit={handleSaveEdit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               
@@ -408,8 +440,14 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
           <div className="card" style={{ width: '420px', backgroundColor: '#ffffff' }}>
             <div className="card-title" style={{ justifyContent: 'space-between', marginBottom: '16px' }}>
               <span>Create New Saving Objective</span>
-              <button onClick={() => setShowAddModal(false)} className="btn btn-ghost btn-sm">✕</button>
+              <button onClick={() => { setShowAddModal(false); setErrorMsg(''); }} className="btn btn-ghost btn-sm">✕</button>
             </div>
+
+            {errorMsg && (
+              <div style={{ padding: '10px 12px', marginBottom: '12px', backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '6px', color: '#dc2626', fontSize: '12px' }}>
+                ⚠️ {errorMsg}
+              </div>
+            )}
 
             <form onSubmit={handleAddGoal} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div>
