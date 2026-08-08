@@ -23,7 +23,7 @@ SENTINEL (Predictor)  ---> IRIS (Advisor)    ---> ATLAS (Strategist) & NOVA (Gua
 
 1. **John — Master Financial Coach (`JohnCoachDashboard.jsx`)**:
    - **Role**: Central AI orchestrator synthesizing insights into unified, actionable financial advice.
-   - **AI Engine**: Integrated with **Google Gemini 1.5 Flash** API (`AQ.Ab8RN6JolEkKO8VTBfFtohWTTCFUqE1v3mUj9Jm9W52qHgnbcw`).
+   - **AI Engine**: Integrated with **Google Gemini 1.5 Flash** API via the `GEMINI_API_KEY` environment variable.
    - **Multi-Agent Reasoning Traces**: Shows step-by-step trace accordions (`Sentinel → Iris → Atlas → Nova`) for user clarity.
    - **User-Consent Goal Proposals**: When John suggests a savings objective (e.g. *iPhone 16 Purchase Reserve* or *September Insurance Fund*), an **Interactive Proposal Card** renders with options: `[ Accept & Create Goal ]` and `[ Decline ]`. Accepting appends the goal directly to Atlas.
 
@@ -113,13 +113,19 @@ c:\Users\Aryan\Projects\FINHACK\
    npm install
    ```
 
-2. **Start Development Server**:
+2. **Configure Environment Variables**:
+   Create a `.env` file in the root directory (or copy from `.env.example`):
+   ```bash
+   GEMINI_API_KEY=your_gemini_api_key_here
+   ```
+
+3. **Start Development Server**:
    ```bash
    npm run dev
    ```
    Open **[http://localhost:5173/](http://localhost:5173/)** in your browser.
 
-3. **Production Build**:
+4. **Production Build**:
    ```bash
    npm run build
    ```

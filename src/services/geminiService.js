@@ -1,9 +1,14 @@
 // Gemini API Service Integration for John Master AI Financial Coach
 
-const GEMINI_API_KEY = "AQ.Ab8RN6JolEkKO8VTBfFtohWTTCFUqE1v3mUj9Jm9W52qHgnbcw";
-const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+const getGeminiApiKey = () => 
+  import.meta.env.GEMINI_API_KEY || 
+  import.meta.env.VITE_GEMINI_API_KEY || 
+  (typeof process !== 'undefined' && process.env ? process.env.GEMINI_API_KEY : '') || 
+  '';
 
 export async function askGeminiJohn(userQuery, userProfile, activeGoals) {
+  const apiKey = getGeminiApiKey();
+  const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
   const systemContext = `
 You are John, the Master AI Financial Coach of FinMate AI.
 You orchestrate 4 specialized underlying AI agents:
