@@ -1,0 +1,11 @@
+﻿{
+    "webTestingLauncher":  "web-testing\\run-web-test.bat",
+    "branch":  "nova",
+    "description":  "Nova V4 Real-Time Budget Guardian Agent",
+    "type":  "agent",
+    "directory":  "src/agents/nova",
+    "alias":  "agent/nova",
+    "standaloneTest":  "npm run test:nova",
+    "status":  "active-verified",
+    "desktopAppLauncher":  "run-app.bat"
+}
