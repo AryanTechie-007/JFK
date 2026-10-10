@@ -185,6 +185,12 @@ export default function App() {
       }
     }
     checkAuthSession();
+
+    if (typeof window !== 'undefined' && window.finmateDesktop?.onNavigateTab) {
+      window.finmateDesktop.onNavigateTab((tabName) => {
+        setActiveTab(tabName);
+      });
+    }
   }, []);
 
   const handleStartOnboarding = (initialData) => {

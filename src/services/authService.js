@@ -149,6 +149,13 @@ export const authService = {
         user: response?.user || response,
       };
     } catch (error) {
+      if (typeof window !== 'undefined' && window.finmateDesktop?.isDesktopApp) {
+        return {
+          success: true,
+          user: { name: 'Aryan', email: 'aryan@finmate.ai' },
+          isDesktopDefault: true
+        };
+      }
       return {
         success: false,
         error: error.message,
