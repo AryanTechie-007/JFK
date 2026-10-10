@@ -4,7 +4,7 @@ color 0A
 cd /d "%~dp0"
 
 echo ================================================================================
-echo   FINMATE AI - ELECTRON DESKTOP APPLICATION LAUNCHER
+echo   FINMATE AI - ELECTRON DESKTOP APPLICATION LAUNCHER (launch.bat)
 echo ================================================================================
 echo.
 echo [1/3] Running Pre-Flight Verification Gate across all Agent ^& Tool modules...
@@ -13,7 +13,7 @@ if %ERRORLEVEL% NEQ 0 (
     color 0C
     echo.
     echo [LAUNCH ABORTED] Pre-flight verification failed!
-    echo Please test and fix your changes using `web-testing\run-web-test.bat` first.
+    echo Please test and fix your changes using `web-testing\launch.bat` first.
     pause
     exit /b 1
 )

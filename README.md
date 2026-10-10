@@ -21,12 +21,12 @@ To maximize velocity for our **4-person engineering team working on 6+ parallel 
 
 ## 🚀 1. Quick Start: Running the Electron App vs. Web-Testing Sandbox
 
-### 🖥️ A. Primary Product: Run the Electron Desktop Application (`run-app.bat`)
+### 🖥️ A. Primary Product: Run the Electron Desktop Application (`launch.bat`)
 From the repository root, double-click or run:
 ```bat
-run-app.bat
+launch.bat
 ```
-**What `run-app.bat` does:**
+**What `launch.bat` does:**
 1. Runs the automated **Pre-Flight Verification Gate** (`web-testing/verify-web-readiness.js`) across all agents, tools, and the 14-suite V4 compliance test suite.
 2. Ensures the production UI bundle (`dist/index.html`) is built.
 3. Launches the native **FinMate AI Electron Desktop Application** (`electron/main.js`) with the embedded Nova V4 Express API server (`http://localhost:4001`) running automatically in the background.
@@ -77,7 +77,7 @@ web-testing\run-web-test.bat
 │ Fix regressions on your branch and  │  │ 1. git checkout main              │
 │ re-run web-testing\run-web-test.bat │  │ 2. git merge <your-branch>        │
 └─────────────────────────────────────┘  │ 3. npm run build                  │
-                                         │ 4. run-app.bat (Launch Desktop)   │
+                                         │ 4. launch.bat (Launch Desktop)   │
                                          └───────────────────────────────────┘
 ```
 
@@ -103,7 +103,7 @@ To enable **4 developers to work on 6 different workstreams in parallel** withou
 
 | Git Branch | Module Type | Isolated Folder | Standalone Test | Primary Responsibility |
 |---|---|---|---|---|
-| **`main`** | **Integrated App** | Root + All Folders | `npm run test:gate` | **Primary Electron Desktop App (`run-app.bat`) integrating all 6 branches** |
+| **`main`** | **Integrated App** | Root + All Folders | `npm run test:gate` | **Primary Electron Desktop App (`launch.bat`) integrating all 6 branches** |
 | **`nova`** | Agent (V4) | `src/agents/nova/` | `npm run test:nova` | Real-Time Budget Guardian, lifecycle runner, placeholder binder, Nova UI |
 | **`john`** | Agent (V4) | `src/agents/john/` | `npm run test:john` | Master Orchestrator, Section 10 signal routing table, John Coach UI |
 | **`iris`** | Agent (V4) | `src/agents/iris/` | `npm run test:iris` | Recurring subscription audit, `RECURRING_ANOMALY` handler, Iris UI |
@@ -117,7 +117,7 @@ To enable **4 developers to work on 6 different workstreams in parallel** withou
 
 ```
 finmate-nova-desktop/
-├── run-app.bat                                       # 🖥️ PRIMARY LAUNCHER: Verifies & launches Electron Desktop App
+├── launch.bat                                       # 🖥️ PRIMARY LAUNCHER: Verifies & launches Electron Desktop App
 ├── branch-manifest.json                              # Branch & parallel workstream metadata
 ├── README.md                                         # Documentation & Testing-to-Application workflow
 ├── Nova_V4_Specification_Compliance_Summary.pdf      # V4 Audit & Compliance Summary PDF
