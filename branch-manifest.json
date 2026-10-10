@@ -1,15 +1,13 @@
 {
   "activeBranch": "main",
   "mode": "integrated-all-branches",
-  "module": "All 6 Team Workstreams + 2 Governance Tools Integrated",
+  "module": "All 6 Team Workstreams Integrated",
   "parallelWorkstreams": [
     { "branch": "nova", "type": "agent", "path": "src/agents/nova", "description": "Nova — Real-Time Budget Guardian (V4)" },
     { "branch": "john", "type": "agent", "path": "src/agents/john", "description": "John — Master Orchestrator & Coach" },
     { "branch": "iris", "type": "agent", "path": "src/agents/iris", "description": "Iris — Subscription & Recurring Specialist" },
     { "branch": "atlas", "type": "agent", "path": "src/agents/atlas", "description": "Atlas — Long-Term Goal & Savings Strategist" },
     { "branch": "sentinel", "type": "tool", "path": "src/tools/sentinel", "description": "Sentinel — Deterministic Financial Calculator & Predictor" },
-    { "branch": "tally", "type": "tool", "path": "src/tools/tally", "description": "Tally — Categorization & Spending Analyser" },
-    { "branch": "threshold-job", "type": "tool", "path": "src/tools/threshold-job", "description": "Threshold Job — Deterministic Alerting Engine" },
-    { "branch": "action-service", "type": "tool", "path": "src/tools/action-service", "description": "Action Service — T1/T2/T3 Mutation Governance" }
+    { "branch": "tally", "type": "tool", "path": "src/tools/tally", "description": "Tally — Categorization & Spending Analyser" }
   ]
 }

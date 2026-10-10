@@ -97,21 +97,19 @@ npm run test:action-service  # Test Action Service T1/T2/T3 Governance only
 
 ---
 
-## 🌿 3. Parallel Team Branch Architecture (4 Developers / 6+ Branches)
+## 🌿 3. Parallel Team Branch Architecture (4 Developers / 6 Branches)
 
-To enable **4 developers to work on 6 different workstreams in parallel** without merge conflicts, every agent and tool has its own Git branch and isolated folder. **Every branch is a complete, runnable build of the product**, and **`main` merges and uses all branches together**.
+To enable **4 developers to work on 6 different workstreams in parallel** without merge conflicts, each of the 6 modules has its own Git branch and isolated folder. **Every branch is a complete, runnable build of the product**, and **`main` merges and uses all 6 branches together**.
 
 | Git Branch | Module Type | Isolated Folder | Standalone Test | Primary Responsibility |
 |---|---|---|---|---|
-| **`main`** | **Integrated App** | Root + All Folders | `npm run test:gate` | **Primary Electron Desktop App (`run-app.bat`) integrating all branches** |
-| **`nova`** (`agent/nova`) | Agent (V4) | `src/agents/nova/` | `npm run test:nova` | Real-Time Budget Guardian, lifecycle runner, placeholder binder, Nova UI |
-| **`john`** (`agent/john`) | Agent (V4) | `src/agents/john/` | `npm run test:john` | Master Orchestrator, Section 10 signal routing table, John Coach UI |
-| **`iris`** (`agent/iris`) | Agent (V4) | `src/agents/iris/` | `npm run test:iris` | Recurring subscription audit, `RECURRING_ANOMALY` handler, Iris UI |
-| **`atlas`** (`agent/atlas`) | Agent (V4) | `src/agents/atlas/` | `npm run test:atlas` | Goal trajectory strategist, `GOAL_FUNDING_PRESSURE` handler, Atlas UI |
-| **`sentinel`** (`tool/sentinel`) | Tool (V4) | `src/tools/sentinel/` | `npm run test:sentinel` | 6 deterministic read-only calculators, snapshot manager, `ToolGateway`, Sentinel UI |
-| **`tally`** (`tool/tally`) | Tool (V4) | `src/tools/tally/` | `npm run test:tally` | 3-state categorizer (`SETTLED`/`NEEDS_REVIEW`/`UNCATEGORIZED`), taxonomy, Spending Analyser UI |
-| **`threshold-job`** (`tool/threshold-job`) | Tool (V4) | `src/tools/threshold-job/` | `npm run test:threshold-job` | Deterministic `<60s` tier alerting & alert hygiene store |
-| **`action-service`** (`tool/action-service`) | Tool (V4) | `src/tools/action-service/` | `npm run test:action-service` | Sole state mutator enforcing T1/T2/T3 confirmation tokens |
+| **`main`** | **Integrated App** | Root + All Folders | `npm run test:gate` | **Primary Electron Desktop App (`run-app.bat`) integrating all 6 branches** |
+| **`nova`** | Agent (V4) | `src/agents/nova/` | `npm run test:nova` | Real-Time Budget Guardian, lifecycle runner, placeholder binder, Nova UI |
+| **`john`** | Agent (V4) | `src/agents/john/` | `npm run test:john` | Master Orchestrator, Section 10 signal routing table, John Coach UI |
+| **`iris`** | Agent (V4) | `src/agents/iris/` | `npm run test:iris` | Recurring subscription audit, `RECURRING_ANOMALY` handler, Iris UI |
+| **`atlas`** | Agent (V4) | `src/agents/atlas/` | `npm run test:atlas` | Goal trajectory strategist, `GOAL_FUNDING_PRESSURE` handler, Atlas UI |
+| **`sentinel`** | Tool (V4) | `src/tools/sentinel/` | `npm run test:sentinel` | 6 deterministic read-only calculators, snapshot manager, `ToolGateway`, Sentinel UI |
+| **`tally`** | Tool (V4) | `src/tools/tally/` | `npm run test:tally` | 3-state categorizer (`SETTLED`/`NEEDS_REVIEW`/`UNCATEGORIZED`), taxonomy, Spending Analyser UI |
 
 ---
 
