@@ -10,10 +10,11 @@ import {
   Filter,
   DollarSign,
   Layers,
-  Activity
+  Activity,
+  Upload
 } from 'lucide-react';
 
-export default function SpendingAnalyserView({ userProfile }) {
+export default function SpendingAnalyserView({ userProfile, onOpenImportModal }) {
   const currency = userProfile?.currency || '₹';
   const [viewMode, setViewMode] = useState('month'); // 'month' | 'year'
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
@@ -124,6 +125,18 @@ export default function SpendingAnalyserView({ userProfile }) {
               <span>By Year</span>
             </button>
           </div>
+
+          {/* Import Statement Button */}
+          {onOpenImportModal && (
+            <button
+              onClick={onOpenImportModal}
+              className="btn btn-secondary"
+              style={{ padding: '8px 14px', fontSize: '13px', fontWeight: '700', color: '#005f41' }}
+            >
+              <Upload size={14} />
+              <span>Import CSV</span>
+            </button>
+          )}
 
           {/* Analyse Option Button */}
           <button

@@ -17,6 +17,7 @@ export default function Sidebar({ activeTab, setActiveTab, userProfile, onLogout
   const profile = userProfile || USER_PROFILE;
 
   const navItems = [
+    { id: 'home', label: 'Home Overview', icon: LayoutGrid, color: '#005f41' },
     { id: 'john', label: 'John AI Coach', icon: Bot, color: '#059669' },
     { id: 'analyser', label: 'Spending Analyser', icon: BarChart3, color: '#005f41' },
     { id: 'iris', label: 'Spending Advisor', icon: Sparkles, color: '#d97706' },

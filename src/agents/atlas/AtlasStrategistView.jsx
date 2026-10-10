@@ -14,8 +14,8 @@ import {
   DollarSign,
   Trash2
 } from 'lucide-react';
-import { AGENTS } from '../data/mockFinancialData';
-import { goalService } from '../services/goalService';
+import { AGENTS } from '../../data/mockFinancialData';
+import { goalService } from '../../services/goalService';
 
 export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
   const userName = userProfile?.name || 'User';

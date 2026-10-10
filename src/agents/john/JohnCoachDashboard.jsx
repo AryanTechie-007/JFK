@@ -22,10 +22,10 @@ import {
   AGENTS, 
   SAMPLE_QUERIES, 
   runOrchestratorQuery 
-} from '../data/mockFinancialData';
-import { askGeminiJohn } from '../services/geminiService';
-import { conversationService } from '../services/conversationService';
-import FormattedText from './FormattedText';
+} from '../../data/mockFinancialData';
+import { askGeminiJohn } from '../../services/geminiService';
+import { conversationService } from '../../services/conversationService';
+import FormattedText from '../../components/FormattedText';
 
 export default function JohnCoachDashboard({ userProfile, goals, onAcceptGoal, setActiveTab }) {
   const userName = userProfile?.name || 'User';

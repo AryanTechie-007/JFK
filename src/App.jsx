@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
-import JohnCoachDashboard from './components/JohnCoachDashboard';
-import SentinelPredictorView from './components/SentinelPredictorView';
-import IrisAdvisorView from './components/IrisAdvisorView';
-import AtlasStrategistView from './components/AtlasStrategistView';
-import NovaGuardianView from './components/NovaGuardianView';
-import SpendingAnalyserView from './components/SpendingAnalyserView';
+import JohnCoachDashboard from './agents/john/JohnCoachDashboard';
+import SentinelPredictorView from './tools/sentinel/SentinelPredictorView';
+import IrisAdvisorView from './agents/iris/IrisAdvisorView';
+import AtlasStrategistView from './agents/atlas/AtlasStrategistView';
+import NovaGuardianView from './agents/nova/NovaGuardianView';
+import SpendingAnalyserView from './tools/tally/SpendingAnalyserView';
 import FinancialHealthView from './components/FinancialHealthView';
 import SettingsView from './components/SettingsView';
 import AuthView from './components/AuthView';
 import OnboardingView from './components/OnboardingView';
+import HomeDashboardView from './components/HomeDashboardView';
+import StatementImportModal from './components/StatementImportModal';
 import { 
   USER_PROFILE, 
   BUDGET_BUDGETS, 
@@ -94,15 +96,47 @@ export default function App() {
   const [authMode, setAuthMode] = useState('login'); // 'login' | 'signup' | 'onboarding' | 'authenticated'
   const [onboardingInitialData, setOnboardingInitialData] = useState(null);
 
-  const [activeTab, setActiveTab] = useState('john');
+  const [activeTab, setActiveTab] = useState('home');
   const [userProfile, setUserProfile] = useState(USER_PROFILE);
   const [budgets, setBudgets] = useState(BUDGET_BUDGETS);
   const [goals, setGoals] = useState(INITIAL_SAVINGS_GOALS);
   const [toastMessage, setToastMessage] = useState(null);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   const showNotification = (title, detail) => {
     setToastMessage({ title, detail });
     setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  const handleImportSuccess = (importedLines, count) => {
+    // Dynamically update category spends in budgets (V4 tier rules: <80% healthy, 80-100% warning, >100% exceeded)
+    if (importedLines && importedLines.length > 0) {
+      setBudgets(prevBudgets => {
+        const nextBudgets = prevBudgets.map(b => {
+          const addedSpend = importedLines
+            .filter(l => l.category === b.category)
+            .reduce((sum, l) => sum + (Number(l.amount) || 0), 0);
+          
+          if (addedSpend > 0) {
+            const newSpent = (b.spent || 0) + addedSpend;
+            const newPct = Math.round((newSpent / (b.limit || 1)) * 100);
+            return {
+              ...b,
+              spent: newSpent,
+              percent: newPct,
+              status: newPct > 100 ? 'exceeded' : (newPct >= 80 ? 'warning' : 'normal')
+            };
+          }
+          return b;
+        });
+        return nextBudgets;
+      });
+    }
+
+    showNotification(
+      'Statement Ingested Successfully!',
+      `Imported ${count} transactions into your live record. Budgets and analytics updated.`
+    );
   };
 
   // Check authentication session on application startup
@@ -175,7 +209,6 @@ export default function App() {
       email: userObj.email || prev?.email 
     }));
 
-    // Fetch user profile & goals from backend API if available
     try {
       const profRes = await profileService.getProfile();
       if (profRes.success && profRes.profile) {
@@ -209,7 +242,6 @@ export default function App() {
     showNotification('New Goal Created!', `Added "${newGoal.name}" (Target: ₹${newGoal.target.toLocaleString()}) to Atlas Strategist.`);
   };
 
-  // Auth Loading Screen
   if (isLoadingAuth) {
     return (
       <div style={{
@@ -245,7 +277,6 @@ export default function App() {
     );
   }
 
-  // Render Auth screens if not authenticated
   if (!isAuthenticated) {
     if (authMode === 'onboarding') {
       return (
@@ -265,6 +296,16 @@ export default function App() {
 
   const renderActiveView = () => {
     switch (activeTab) {
+      case 'home':
+        return (
+          <HomeDashboardView 
+            userProfile={userProfile}
+            budgets={budgets}
+            goals={goals}
+            setActiveTab={setActiveTab}
+            onOpenImportModal={() => setIsImportModalOpen(true)}
+          />
+        );
       case 'john':
         return (
           <JohnCoachDashboard 
@@ -283,7 +324,7 @@ export default function App() {
       case 'nova':
         return <NovaGuardianView budgets={budgets} setBudgets={setBudgets} userProfile={userProfile} setUserProfile={setUserProfile} />;
       case 'analyser':
-        return <SpendingAnalyserView userProfile={userProfile} />;
+        return <SpendingAnalyserView userProfile={userProfile} onOpenImportModal={() => setIsImportModalOpen(true)} />;
       case 'health':
         return <FinancialHealthView userProfile={userProfile} />;
       case 'settings':
@@ -298,11 +339,12 @@ export default function App() {
         );
       default:
         return (
-          <JohnCoachDashboard 
+          <HomeDashboardView 
             userProfile={userProfile}
-            goals={goals} 
-            onAcceptGoal={handleAddGoalFromJohn} 
-            setActiveTab={setActiveTab} 
+            budgets={budgets}
+            goals={goals}
+            setActiveTab={setActiveTab}
+            onOpenImportModal={() => setIsImportModalOpen(true)}
           />
         );
     }
@@ -311,19 +353,27 @@ export default function App() {
   return (
     <ErrorBoundary>
       <div className="app-container">
-        {/* Navigation Sidebar */}
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} userProfile={userProfile} onLogout={handleLogout} />
 
-        {/* Main Work Area */}
         <main className="main-content">
-          <Header activeTab={activeTab} onSync={() => showNotification("Network Synced", "All agent states refreshed.")} />
+          <Header 
+            activeTab={activeTab} 
+            onSync={() => showNotification("Network Synced", "All agent states refreshed.")} 
+            onOpenImportModal={() => setIsImportModalOpen(true)}
+          />
 
           <div className="content-body">
             {renderActiveView()}
           </div>
         </main>
 
-        {/* Toast Notification Banner */}
+        <StatementImportModal
+          isOpen={isImportModalOpen}
+          onClose={() => setIsImportModalOpen(false)}
+          onImportSuccess={handleImportSuccess}
+          userProfile={userProfile}
+        />
+
         {toastMessage && (
           <div style={{
             position: 'fixed',

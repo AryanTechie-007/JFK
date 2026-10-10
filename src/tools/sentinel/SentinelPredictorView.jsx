@@ -19,7 +19,7 @@ import {
   ShieldAlert,
   ArrowUpRight
 } from 'lucide-react';
-import { SENTINEL_FORECAST, AGENTS } from '../data/mockFinancialData';
+import { SENTINEL_FORECAST, AGENTS } from '../../data/mockFinancialData';
 
 export default function SentinelPredictorView({ userProfile }) {
   const currency = userProfile?.currency || '₹';

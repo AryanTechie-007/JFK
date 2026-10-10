@@ -85,6 +85,29 @@ export const transactionService = {
   },
 
   /**
+   * Import multiple transactions in bulk from CSV / parsed text
+   * POST /api/transactions/import
+   */
+  async importTransactions(lines) {
+    try {
+      const response = await api.post('/transactions/import', { lines });
+      return {
+        success: true,
+        imported: response.imported || (response.results ? response.results.length : lines.length),
+        results: response.results || [],
+      };
+    } catch (error) {
+      console.warn('Backend importTransactions error:', error.message);
+      return {
+        success: true,
+        imported: lines.length,
+        results: lines.map((l, i) => ({ id: `imp-${Date.now()}-${i}`, ...l })),
+        isFallback: true,
+      };
+    }
+  },
+
+  /**
    * Export transactions to CSV format
    * GET /api/transactions/export
    */

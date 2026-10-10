@@ -1,21 +1,43 @@
 {
-  "name": "finhack",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "name": "nova-agent",
+  "version": "4.0.0",
+  "description": "Nova V4 — Real-Time Budget Guardian & FinMate Multi-Agent Ecosystem",
+  "main": "src/index.js",
   "scripts": {
-    "dev": "vite",
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "demo": "node demo.js",
+    "test": "node tests/novaEngine.test.js",
+    "dev:ui": "vite",
     "dev:backend": "node backend/src/index.js",
     "seed:backend": "node backend/src/seed.js",
     "build": "vite build",
-    "lint": "oxlint",
     "preview": "vite preview"
   },
+  "keywords": [
+    "finmate",
+    "nova",
+    "budget-guardian",
+    "sentinel",
+    "tally",
+    "john",
+    "iris",
+    "atlas",
+    "multi-agent"
+  ],
+  "author": "FinMate AI Team",
+  "license": "MIT",
   "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
     "lucide-react": "^1.30.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "recharts": "^3.10.1"
+  },
+  "optionalDependencies": {
+    "better-sqlite3": "^11.8.1"
   },
   "devDependencies": {
     "@types/react": "^19.2.17",

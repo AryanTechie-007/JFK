@@ -10,7 +10,7 @@ import {
   Sliders,
   DollarSign
 } from 'lucide-react';
-import { AGENTS } from '../data/mockFinancialData';
+import { AGENTS } from '../../data/mockFinancialData';
 
 export default function IrisAdvisorView({ userProfile }) {
   const currency = userProfile?.currency || '₹';

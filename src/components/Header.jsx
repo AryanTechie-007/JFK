@@ -2,9 +2,11 @@ import React from 'react';
 import { Bell, Sparkles, RefreshCw, Zap } from 'lucide-react';
 import { USER_PROFILE, AGENTS } from '../data/mockFinancialData';
 
-export default function Header({ activeTab, onSync }) {
+export default function Header({ activeTab, onSync, onOpenImportModal }) {
   const getTabInfo = () => {
     switch (activeTab) {
+      case 'home':
+        return { title: 'Home Overview Dashboard', subtitle: 'Live financial summary, active budget alerts, and AI coaching pulse', agent: null };
       case 'john':
         return { title: 'John — AI Financial Coach', subtitle: 'Master orchestrator synthesizing predictions, spending habits, budgets, and savings goals', agent: AGENTS.john };
       case 'iris':
@@ -56,6 +58,17 @@ export default function Header({ activeTab, onSync }) {
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        {onOpenImportModal && (
+          <button 
+            onClick={onOpenImportModal}
+            className="btn btn-secondary btn-sm"
+            style={{ color: '#005f41', fontWeight: '700' }}
+            title="Import Bank Statement or CSV"
+          >
+            <span>+ Import CSV</span>
+          </button>
+        )}
+
         <button 
           onClick={onSync}
           className="btn btn-secondary btn-sm"
