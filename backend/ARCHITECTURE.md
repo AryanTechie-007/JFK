@@ -289,19 +289,14 @@ something breaks you will know exactly which change caused it.
 
 ---
 
-## 9. Running both services
+## 9. Running the Application
 
-Two terminals, backend started first.
+The Electron Desktop Application (`launch.bat` or `npm run app`) automatically starts the embedded backend on port `4000` and the Nova V4 server on port `4001`, and loads the built UI bundle (`dist/index.html`).
 
 | Service | Folder | Command | Port |
 |---|---|---|---|
-| Backend | `finmate-backend` | `npm run dev` | 4000 |
-| Frontend | `JFK` | `npm run dev` | 5173 |
-
-The frontend needs `VITE_API_URL=http://localhost:4000` in its own `.env`.
-
-CORS accepts `localhost:5173` (vite dev) and `localhost:4173` (vite preview, for the `dist`
-build) by default. Both are configurable via a comma-separated `CORS_ORIGIN`.
+| Desktop App | Root | `launch.bat` / `npm run app` | Desktop Window |
+| Backend | `backend` | `npm run dev:backend` | 4000 |
 
 **On Windows**, if PowerShell reports that running scripts is disabled, either use `npm.cmd`
 instead of `npm`, or switch the VS Code terminal to Command Prompt
@@ -340,7 +335,6 @@ not remove it from git history — the key must be revoked at
   access rejection
 - Database layer: persistence across restart, WAL mode, transaction commit and rollback, nested
   savepoints, foreign-key cascade, numeric return types, string-to-integer primary key binding
-- CORS: 5173 allowed, 4173 allowed, unknown origin blocked
 - Cold start from an empty database creates all five tables and accepts a signup
 
 ---

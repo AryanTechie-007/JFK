@@ -1,5 +1,4 @@
-﻿{
-    "webTestingLauncher":  "web-testing\\run-web-test.bat",
+{
     "branch":  "sentinel",
     "description":  "Sentinel Deterministic Financial Calculator \u0026 Predictor Tool",
     "type":  "tool",
@@ -7,5 +6,5 @@
     "alias":  "tool/sentinel",
     "standaloneTest":  "npm run test:sentinel",
     "status":  "active-verified",
-    "desktopAppLauncher":  "run-app.bat"
+    "desktopAppLauncher":  "launch.bat"
 }

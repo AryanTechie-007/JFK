@@ -1,5 +1,4 @@
-﻿{
-    "webTestingLauncher":  "web-testing\\run-web-test.bat",
+{
     "branch":  "tally",
     "description":  "Tally Categorization Service \u0026 Spending Analyser Tool",
     "type":  "tool",
@@ -7,5 +6,5 @@
     "alias":  "tool/tally",
     "standaloneTest":  "npm run test:tally",
     "status":  "active-verified",
-    "desktopAppLauncher":  "run-app.bat"
+    "desktopAppLauncher":  "launch.bat"
 }

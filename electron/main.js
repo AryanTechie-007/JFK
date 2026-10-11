@@ -149,16 +149,8 @@ function createMainWindow() {
     }
   });
 
-  const devServerUrl = process.env.ELECTRON_START_URL;
   const distIndex = path.join(__dirname, '..', 'dist', 'index.html');
-
-  if (devServerUrl) {
-    mainWindow.loadURL(devServerUrl);
-  } else if (fs.existsSync(distIndex)) {
-    mainWindow.loadFile(distIndex);
-  } else {
-    mainWindow.loadURL('http://localhost:5173');
-  }
+  mainWindow.loadFile(distIndex);
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);

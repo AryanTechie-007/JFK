@@ -1,7 +1,6 @@
 # 🖥️ FinMate AI & Nova V4 — Multi-Agent Desktop Application (Electron) & Parallel Branch Architecture
 
 > **"Financial discipline through deterministic enforcement, not probabilistic guesswork."**
-> **"Test in `web-testing/` first — promote to the Electron Desktop Application only when 100% of tests succeed."**
 
 **FinMate AI** is a native **Electron Desktop Application** powered by a multi-agent financial architecture built in full compliance with **Nova: Agent Specification (V4)**.
 
@@ -10,8 +9,8 @@ To maximize velocity for our **4-person engineering team working on 6+ parallel 
 ---
 
 ## 📑 Table of Contents
-1. [Quick Start: Running the Electron App vs. Web-Testing Sandbox](#-1-quick-start-running-the-electron-app-vs-web-testing-sandbox)
-2. [Mandatory Testing-to-Application Promotion Workflow](#-2-mandatory-testing-to-application-promotion-workflow)
+1. [Quick Start: Running the Electron Desktop Application](#-1-quick-start-running-the-electron-desktop-application)
+2. [Module Verification & Promotion Workflow](#-2-module-verification--promotion-workflow)
 3. [Parallel Team Branch Architecture (4 Developers / 6+ Branches)](#-3-parallel-team-branch-architecture-4-developers--6-branches)
 4. [Modular Repository Structure](#-4-modular-repository-structure)
 5. [Nova V4 Architecture, Contracts & Deterministic Tools](#-5-nova-v4-architecture-contracts--deterministic-tools)
@@ -19,37 +18,25 @@ To maximize velocity for our **4-person engineering team working on 6+ parallel 
 
 ---
 
-## 🚀 1. Quick Start: Running the Electron App vs. Web-Testing Sandbox
+## 🚀 1. Quick Start: Running the Electron Desktop Application
 
-### 🖥️ A. Primary Product: Run the Electron Desktop Application (`launch.bat`)
+### 🖥️ Run the Electron Desktop Application (`launch.bat`)
 From the repository root, double-click or run:
 ```bat
 launch.bat
 ```
 **What `launch.bat` does:**
-1. Runs the automated **Pre-Flight Verification Gate** (`web-testing/verify-web-readiness.js`) across all agents, tools, and the 14-suite V4 compliance test suite.
+1. Runs the automated **Pre-Flight Verification Suite** (`tests/verifyApp.js`) across all agents, tools, and the 14-suite V4 compliance test suite.
 2. Ensures the production UI bundle (`dist/index.html`) is built.
-3. Launches the native **FinMate AI Electron Desktop Application** (`electron/main.js`) with the embedded Nova V4 Express API server (`http://localhost:4001`) running automatically in the background.
+3. Launches the native **FinMate AI Electron Desktop Application** (`electron/main.js`) with the embedded FinMate Backend (`http://localhost:4000`) and Nova V4 Express API server (`http://localhost:4001`) running automatically in the background.
 
 ---
 
-### 🌐 B. Website Testing Sandbox (`web-testing\run-web-test.bat`)
-All website hosting and browser-testing logic resides inside the [`web-testing/`](./web-testing) folder. To test changes in the website before adding them to the Electron application, run:
-```bat
-web-testing\run-web-test.bat
-```
-**What `web-testing\run-web-test.bat` does:**
-1. Runs all 8 standalone module tests (`nova`, `john`, `iris`, `atlas`, `sentinel`, `tally`, `threshold-job`, `action-service`) plus the 14-suite V4 compliance suite (`tests/novaEngine.test.js`).
-2. **If any test fails**, it halts with a red `[GATE BLOCKED]` screen and warns you **NOT** to merge or add your changes to the Electron Desktop Application.
-3. **If all tests pass**, it starts the Nova V4 API server (`:4001`) and opens the interactive Website Testing Sandbox (`http://localhost:5173`) in your browser.
-
----
-
-## 🧪 2. Mandatory Testing-to-Application Promotion Workflow
+## 🧪 2. Module Verification & Promotion Workflow
 
 > [!IMPORTANT]
 > **Golden Rule for All 4 Team Members:**
-> Never add or merge changes directly into the Electron Desktop Application (`main`) without first running the `web-testing` suite. **Only when 100% of automated and browser tests succeed in `web-testing` should changes be added to the Electron Application.**
+> Never merge changes directly into the Electron Desktop Application (`main`) without first running the verification test suite (`npm test`). **Only when 100% of automated tests succeed should changes be promoted to the Electron Application.**
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────┐
@@ -63,28 +50,27 @@ web-testing\run-web-test.bat
 └─────────────────────────────────────┬──────────────────────────────────────┘
                                       ▼
 ┌────────────────────────────────────────────────────────────────────────────┐
-│ STEP 3: Run the Website Testing Sandbox & Pre-Promotion Gate               │
-│   web-testing\run-web-test.bat                                             │
+│ STEP 3: Run the Full Application Verification Gate                         │
+│   npm test                                                                 │
 │   • Runs all 8 module tests + all 12 V4 Acceptance Criteria                │
-│   • Launches http://localhost:5173 for live browser verification           │
 └──────────────────┬──────────────────────────────────────┬──────────────────┘
                    │                                      │
         ❌ IF TESTS FAIL                        ✅ IF TESTS SUCCEED (100%)
                    │                                      │
                    ▼                                      ▼
 ┌─────────────────────────────────────┐  ┌───────────────────────────────────┐
-│ 🛑 STOP — DO NOT ADD TO APPLICATION │  │ 🚀 PROMOTE TO ELECTRON APP (main) │
+│ 🛑 STOP — DO NOT MERGE TO MAIN      │  │ 🚀 PROMOTE TO ELECTRON APP (main) │
 │ Fix regressions on your branch and  │  │ 1. git checkout main              │
-│ re-run web-testing\run-web-test.bat │  │ 2. git merge <your-branch>        │
+│ re-run npm test                     │  │ 2. git merge <your-branch>        │
 └─────────────────────────────────────┘  │ 3. npm run build                  │
-                                         │ 4. launch.bat (Launch Desktop)   │
+                                         │ 4. launch.bat (Launch Desktop)    │
                                          └───────────────────────────────────┘
 ```
 
 ### Individual Module Test Commands
 You can also run targeted tests for your specific branch at any time:
 ```bash
-npm run test:gate            # Full Pre-Promotion Gate (All 8 modules + 14 V4 test suites)
+npm test                     # Full Verification Suite (All 8 modules + 14 V4 test suites)
 npm run test:nova            # Test Nova Agent only
 npm run test:john            # Test John Orchestrator only
 npm run test:iris            # Test Iris Subscription Specialist only
@@ -103,7 +89,7 @@ To enable **4 developers to work on 6 different workstreams in parallel** withou
 
 | Git Branch | Module Type | Isolated Folder | Standalone Test | Primary Responsibility |
 |---|---|---|---|---|
-| **`main`** | **Integrated App** | Root + All Folders | `npm run test:gate` | **Primary Electron Desktop App (`launch.bat`) integrating all 6 branches** |
+| **`main`** | **Integrated App** | Root + All Folders | `npm test` | **Primary Electron Desktop App (`launch.bat`) integrating all 6 branches** |
 | **`nova`** | Agent (V4) | `src/agents/nova/` | `npm run test:nova` | Real-Time Budget Guardian, lifecycle runner, placeholder binder, Nova UI |
 | **`john`** | Agent (V4) | `src/agents/john/` | `npm run test:john` | Master Orchestrator, Section 10 signal routing table, John Coach UI |
 | **`iris`** | Agent (V4) | `src/agents/iris/` | `npm run test:iris` | Recurring subscription audit, `RECURRING_ANOMALY` handler, Iris UI |
@@ -119,19 +105,14 @@ To enable **4 developers to work on 6 different workstreams in parallel** withou
 finmate-nova-desktop/
 ├── launch.bat                                       # 🖥️ PRIMARY LAUNCHER: Verifies & launches Electron Desktop App
 ├── branch-manifest.json                              # Branch & parallel workstream metadata
-├── README.md                                         # Documentation & Testing-to-Application workflow
+├── README.md                                         # Desktop Application documentation
 ├── Nova_V4_Specification_Compliance_Summary.pdf      # V4 Audit & Compliance Summary PDF
 ├── electron/                                         # 🖥️ Electron Desktop Application Wrapper
-│   ├── main.js                                       # Electron Main Process + Embedded Nova V4 Server + Native Menu
+│   ├── main.js                                       # Electron Main Process + Embedded Backend & Nova V4 Server + Native Menu
 │   └── preload.js                                    # Context-isolated desktop bridge (window.finmateDesktop)
-├── web-testing/                                      # 🌐 Website Testing Sandbox & Pre-Promotion Gate
-│   ├── run-web-test.bat                              # 🌐 WEB TEST LAUNCHER: Runs gate tests & opens browser sandbox
-│   ├── verify-web-readiness.js                       # Automated 8-module + 14-suite V4 promotion gate
-│   ├── web-server.js                                 # Website dev server + API launcher
-│   ├── vite.web.config.js                            # Vite config for browser sandbox
-│   └── README.md                                     # Web-testing instructions
+├── backend/                                          # ⚙️ Embedded FinMate Core API Backend (SQLite + Express)
 ├── src/
-│   ├── App.jsx                                       # Unified UI shell importing from src/agents/* and src/tools/*
+│   ├── App.jsx                                       # Unified Desktop UI shell importing from src/agents/* and src/tools/*
 │   ├── index.js                                      # Express V4 Server Entrypoint
 │   ├── contracts/                                    # Shared V4 Schemas & Platform Rules
 │   │   ├── PlatformRules.js                          # Tier rules (<80%, 80-100%, >100%), cap rules, T1/T2/T3
@@ -151,6 +132,7 @@ finmate-nova-desktop/
 │   ├── db/                                           # SQLite / In-Memory V4 Database & Seeder
 │   └── routes/                                       # Express REST Endpoints (/api/budget, /api/transactions, /api/actions)
 └── tests/
+    ├── verifyApp.js                                  # Automated 8-module + 14-suite V4 verification runner
     └── novaEngine.test.js                            # Full 14-Suite Nova V4 Specification Test Suite
 ```
 

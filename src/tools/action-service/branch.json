@@ -1,5 +1,4 @@
-﻿{
-    "webTestingLauncher":  "web-testing\\run-web-test.bat",
+{
     "branch":  "action-service",
     "description":  "Action Service T1/T2/T3 Mutation Governance Tool",
     "type":  "tool",
@@ -7,5 +6,5 @@
     "alias":  "tool/action-service",
     "standaloneTest":  "npm run test:action-service",
     "status":  "active-verified",
-    "desktopAppLauncher":  "run-app.bat"
+    "desktopAppLauncher":  "launch.bat"
 }

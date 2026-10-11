@@ -1,5 +1,4 @@
-﻿{
-    "webTestingLauncher":  "web-testing\\run-web-test.bat",
+{
     "branch":  "atlas",
     "description":  "Atlas Long-Term Goal \u0026 Savings Strategist Agent",
     "type":  "agent",
@@ -7,5 +6,5 @@
     "alias":  "agent/atlas",
     "standaloneTest":  "npm run test:atlas",
     "status":  "active-verified",
-    "desktopAppLauncher":  "run-app.bat"
+    "desktopAppLauncher":  "launch.bat"
 }

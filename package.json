@@ -1,16 +1,16 @@
 {
   "name": "finmate-nova-desktop",
   "version": "4.0.0",
-  "description": "FinMate AI & Nova V4 — Multi-Agent Desktop Application (Electron) & Web-Testing Suite",
+  "description": "FinMate AI & Nova V4 — Multi-Agent Desktop Application (Electron)",
   "main": "electron/main.js",
   "scripts": {
     "app": "electron .",
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
     "demo": "node demo.js",
-    "test": "node web-testing/verify-web-readiness.js",
+    "test": "node tests/verifyApp.js",
     "test:v4": "node tests/novaEngine.test.js",
-    "test:gate": "node web-testing/verify-web-readiness.js",
+    "test:gate": "node tests/verifyApp.js",
     "test:nova": "node src/agents/nova/nova.test.js",
     "test:john": "node src/agents/john/john.test.js",
     "test:iris": "node src/agents/iris/iris.test.js",
@@ -19,11 +19,9 @@
     "test:tally": "node src/tools/tally/tally.test.js",
     "test:threshold-job": "node src/tools/threshold-job/threshold-job.test.js",
     "test:action-service": "node src/tools/action-service/action-service.test.js",
-    "web-test": "node web-testing/web-server.js",
     "dev:backend": "node backend/src/index.js",
     "seed:backend": "node backend/src/seed.js",
-    "build": "vite build",
-    "preview": "vite preview"
+    "build": "vite build"
   },
   "keywords": [
     "finmate",

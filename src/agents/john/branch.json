@@ -1,5 +1,4 @@
-﻿{
-    "webTestingLauncher":  "web-testing\\run-web-test.bat",
+{
     "branch":  "john",
     "description":  "John Master Orchestrator \u0026 Coach Agent",
     "type":  "agent",
@@ -7,5 +6,5 @@
     "alias":  "agent/john",
     "standaloneTest":  "npm run test:john",
     "status":  "active-verified",
-    "desktopAppLauncher":  "run-app.bat"
+    "desktopAppLauncher":  "launch.bat"
 }

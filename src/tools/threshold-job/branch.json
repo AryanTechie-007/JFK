@@ -1,5 +1,4 @@
-﻿{
-    "webTestingLauncher":  "web-testing\\run-web-test.bat",
+{
     "branch":  "threshold-job",
     "description":  "Threshold Job Deterministic Alerting Tool",
     "type":  "tool",
@@ -7,5 +6,5 @@
     "alias":  "tool/threshold-job",
     "standaloneTest":  "npm run test:threshold-job",
     "status":  "active-verified",
-    "desktopAppLauncher":  "run-app.bat"
+    "desktopAppLauncher":  "launch.bat"
 }

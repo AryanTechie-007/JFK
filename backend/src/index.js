@@ -12,22 +12,7 @@ if (!process.env.JWT_SECRET) {
 
 const app = express();
 
-// Vite dev runs on 5173, `vite preview` (the dist/ build) on 4173. Accept a
-// comma-separated CORS_ORIGIN list so both work without editing code.
-const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173,http://localhost:4173')
-  .split(',')
-  .map((o) => o.trim())
-  .filter(Boolean);
-
-app.use(
-  cors({
-    origin(origin, callback) {
-      // Requests with no Origin header (curl, Postman, same-origin) are allowed.
-      if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
-      return callback(new Error(`Origin ${origin} not allowed by CORS`));
-    },
-  })
-);
+app.use(cors());
 app.use(express.json({ limit: '1mb' }));
 
 app.get('/api/health', (_req, res) => res.json({ ok: true, service: 'finmate-backend' }));

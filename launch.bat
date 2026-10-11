@@ -7,13 +7,12 @@ echo ===========================================================================
 echo   FINMATE AI - ELECTRON DESKTOP APPLICATION LAUNCHER (launch.bat)
 echo ================================================================================
 echo.
-echo [1/3] Running Pre-Flight Verification Gate across all Agent ^& Tool modules...
-node "%~dp0web-testing\verify-web-readiness.js"
+echo [1/3] Running Pre-Flight Verification Suite across all Agent ^& Tool modules...
+node "%~dp0tests\verifyApp.js"
 if %ERRORLEVEL% NEQ 0 (
     color 0C
     echo.
     echo [LAUNCH ABORTED] Pre-flight verification failed!
-    echo Please test and fix your changes using `web-testing\launch.bat` first.
     pause
     exit /b 1
 )

@@ -1,9 +1,8 @@
 /**
- * FinMate AI — Web-Testing Pre-Promotion Verification Gate
- * ---------------------------------------------------------
- * Runs standalone tests for all 6 parallel team modules + 2 governance tools + V4 Compliance Suite.
- * Developers MUST run this gate in `web-testing` before merging their branch into `main`
- * or promoting changes to the Electron Desktop Application.
+ * FinMate AI — Desktop Application Verification Suite
+ * ---------------------------------------------------
+ * Runs standalone tests for all 6 parallel team modules + 2 governance tools + V4 Compliance Suite
+ * for the FinMate AI Electron Desktop Application.
  */
 const { execFileSync } = require('child_process');
 const path = require('path');
@@ -79,7 +78,7 @@ const MODULE_CHECKS = [
 ];
 
 console.log('================================================================================');
-console.log('🌐 FINMATE AI — WEB-TESTING & PRE-APPLICATION PROMOTION GATE');
+console.log('🖥️  FINMATE AI — DESKTOP APPLICATION VERIFICATION SUITE');
 console.log('================================================================================\n');
 
 let allPassed = true;
@@ -128,12 +127,10 @@ try {
 console.log('\n================================================================================');
 if (allPassed) {
   console.log('🎉 VERDICT: ALL MODULE & V4 ACCEPTANCE TESTS SUCCEEDED (100%)!');
-  console.log('👉 You may now verify in the browser and safely merge/add to the Electron App.');
   console.log('================================================================================\n');
   process.exit(0);
 } else {
-  console.error('🚨 VERDICT: TESTS FAILED — DO NOT MERGE OR ADD TO THE ELECTRON APPLICATION!');
-  console.error('👉 Fix the failing module in your branch and re-run web-testing\\run-web-test.bat.');
+  console.error('🚨 VERDICT: APPLICATION VERIFICATION TESTS FAILED!');
   console.log('================================================================================\n');
   process.exit(1);
 }
