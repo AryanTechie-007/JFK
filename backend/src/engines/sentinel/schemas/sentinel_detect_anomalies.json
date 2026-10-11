@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "function": "sentinel_detect_anomalies",
+  "c3_spec": {
+    "params": { "lookback_days": "1..90" },
+    "data": {
+      "items": [
+        {
+          "anomaly_type": "DUPLICATE_SWIPE|SPIKE|PRICE_CREEP",
+          "merchant_id": "str?",
+          "merchant_name": "str?",
+          "category_id": "str?",
+          "txn_ids": ["str"],
+          "amount_minor": "int",
+          "baseline_minor": "int",
+          "delta_bp": "int",
+          "date": "date",
+          "recurring": "bool",
+          "confidence": "Confidence"
+        }
+      ]
+    }
+  },
+  "params": {
+    "type": "object",
+    "properties": {
+      "lookback_days": { "type": "integer", "minimum": 1, "maximum": 90, "default": 30 }
+    },
+    "additionalProperties": true
+  },
+  "data": {
+    "type": "object",
+    "required": ["items"],
+    "properties": {
+      "items": { "type": "array" }
+    }
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "model_version": "5.0.1",
+  "tier": {
+    "warning_bp": 7500,
+    "watch_bp": 8000,
+    "exceeded_bp": 10000,
+    "severe_bp": 11000,
+    "min_cap_minor": 10000
+  },
+  "velocity": {
+    "under_bp": 8800,
+    "buffer_bp": {
+      "HIGH": 0,
+      "MEDIUM": 1200,
+      "LOW": 2200
+    }
+  },
+  "income": {
+    "cv_high": 0.15,
+    "cv_medium": 0.35,
+    "cv_high_bp": 1500,
+    "cv_medium_bp": 3500,
+    "uncertain_credit_bp": 2000
+  },
+  "confidence": {
+    "min_coverage_for_high_bp": 8500,
+    "min_coverage_for_medium_bp": 7000,
+    "provisional_high_ceiling_bp": 1000,
+    "provisional_medium_ceiling_bp": 2500,
+    "provisional_warning_bp": 2000
+  },
+  "balance": {
+    "stale_after_hours": 48,
+    "buffer_floor_income_bp": 500,
+    "buffer_floor_min_minor": 200000
+  },
+  "simulation": {
+    "baseline_months": 3,
+    "band_months": 6,
+    "default_band_factor_bp": 2000
+  },
+  "anomaly": {
+    "dup_window_days": 0,
+    "spike_k": 3,
+    "spike_k_bp": 30000,
+    "spike_min_minor": 50000,
+    "creep_bp": 500,
+    "min_baseline_txns": 5
+  },
+  "bills": {
+    "cadence_tolerance_days": 5,
+    "merge_window_days": 5,
+    "merge_amount_bp": 1000
+  },
+  "cashflow": {
+    "high_bp": 2500,
+    "medium_bp": 1000
+  },
+  "rebalance": {
+    "donor_max_utilization_bp": 7000,
+    "donor_max_share_bp": 5000,
+    "min_donor_cut_minor": 5000,
+    "max_donors": 3
+  },
+  "goal": {
+    "trailing_months": 3,
+    "max_active": 20,
+    "max_years": 30
+  },
+  "ledger": {
+    "top_merchants": 5
+  },
+  "health": {
+    "savings_benchmark_bp": 2000,
+    "no_caps_discipline_score": 12,
+    "control_span_bp": 4000,
+    "outflow_healthy_bp": 6000,
+    "points_per_funded_goal": 8
+  },
+  "sip": {
+    "min_monthly_minor": 10000,
+    "max_monthly_minor": 100000000,
+    "max_rate_bp": 3000,
+    "max_step_up_bp": 5000,
+    "max_months": 600
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "function": "sentinel_run_spending_simulation",
+  "c3_spec": {
+    "params": {
+      "target_month": "YYYY-MM",
+      "category_adjustments": [{ "category_id": "str", "delta_spend_signed_minor": "int" }],
+      "cap_changes": [{ "category_id": "str", "new_cap_minor": "int≥0" }],
+      "goal_changes": [{ "goal_id": "str|null", "monthly_add_minor": "int≥0" }],
+      "one_off_outlays": [{ "label": "str≤40", "amount_minor": "int≥1", "date": "date" }]
+    },
+    "data": {
+      "target_month": "YYYY-MM",
+      "opening_balance_signed_minor": "int",
+      "projected_end_balance_signed_minor": "int",
+      "conservative_end_balance_signed_minor": "int",
+      "projected_available_signed_minor": "int",
+      "conservative_available_signed_minor": "int",
+      "risk_level": "LOW|MEDIUM|HIGH",
+      "allocation_outcome": {
+        "income_minor": "int",
+        "fixed_total_minor": "int",
+        "goal_commitments_minor": "int",
+        "caps_total_minor": "int",
+        "unallocated_signed_minor": "int"
+      },
+      "category_plan": [
+        {
+          "category_id": "str",
+          "baseline_outflow_minor": "int",
+          "p80_outflow_minor": "int",
+          "effective_cap_minor": "int|null",
+          "overrun_minor": "int"
+        }
+      ],
+      "category_overrun": ["category_id"]
+    }
+  },
+  "params": {
+    "type": "object",
+    "properties": {
+      "target_month": { "type": "string", "pattern": "^\\d{4}-\\d{2}$" },
+      "category_adjustments": { "type": "array" },
+      "cap_changes": { "type": "array" },
+      "goal_changes": { "type": "array" },
+      "one_off_outlays": { "type": "array" }
+    },
+    "additionalProperties": true
+  },
+  "data": {
+    "type": "object",
+    "required": [
+      "target_month",
+      "opening_balance_signed_minor",
+      "projected_end_balance_signed_minor",
+      "conservative_end_balance_signed_minor",
+      "projected_available_signed_minor",
+      "conservative_available_signed_minor",
+      "risk_level",
+      "allocation_outcome",
+      "category_plan",
+      "category_overrun"
+    ],
+    "properties": {
+      "target_month": { "type": "string" },
+      "opening_balance_signed_minor": { "type": "integer" },
+      "projected_end_balance_signed_minor": { "type": "integer" },
+      "conservative_end_balance_signed_minor": { "type": "integer" },
+      "projected_available_signed_minor": { "type": "integer" },
+      "conservative_available_signed_minor": { "type": "integer" },
+      "risk_level": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH"] },
+      "allocation_outcome": { "type": "object" },
+      "category_plan": { "type": "array" },
+      "category_overrun": { "type": "array" }
+    }
+  }
+}

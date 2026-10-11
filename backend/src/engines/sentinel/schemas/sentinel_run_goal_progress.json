@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "function": "sentinel_run_goal_progress",
+  "c3_spec": {
+    "params": { "goal_id": "str" },
+    "data": {
+      "goal_id": "str",
+      "name": "str",
+      "status": "GoalStatus",
+      "saved_minor": "int",
+      "target_minor": "int",
+      "remaining_minor": "int",
+      "progress_bp": "int",
+      "effective_monthly_add_minor": "int",
+      "trailing_actual_contribution_minor": "int|null",
+      "projected_date": "date|null",
+      "conservative_date": "date|null",
+      "deadline": "date|null",
+      "on_track": "bool|null",
+      "required_monthly_add_for_deadline_minor": "int|null",
+      "acceleration_extra_monthly_minor": "int|null"
+    }
+  },
+  "params": {
+    "type": "object",
+    "properties": {
+      "goal_id": { "type": "string" }
+    },
+    "additionalProperties": true
+  },
+  "data": {
+    "type": "object",
+    "required": [
+      "goal_id",
+      "name",
+      "status",
+      "saved_minor",
+      "target_minor",
+      "remaining_minor",
+      "progress_bp",
+      "effective_monthly_add_minor",
+      "trailing_actual_contribution_minor",
+      "projected_date",
+      "conservative_date",
+      "deadline",
+      "on_track",
+      "required_monthly_add_for_deadline_minor",
+      "acceleration_extra_monthly_minor"
+    ],
+    "properties": {
+      "goal_id": { "type": "string" },
+      "name": { "type": "string" },
+      "status": { "type": "string" },
+      "saved_minor": { "type": "integer" },
+      "target_minor": { "type": "integer" },
+      "remaining_minor": { "type": "integer" },
+      "progress_bp": { "type": "integer" },
+      "effective_monthly_add_minor": { "type": "integer" },
+      "trailing_actual_contribution_minor": { "type": ["integer", "null"] },
+      "projected_date": { "type": ["string", "null"] },
+      "conservative_date": { "type": ["string", "null"] },
+      "deadline": { "type": ["string", "null"] },
+      "on_track": { "type": ["boolean", "null"] },
+      "required_monthly_add_for_deadline_minor": { "type": ["integer", "null"] },
+      "acceleration_extra_monthly_minor": { "type": ["integer", "null"] }
+    }
+  }
+}

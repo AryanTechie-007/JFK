@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "function": "sentinel_run_category_utilization",
+  "c3_spec": {
+    "params": { "category_id": "str", "period": "YYYY-MM?" },
+    "data": {
+      "category_id": "str",
+      "period": "YYYY-MM",
+      "cap_minor": "int|null",
+      "covered_category_ids": ["str"],
+      "spent_signed_minor": "int",
+      "spent_total_minor": "int",
+      "spent_settled_minor": "int",
+      "spent_provisional_minor": "int",
+      "utilization_bp": "int|null",
+      "remaining_signed_minor": "int|null",
+      "tier": "HEALTHY|WARNING|EXCEEDED|null",
+      "tier_is_provisional": "bool"
+    }
+  },
+  "params": {
+    "type": "object",
+    "properties": {
+      "category_id": { "type": "string" },
+      "period": { "type": "string", "pattern": "^\\d{4}-\\d{2}$" }
+    },
+    "additionalProperties": true
+  },
+  "data": {
+    "type": "object",
+    "required": [
+      "category_id",
+      "period",
+      "cap_minor",
+      "covered_category_ids",
+      "spent_signed_minor",
+      "spent_total_minor",
+      "spent_settled_minor",
+      "spent_provisional_minor",
+      "utilization_bp",
+      "remaining_signed_minor",
+      "tier",
+      "tier_is_provisional"
+    ],
+    "properties": {
+      "category_id": { "type": "string" },
+      "period": { "type": "string" },
+      "cap_minor": { "type": ["integer", "null"] },
+      "covered_category_ids": { "type": "array" },
+      "spent_signed_minor": { "type": "integer" },
+      "spent_total_minor": { "type": "integer" },
+      "spent_settled_minor": { "type": "integer" },
+      "spent_provisional_minor": { "type": "integer" },
+      "utilization_bp": { "type": ["integer", "null"] },
+      "remaining_signed_minor": { "type": ["integer", "null"] },
+      "tier": { "type": ["string", "null"] },
+      "tier_is_provisional": { "type": "boolean" }
+    }
+  }
+}

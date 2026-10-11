@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "function": "sentinel_validate_cap_change",
+  "c3_spec": {
+    "params": {
+      "category_id": "str",
+      "new_cap_minor": "int",
+      "scope": "STANDING|MONTH",
+      "period": "YYYY-MM?",
+      "override_protected": "bool?"
+    },
+    "data": {
+      "verdict": "PASS|REJECTED",
+      "rule_codes": ["code"],
+      "warnings": ["code"],
+      "current_cap_minor": "int|null",
+      "spent_total_minor": "int",
+      "suggested_category_id": "str?"
+    }
+  },
+  "params": {
+    "type": "object",
+    "properties": {
+      "category_id": { "type": "string" },
+      "new_cap_minor": { "type": "integer" },
+      "scope": { "type": "string", "enum": ["STANDING", "MONTH", "THIS_MONTH", "FUTURE_MONTHS"], "default": "STANDING" },
+      "period": { "type": "string", "pattern": "^\\d{4}-\\d{2}$" },
+      "override_protected": { "type": "boolean" }
+    },
+    "additionalProperties": true
+  },
+  "data": {
+    "type": "object",
+    "required": ["verdict", "rule_codes", "warnings", "current_cap_minor", "spent_total_minor"],
+    "properties": {
+      "verdict": { "type": "string", "enum": ["PASS", "REJECTED"] },
+      "rule_codes": { "type": "array" },
+      "warnings": { "type": "array" },
+      "current_cap_minor": { "type": ["integer", "null"] },
+      "spent_total_minor": { "type": "integer" },
+      "suggested_category_id": { "type": ["string", "null"] }
+    }
+  }
+}

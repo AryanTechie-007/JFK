@@ -1,0 +1,10 @@
+{
+    "branch":  "iris",
+    "description":  "Iris Subscription \u0026 Recurring Bill Specialist Agent",
+    "type":  "agent",
+    "directory":  "src/agents/iris",
+    "alias":  "agent/iris",
+    "standaloneTest":  "npm run test:iris",
+    "status":  "active-verified",
+    "desktopAppLauncher":  "launch.bat"
+}

@@ -1,0 +1,170 @@
+# 🖥️ FinMate AI & Nova V4 — Multi-Agent Desktop Application (Electron) & Parallel Branch Architecture
+
+> **"Financial discipline through deterministic enforcement, not probabilistic guesswork."**
+
+**FinMate AI** is a native **Electron Desktop Application** powered by a multi-agent financial architecture built in full compliance with **Nova: Agent Specification (V4)**.
+
+To maximize velocity for our **4-person engineering team working on 6+ parallel modules**, every agent and tool lives in its own **isolated directory** (`src/agents/*`, `src/tools/*`) AND its own **dedicated Git branch**, with `main` integrating all branches into the unified Electron Desktop Application.
+
+---
+
+## 📑 Table of Contents
+1. [Quick Start: Running the Electron Desktop Application](#-1-quick-start-running-the-electron-desktop-application)
+2. [Module Verification & Promotion Workflow](#-2-module-verification--promotion-workflow)
+3. [Parallel Team Branch Architecture (4 Developers / 6+ Branches)](#-3-parallel-team-branch-architecture-4-developers--6-branches)
+4. [Modular Repository Structure](#-4-modular-repository-structure)
+5. [Nova V4 Architecture, Contracts & Deterministic Tools](#-5-nova-v4-architecture-contracts--deterministic-tools)
+6. [API Specification](#-6-api-specification)
+
+---
+
+## 🚀 1. Quick Start: Running the Electron Desktop Application
+
+### 🖥️ Run the Electron Desktop Application (`launch.bat`)
+From the repository root, double-click or run:
+```bat
+launch.bat
+```
+**What `launch.bat` does:**
+1. Runs the automated **Pre-Flight Verification Suite** (`tests/verifyApp.js`) across all agents, tools, and the 14-suite V4 compliance test suite.
+2. Ensures the production UI bundle (`dist/index.html`) is built.
+3. Launches the native **FinMate AI Electron Desktop Application** (`electron/main.js`) with the embedded FinMate Backend (`http://localhost:4000`) and Nova V4 Express API server (`http://localhost:4001`) running automatically in the background.
+
+---
+
+## 🧪 2. Module Verification & Promotion Workflow
+
+> [!IMPORTANT]
+> **Golden Rule for All 4 Team Members:**
+> Never merge changes directly into the Electron Desktop Application (`main`) without first running the verification test suite (`npm test`). **Only when 100% of automated tests succeed should changes be promoted to the Electron Application.**
+
+```
+┌────────────────────────────────────────────────────────────────────────────┐
+│ STEP 1: Checkout Your Assigned Agent/Tool Branch                           │
+│   git checkout nova   (or john / iris / atlas / sentinel / tally)          │
+└─────────────────────────────────────┬──────────────────────────────────────┘
+                                      ▼
+┌────────────────────────────────────────────────────────────────────────────┐
+│ STEP 2: Develop in Your Isolated Module Folder & Run Unit Tests            │
+│   npm run test:nova   (or test:john / test:iris / test:atlas / etc.)       │
+└─────────────────────────────────────┬──────────────────────────────────────┘
+                                      ▼
+┌────────────────────────────────────────────────────────────────────────────┐
+│ STEP 3: Run the Full Application Verification Gate                         │
+│   npm test                                                                 │
+│   • Runs all 8 module tests + all 12 V4 Acceptance Criteria                │
+└──────────────────┬──────────────────────────────────────┬──────────────────┘
+                   │                                      │
+        ❌ IF TESTS FAIL                        ✅ IF TESTS SUCCEED (100%)
+                   │                                      │
+                   ▼                                      ▼
+┌─────────────────────────────────────┐  ┌───────────────────────────────────┐
+│ 🛑 STOP — DO NOT MERGE TO MAIN      │  │ 🚀 PROMOTE TO ELECTRON APP (main) │
+│ Fix regressions on your branch and  │  │ 1. git checkout main              │
+│ re-run npm test                     │  │ 2. git merge <your-branch>        │
+└─────────────────────────────────────┘  │ 3. npm run build                  │
+                                         │ 4. launch.bat (Launch Desktop)    │
+                                         └───────────────────────────────────┘
+```
+
+### Individual Module Test Commands
+You can also run targeted tests for your specific branch at any time:
+```bash
+npm test                     # Full Verification Suite (All 8 modules + 14 V4 test suites)
+npm run test:nova            # Test Nova Agent only
+npm run test:john            # Test John Orchestrator only
+npm run test:iris            # Test Iris Subscription Specialist only
+npm run test:atlas           # Test Atlas Goal Strategist only
+npm run test:sentinel        # Test Sentinel Deterministic Calculator only
+npm run test:tally           # Test Tally Categorizer & Taxonomy only
+npm run test:threshold-job   # Test Threshold Job Alerting Engine only
+npm run test:action-service  # Test Action Service T1/T2/T3 Governance only
+```
+
+---
+
+## 🌿 3. Parallel Team Branch Architecture (4 Developers / 6 Branches)
+
+To enable **4 developers to work on 6 different workstreams in parallel** without merge conflicts, each of the 6 modules has its own Git branch and isolated folder. **Every branch is a complete, runnable build of the product**, and **`main` merges and uses all 6 branches together**.
+
+| Git Branch | Module Type | Isolated Folder | Standalone Test | Primary Responsibility |
+|---|---|---|---|---|
+| **`main`** | **Integrated App** | Root + All Folders | `npm test` | **Primary Electron Desktop App (`launch.bat`) integrating all 6 branches** |
+| **`nova`** | Agent (V4) | `src/agents/nova/` | `npm run test:nova` | Real-Time Budget Guardian, lifecycle runner, placeholder binder, Nova UI |
+| **`john`** | Agent (V4) | `src/agents/john/` | `npm run test:john` | Master Orchestrator, Section 10 signal routing table, John Coach UI |
+| **`iris`** | Agent (V4) | `src/agents/iris/` | `npm run test:iris` | Recurring subscription audit, `RECURRING_ANOMALY` handler, Iris UI |
+| **`atlas`** | Agent (V4) | `src/agents/atlas/` | `npm run test:atlas` | Goal trajectory strategist, `GOAL_FUNDING_PRESSURE` handler, Atlas UI |
+| **`sentinel`** | Tool (V4) | `src/tools/sentinel/` | `npm run test:sentinel` | 6 deterministic read-only calculators, snapshot manager, `ToolGateway`, Sentinel UI |
+| **`tally`** | Tool (V4) | `src/tools/tally/` | `npm run test:tally` | 3-state categorizer (`SETTLED`/`NEEDS_REVIEW`/`UNCATEGORIZED`), taxonomy, Spending Analyser UI |
+
+---
+
+## 📂 4. Modular Repository Structure
+
+```
+finmate-nova-desktop/
+├── launch.bat                                       # 🖥️ PRIMARY LAUNCHER: Verifies & launches Electron Desktop App
+├── branch-manifest.json                              # Branch & parallel workstream metadata
+├── README.md                                         # Desktop Application documentation
+├── Nova_V4_Specification_Compliance_Summary.pdf      # V4 Audit & Compliance Summary PDF
+├── electron/                                         # 🖥️ Electron Desktop Application Wrapper
+│   ├── main.js                                       # Electron Main Process + Embedded Backend & Nova V4 Server + Native Menu
+│   └── preload.js                                    # Context-isolated desktop bridge (window.finmateDesktop)
+├── backend/                                          # ⚙️ Embedded FinMate Core API Backend (SQLite + Express)
+├── src/
+│   ├── App.jsx                                       # Unified Desktop UI shell importing from src/agents/* and src/tools/*
+│   ├── index.js                                      # Express V4 Server Entrypoint
+│   ├── contracts/                                    # Shared V4 Schemas & Platform Rules
+│   │   ├── PlatformRules.js                          # Tier rules (<80%, 80-100%, >100%), cap rules, T1/T2/T3
+│   │   ├── TaskPacketV1.js                           # TaskPacket@1 validator & factory (zero PII)
+│   │   └── SpecialistResponseV1.js                   # SpecialistResponse@1 validator & builder
+│   ├── agents/                                       # 🤖 Isolated Agent Modules (1 Folder per Agent)
+│   │   ├── nova/                                     # 🛡️ Nova — Real-Time Budget Guardian + nova.test.js
+│   │   ├── john/                                     # 🎯 John — Master Orchestrator & Coach + john.test.js
+│   │   ├── iris/                                     # 🔄 Iris — Subscription Specialist + iris.test.js
+│   │   └── atlas/                                    # 🗺️ Atlas — Goal Strategist + atlas.test.js
+│   ├── tools/                                        # 🛠️ Isolated Deterministic Tool Modules (1 Folder per Tool)
+│   │   ├── sentinel/                                 # 📐 Sentinel — 6 Read-Only Calculators + sentinel.test.js
+│   │   ├── tally/                                    # 🏷️ Tally — Categorizer & Spending Analyser + tally.test.js
+│   │   ├── threshold-job/                            # 🚨 Threshold Job — Deterministic Alerting + threshold-job.test.js
+│   │   └── action-service/                           # 🔐 Action Service — T1/T2/T3 Governance + action-service.test.js
+│   ├── components/                                   # Shared App Shell UI (Sidebar, Header, Auth, Settings)
+│   ├── db/                                           # SQLite / In-Memory V4 Database & Seeder
+│   └── routes/                                       # Express REST Endpoints (/api/budget, /api/transactions, /api/actions)
+└── tests/
+    ├── verifyApp.js                                  # Automated 8-module + 14-suite V4 verification runner
+    └── novaEngine.test.js                            # Full 14-Suite Nova V4 Specification Test Suite
+```
+
+---
+
+## ⚙️ 5. Nova V4 Architecture, Contracts & Deterministic Tools
+
+### Key V4 Architectural Guarantees
+1. **Strict Separation of Arithmetic and Narrative**: Nova never computes or guesses numbers. Nova binds `{{placeholders}}` directly to verified Sentinel `tool_result_id` outputs via `PlaceholderBinder`.
+2. **Read-Only Tool Gateway**: Nova can only invoke the 6 allowlisted `sentinel_*` read-only functions (`sentinel_get_ledger_summary`, `sentinel_run_category_utilization`, `sentinel_run_velocity_projection`, `sentinel_detect_anomalies`, `sentinel_run_rebalance_simulation`, `sentinel_validate_cap_change`). Any write attempt throws `GATEWAY_WRITE_ATTEMPT_BLOCKED`.
+3. **Zero PII Leakage (`TaskPacket@1`)**: Orchestrator requests strip `user_id` and raw ledger rows; specialists operate on pinned `snapshot_id`.
+4. **Tier Thresholds (Section 10.1)**:
+   - 🟢 **`healthy`**: Utilization `< 80%`
+   - 🟡 **`warning`**: Utilization `80% – 100%` (inclusive)
+   - 🔴 **`exceeded`**: Utilization `> 100%`
+5. **Action Governance (T1 / T2 / T3)**: All state mutations require a scoped confirmation token verified by `ActionService` and re-validated by `Sentinel`.
+
+---
+
+## 🔌 6. API Specification
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/budget` | Full budget status, V4 category tiers, data quality & active alerts |
+| `PUT` | `/api/budget/:category` | Validates & updates a category cap via Sentinel + ActionService |
+| `DELETE` | `/api/budget/:category` | Uncaps a category (enforces `PROTECTED_CATEGORY` check) |
+| `POST` | `/api/transactions` | Ingests an expense via Tally → triggers ThresholdJob → returns live audit |
+| `POST` | `/api/transactions/import` | Bulk statement batch ingestion via Tally (`categorization.updated`) |
+| `POST` | `/api/transactions/:id/recategorize` | Corrects transaction category via Tally & recomputes both categories |
+| `GET` | `/api/transactions/review-queue` | Lists `UNCATEGORIZED` and `NEEDS_REVIEW` transactions |
+| `POST` | `/api/actions/propose` | Issues a scoped confirmation token (`T1` / `T2` / `T3`) for a proposed action |
+| `POST` | `/api/actions/execute` | Executes a confirmed action via `ActionService` |
+| `POST` | `/api/nova/telemetry/task-packet` | Executes a V4 `TaskPacket@1` directly on Nova and returns `SpecialistResponse@1` |
+| `GET` | `/api/nova/telemetry` | Multi-agent telemetry & reasoning trace |
+| `GET` | `/api/nova/telemetry/cycle` | Full Cognitive OODA cycle & burn envelopes |

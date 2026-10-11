@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "function": "sentinel_forecast_bill_outlays",
+  "c3_spec": {
+    "params": { "lookback_months": "3..12", "horizon_days": "1..90" },
+    "data": {
+      "outlays": [
+        {
+          "source": "DETECTED|DECLARED",
+          "merchant_id": "str?",
+          "merchant_name": "str?",
+          "bill_id": "str?",
+          "label": "str",
+          "category_id": "str?",
+          "amount_minor": "int",
+          "due_date": "date",
+          "confidence": "Confidence",
+          "variance_band": { "low_minor": "int", "high_minor": "int" }
+        }
+      ],
+      "total_minor": "int"
+    }
+  },
+  "params": {
+    "type": "object",
+    "properties": {
+      "lookback_months": { "type": "integer", "minimum": 3, "maximum": 12, "default": 6 },
+      "horizon_days": { "type": "integer", "minimum": 1, "maximum": 90, "default": 30 }
+    },
+    "additionalProperties": true
+  },
+  "data": {
+    "type": "object",
+    "required": ["outlays", "total_minor"],
+    "properties": {
+      "outlays": { "type": "array" },
+      "total_minor": { "type": "integer" }
+    }
+  }
+}

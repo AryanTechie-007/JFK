@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "function": "sentinel_compute_health_score",
+  "c3_spec": {
+    "params": {},
+    "data": {
+      "period": "YYYY-MM",
+      "score": "0..100",
+      "grade": "EXCELLENT|GOOD|FAIR|NEEDS_WORK",
+      "components": {
+        "saving_behavior": "0..25",
+        "budget_discipline": "0..25",
+        "spending_control": "0..25",
+        "future_planning": "0..25"
+      },
+      "metrics": {
+        "savings_rate_bp": "int",
+        "outflow_ratio_bp": "int",
+        "capped_count": "int",
+        "within_cap_count": "int",
+        "funded_goals_count": "int"
+      }
+    }
+  },
+  "params": {
+    "type": "object",
+    "properties": {},
+    "additionalProperties": true
+  },
+  "data": {
+    "type": "object",
+    "required": ["period", "score", "grade", "components", "metrics"],
+    "properties": {
+      "period": { "type": "string" },
+      "score": { "type": "integer", "minimum": 0, "maximum": 100 },
+      "grade": { "type": "string", "enum": ["EXCELLENT", "GOOD", "FAIR", "NEEDS_WORK"] },
+      "components": { "type": "object" },
+      "metrics": { "type": "object" }
+    }
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "function": "sentinel_get_ledger_summary",
+  "c3_spec": {
+    "params": {
+      "timeframe_months": "1..12",
+      "category_scope": { "type": "array", "maxItems": 20, "items": "category_id" }
+    },
+    "data": {
+      "periods": ["YYYY-MM"],
+      "categories": [
+        {
+          "category_id": "str",
+          "total_signed_minor": "int",
+          "monthly_average_minor": "int",
+          "settled_minor": "int",
+          "provisional_minor": "int",
+          "top_merchants": [
+            { "merchant_id": "str", "merchant_name": "str≤40", "total_minor": "int", "count": "int" }
+          ]
+        }
+      ],
+      "uncategorized_minor": "int",
+      "card_payment_unmatched_minor": "int",
+      "unclassified_movement_minor": "int",
+      "unmatched_credits_minor": "int",
+      "recurring_schedule": [
+        {
+          "merchant_id": "str",
+          "merchant_name": "str",
+          "cadence": "WEEKLY|MONTHLY|QUARTERLY|YEARLY",
+          "typical_amount_minor": "int",
+          "next_expected_date": "date",
+          "confidence": "Confidence"
+        }
+      ]
+    }
+  },
+  "params": {
+    "type": "object",
+    "properties": {
+      "timeframe_months": { "type": "integer", "minimum": 1, "maximum": 12, "default": 3 },
+      "category_scope": { "type": "array", "maxItems": 20, "items": { "type": "string" } }
+    },
+    "additionalProperties": true
+  },
+  "data": {
+    "type": "object",
+    "required": [
+      "periods",
+      "categories",
+      "uncategorized_minor",
+      "card_payment_unmatched_minor",
+      "unclassified_movement_minor",
+      "unmatched_credits_minor",
+      "recurring_schedule"
+    ],
+    "properties": {
+      "periods": { "type": "array" },
+      "categories": { "type": "array" },
+      "uncategorized_minor": { "type": "integer" },
+      "card_payment_unmatched_minor": { "type": "integer" },
+      "unclassified_movement_minor": { "type": "integer" },
+      "unmatched_credits_minor": { "type": "integer" },
+      "recurring_schedule": { "type": "array" }
+    }
+  }
+}

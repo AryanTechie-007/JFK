@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "function": "sentinel_run_goal_feasibility",
+  "c3_spec": {
+    "params": {
+      "proposed_monthly_add_minor": "int≥0",
+      "goal_id": "str|null",
+      "period": "YYYY-MM?"
+    },
+    "data": {
+      "verdict": "FITS|TIGHT|SHORTFALL",
+      "income_basis": "DECLARED|OBSERVED",
+      "verdict_income": "CENTRAL|CONSERVATIVE",
+      "headroom_vs_surplus_signed_minor": "int",
+      "headroom_after_caps_signed_minor": "int",
+      "conservative_headroom_after_caps_signed_minor": "int",
+      "components": {
+        "income_minor": "int",
+        "fixed_total_minor": "int",
+        "goal_commitments_incl_proposed_minor": "int",
+        "caps_total_minor": "int"
+      }
+    }
+  },
+  "params": {
+    "type": "object",
+    "properties": {
+      "proposed_monthly_add_minor": { "type": "integer", "minimum": 0 },
+      "goal_id": { "type": ["string", "null"] },
+      "period": { "type": "string", "pattern": "^\\d{4}-\\d{2}$" }
+    },
+    "additionalProperties": true
+  },
+  "data": {
+    "type": "object",
+    "required": [
+      "verdict",
+      "income_basis",
+      "verdict_income",
+      "headroom_vs_surplus_signed_minor",
+      "headroom_after_caps_signed_minor",
+      "conservative_headroom_after_caps_signed_minor",
+      "components"
+    ],
+    "properties": {
+      "verdict": { "type": "string", "enum": ["FITS", "TIGHT", "SHORTFALL"] },
+      "income_basis": { "type": "string", "enum": ["DECLARED", "OBSERVED"] },
+      "verdict_income": { "type": "string", "enum": ["CENTRAL", "CONSERVATIVE"] },
+      "headroom_vs_surplus_signed_minor": { "type": "integer" },
+      "headroom_after_caps_signed_minor": { "type": "integer" },
+      "conservative_headroom_after_caps_signed_minor": { "type": "integer" },
+      "components": { "type": "object" }
+    }
+  }
+}

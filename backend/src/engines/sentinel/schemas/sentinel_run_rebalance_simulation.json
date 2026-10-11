@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "function": "sentinel_run_rebalance_simulation",
+  "c3_spec": {
+    "params": { "deficit_category_id": "str", "period": "YYYY-MM? (current only)" },
+    "data": {
+      "period": "YYYY-MM",
+      "deficit_minor": "int",
+      "transfers": [
+        { "from_category_id": "str", "to_category_id": "str", "amount_minor": "int" }
+      ],
+      "covered_minor": "int",
+      "shortfall_minor": "int",
+      "updated_caps": [{ "category_id": "str", "new_cap_minor": "int" }],
+      "net_cap_change_minor": 0,
+      "excluded_protected": ["str"],
+      "excluded_fixed": ["str"]
+    }
+  },
+  "params": {
+    "type": "object",
+    "properties": {
+      "deficit_category_id": { "type": "string" },
+      "period": { "type": "string", "pattern": "^\\d{4}-\\d{2}$" }
+    },
+    "additionalProperties": true
+  },
+  "data": {
+    "type": "object",
+    "required": [
+      "period",
+      "deficit_minor",
+      "transfers",
+      "covered_minor",
+      "shortfall_minor",
+      "updated_caps",
+      "net_cap_change_minor",
+      "excluded_protected",
+      "excluded_fixed"
+    ],
+    "properties": {
+      "period": { "type": "string" },
+      "deficit_minor": { "type": "integer" },
+      "transfers": { "type": "array" },
+      "covered_minor": { "type": "integer" },
+      "shortfall_minor": { "type": "integer" },
+      "updated_caps": { "type": "array" },
+      "net_cap_change_minor": { "type": "integer" },
+      "excluded_protected": { "type": "array" },
+      "excluded_fixed": { "type": "array" }
+    }
+  }
+}

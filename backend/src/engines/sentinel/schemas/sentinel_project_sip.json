@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "function": "sentinel_project_sip",
+  "c3_spec": {
+    "params": {
+      "monthly_amount_minor": "10000..100000000",
+      "annual_rate_bp": "0..3000",
+      "months": "1..600",
+      "annual_step_up_bp": "0..5000"
+    },
+    "data": {
+      "future_value_minor": "int",
+      "total_invested_minor": "int",
+      "estimated_gain_minor": "int",
+      "yearly_schedule": [
+        { "year": "int", "invested_minor": "int", "value_minor": "int" }
+      ],
+      "illustrative": true,
+      "rate_source": "USER_SUPPLIED"
+    }
+  },
+  "params": {
+    "type": "object",
+    "properties": {
+      "monthly_amount_minor": { "type": "integer", "minimum": 10000, "maximum": 100000000 },
+      "annual_rate_bp": { "type": "integer", "minimum": 0, "maximum": 3000 },
+      "months": { "type": "integer", "minimum": 1, "maximum": 600 },
+      "annual_step_up_bp": { "type": "integer", "minimum": 0, "maximum": 5000 }
+    },
+    "additionalProperties": true
+  },
+  "data": {
+    "type": "object",
+    "required": [
+      "future_value_minor",
+      "total_invested_minor",
+      "estimated_gain_minor",
+      "yearly_schedule",
+      "illustrative",
+      "rate_source"
+    ],
+    "properties": {
+      "future_value_minor": { "type": "integer" },
+      "total_invested_minor": { "type": "integer" },
+      "estimated_gain_minor": { "type": "integer" },
+      "yearly_schedule": { "type": "array" },
+      "illustrative": { "type": "boolean", "const": true },
+      "rate_source": { "type": "string", "const": "USER_SUPPLIED" }
+    }
+  }
+}

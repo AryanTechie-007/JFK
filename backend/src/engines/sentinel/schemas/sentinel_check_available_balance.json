@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "function": "sentinel_check_available_balance",
+  "c3_spec": {
+    "params": { "amount_minor": "int≥1" },
+    "data": {
+      "verdict": "OK|INSUFFICIENT",
+      "spendable_balance_signed_minor": "int|null",
+      "earmarked_total_minor": "int",
+      "available_signed_minor": "int|null",
+      "balance_as_of": "date-time|null",
+      "stale": "bool"
+    }
+  },
+  "params": {
+    "type": "object",
+    "properties": {
+      "amount_minor": { "type": "integer", "minimum": 0 }
+    },
+    "additionalProperties": true
+  },
+  "data": {
+    "type": "object",
+    "required": [
+      "verdict",
+      "spendable_balance_signed_minor",
+      "earmarked_total_minor",
+      "available_signed_minor",
+      "balance_as_of",
+      "stale"
+    ],
+    "properties": {
+      "verdict": { "type": "string", "enum": ["OK", "INSUFFICIENT"] },
+      "spendable_balance_signed_minor": { "type": ["integer", "null"] },
+      "earmarked_total_minor": { "type": "integer" },
+      "available_signed_minor": { "type": ["integer", "null"] },
+      "balance_as_of": { "type": ["string", "null"] },
+      "stale": { "type": "boolean" }
+    }
+  }
+}

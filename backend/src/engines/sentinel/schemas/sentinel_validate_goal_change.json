@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "function": "sentinel_validate_goal_change",
+  "c3_spec": {
+    "params": {
+      "operation": "CREATE|UPDATE|SET_STATUS|SET_MONTH_OVERRIDE|ADD_FUNDS|RELEASE_FUNDS|RESTORE",
+      "goal_id": "str?",
+      "name": "str?",
+      "target_minor": "int?",
+      "monthly_add_minor": "int?",
+      "deadline": "date?",
+      "priority_tier": "HIGH|MEDIUM|LOW?",
+      "status": "ACTIVE|PAUSED?",
+      "period": "YYYY-MM?",
+      "amount_minor": "int?"
+    },
+    "data": {
+      "verdict": "PASS|REJECTED",
+      "rule_codes": ["code"]
+    }
+  },
+  "params": {
+    "type": "object",
+    "properties": {
+      "operation": {
+        "type": "string",
+        "enum": [
+          "CREATE",
+          "UPDATE",
+          "SET_STATUS",
+          "SET_MONTH_OVERRIDE",
+          "ADD_FUNDS",
+          "RELEASE_FUNDS",
+          "RESTORE",
+          "DELETE"
+        ]
+      },
+      "goal_id": { "type": ["string", "null"] },
+      "name": { "type": ["string", "null"] },
+      "target_minor": { "type": ["integer", "number", "null"] },
+      "monthly_add_minor": { "type": ["integer", "number", "null"] },
+      "deadline": { "type": ["string", "null"] },
+      "priority_tier": { "type": ["string", "null"] },
+      "status": { "type": ["string", "null"] },
+      "period": { "type": ["string", "null"] },
+      "amount_minor": { "type": ["integer", "number", "null"] }
+    },
+    "additionalProperties": true
+  },
+  "data": {
+    "type": "object",
+    "required": ["verdict", "rule_codes"],
+    "properties": {
+      "verdict": { "type": "string", "enum": ["PASS", "REJECTED"] },
+      "rule_codes": { "type": "array" }
+    }
+  }
+}

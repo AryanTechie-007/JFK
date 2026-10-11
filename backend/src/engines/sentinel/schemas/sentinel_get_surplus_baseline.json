@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "function": "sentinel_get_surplus_baseline",
+  "c3_spec": {
+    "params": {
+      "timeframe_months": { "type": "integer", "minimum": 1, "maximum": 12, "default": 3 }
+    },
+    "data": {
+      "income_minor": "int",
+      "conservative_income_minor": "int",
+      "income_basis": "DECLARED|OBSERVED",
+      "income_monthly_series": [{ "period": "YYYY-MM", "income_minor": "int" }],
+      "fixed_total_minor": "int",
+      "fixed_lines": [{ "line_id": "str", "category_id": "str", "amount_minor": "int" }],
+      "net_surplus_signed_minor": "int",
+      "conservative_net_surplus_signed_minor": "int",
+      "goal_commitments_minor": "int",
+      "caps_total_minor": "int",
+      "unallocated_surplus_signed_minor": "int",
+      "period": "YYYY-MM"
+    }
+  },
+  "params": {
+    "type": "object",
+    "properties": {
+      "timeframe_months": { "type": "integer", "minimum": 1, "maximum": 12, "default": 3 }
+    },
+    "additionalProperties": true
+  },
+  "data": {
+    "type": "object",
+    "required": [
+      "income_minor",
+      "conservative_income_minor",
+      "income_basis",
+      "income_monthly_series",
+      "fixed_total_minor",
+      "fixed_lines",
+      "net_surplus_signed_minor",
+      "conservative_net_surplus_signed_minor",
+      "goal_commitments_minor",
+      "caps_total_minor",
+      "unallocated_surplus_signed_minor",
+      "period"
+    ],
+    "properties": {
+      "income_minor": { "type": "integer" },
+      "conservative_income_minor": { "type": "integer" },
+      "income_basis": { "type": "string", "enum": ["DECLARED", "OBSERVED"] },
+      "income_monthly_series": { "type": "array" },
+      "fixed_total_minor": { "type": "integer" },
+      "fixed_lines": { "type": "array" },
+      "net_surplus_signed_minor": { "type": "integer" },
+      "conservative_net_surplus_signed_minor": { "type": "integer" },
+      "goal_commitments_minor": { "type": "integer" },
+      "caps_total_minor": { "type": "integer" },
+      "unallocated_surplus_signed_minor": { "type": "integer" },
+      "period": { "type": "string", "pattern": "^\\d{4}-\\d{2}$" }
+    }
+  }
+}

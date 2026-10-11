@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "function": "sentinel_validate_profile",
+  "c3_spec": {
+    "params": {
+      "self_reported_income_minor": "int?",
+      "fixed_obligations_minor": "int?",
+      "fixed_obligations": "array?"
+    },
+    "data": {
+      "verdict": "PASS|REJECTED",
+      "rule_codes": ["code"],
+      "warnings": ["code"]
+    }
+  },
+  "params": {
+    "type": "object",
+    "properties": {
+      "self_reported_income_minor": { "type": ["integer", "null"] },
+      "fixed_obligations_minor": { "type": ["integer", "null"] },
+      "fixed_obligations": { "type": ["array", "null"] }
+    },
+    "additionalProperties": true
+  },
+  "data": {
+    "type": "object",
+    "required": ["verdict", "rule_codes", "warnings"],
+    "properties": {
+      "verdict": { "type": "string", "enum": ["PASS", "REJECTED"] },
+      "rule_codes": { "type": "array" },
+      "warnings": { "type": "array" }
+    }
+  }
+}
