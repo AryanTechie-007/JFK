@@ -237,13 +237,13 @@ export default function SettingsView({
               <User size={18} />
             </div>
             <div>
-              <div style={{ fontSize: '16px', fontWeight: '700', color: '#0f172a' }}>Income & Fixed Outlay Inputs</div>
-              <div style={{ fontSize: '12px', color: '#64748b' }}>Primary cash flow parameters</div>
+              <div style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)' }}>Income & Fixed Outlay Inputs</div>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Primary cash flow parameters</div>
             </div>
           </div>
 
           <div>
-            <label style={{ fontSize: '12px', color: '#64748b', fontWeight: '600', marginBottom: '6px', display: 'block' }}>
+            <label style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600', marginBottom: '6px', display: 'block' }}>
               Your Name
             </label>
             <input
@@ -256,7 +256,7 @@ export default function SettingsView({
           </div>
 
           <div>
-            <label style={{ fontSize: '12px', color: '#64748b', fontWeight: '600', marginBottom: '6px', display: 'block' }}>
+            <label style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600', marginBottom: '6px', display: 'block' }}>
               Monthly Net Income / Salary (₹)
             </label>
             <input
@@ -269,7 +269,7 @@ export default function SettingsView({
           </div>
 
           <div>
-            <label style={{ fontSize: '12px', color: '#64748b', fontWeight: '600', marginBottom: '6px', display: 'block' }}>
+            <label style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600', marginBottom: '6px', display: 'block' }}>
               Fixed Monthly Expenses (Rent, Utilities, Insurance) (₹)
             </label>
             <input
@@ -283,16 +283,16 @@ export default function SettingsView({
 
           <div style={{
             padding: '16px',
-            backgroundColor: '#f8fafc',
+            backgroundColor: 'var(--bg-card-subtle)',
             borderRadius: '8px',
-            border: '1px solid #e2e8f0',
+            border: '1px solid var(--border-color)',
             marginTop: 'auto'
           }}>
-            <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
               CALCULATED SURPLUS PREVIEW
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
-              <span style={{ fontSize: '13px', color: '#475569' }}>Calculated Net Surplus:</span>
+              <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Calculated Net Surplus:</span>
               <span className="mono" style={{ fontSize: '18px', fontWeight: '700', color: '#059669' }}>
                 ₹{(Number(income) - (userProfile?.totalSpentThisMonth || 0)).toLocaleString()}/mo
               </span>
@@ -307,13 +307,13 @@ export default function SettingsView({
               <Sliders size={18} />
             </div>
             <div>
-              <div style={{ fontSize: '16px', fontWeight: '700', color: '#0f172a' }}>Nova Category Budget Thresholds</div>
-              <div style={{ fontSize: '12px', color: '#64748b' }}>Custom category spending limits</div>
+              <div style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)' }}>Nova Category Budget Thresholds</div>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Custom category spending limits</div>
             </div>
           </div>
 
           <div>
-            <label style={{ fontSize: '12px', color: '#64748b', fontWeight: '600', marginBottom: '6px', display: 'block' }}>
+            <label style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600', marginBottom: '6px', display: 'block' }}>
               Food & Dining Budget Limit (₹)
             </label>
             <input
@@ -326,7 +326,7 @@ export default function SettingsView({
           </div>
 
           <div>
-            <label style={{ fontSize: '12px', color: '#64748b', fontWeight: '600', marginBottom: '6px', display: 'block' }}>
+            <label style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600', marginBottom: '6px', display: 'block' }}>
               Shopping & Lifestyle Budget Limit (₹)
             </label>
             <input
@@ -339,7 +339,7 @@ export default function SettingsView({
           </div>
 
           <div>
-            <label style={{ fontSize: '12px', color: '#64748b', fontWeight: '600', marginBottom: '6px', display: 'block' }}>
+            <label style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600', marginBottom: '6px', display: 'block' }}>
               Subscriptions Budget Limit (₹)
             </label>
             <input
@@ -352,7 +352,7 @@ export default function SettingsView({
           </div>
 
           <div>
-            <label style={{ fontSize: '12px', color: '#64748b', fontWeight: '600', marginBottom: '6px', display: 'block' }}>
+            <label style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600', marginBottom: '6px', display: 'block' }}>
               Transport Budget Limit (₹)
             </label>
             <input
@@ -365,7 +365,7 @@ export default function SettingsView({
           </div>
 
           <div>
-            <label style={{ fontSize: '12px', color: '#64748b', fontWeight: '600', marginBottom: '6px', display: 'block' }}>
+            <label style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600', marginBottom: '6px', display: 'block' }}>
               Bills & Utilities Budget Limit (₹)
             </label>
             <input

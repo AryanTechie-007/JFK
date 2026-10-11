@@ -26,7 +26,7 @@ export default function Sidebar({ activeTab, setActiveTab, userProfile, onLogout
     { id: 'nova', label: 'Budget Guardian', icon: ShieldCheck, color: '#dc2626' },
     { id: 'atlas', label: 'Saving Strategist', icon: Target, color: '#059669' },
     { id: 'health', label: 'Financial Health', icon: Activity, color: '#059669' },
-    { id: 'settings', label: 'User Profile & Settings', icon: Settings, color: '#64748b' }
+    { id: 'settings', label: 'User Profile & Settings', icon: Settings, color: 'var(--text-muted)' }
   ];
 
   return (

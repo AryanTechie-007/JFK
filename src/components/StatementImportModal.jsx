@@ -298,7 +298,7 @@ export default function StatementImportModal({ isOpen, onClose, onImportSuccess,
       padding: '20px'
     }}>
       <div style={{
-        backgroundColor: '#ffffff',
+        backgroundColor: 'var(--bg-card)',
         borderRadius: '16px',
         maxWidth: '900px',
         width: '100%',
@@ -306,18 +306,18 @@ export default function StatementImportModal({ isOpen, onClose, onImportSuccess,
         display: 'flex',
         flexDirection: 'column',
         boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-        border: '1px solid #e2e8f0',
+        border: '1px solid var(--border-color)',
         overflow: 'hidden'
       }}>
         
         {/* Header Bar */}
         <div style={{
           padding: '20px 24px',
-          borderBottom: '1px solid #e2e8f0',
+          borderBottom: '1px solid var(--border-color)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          backgroundColor: '#f8fafc'
+          backgroundColor: 'var(--bg-card-subtle)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{
@@ -333,10 +333,10 @@ export default function StatementImportModal({ isOpen, onClose, onImportSuccess,
               <Upload size={20} />
             </div>
             <div>
-              <h2 style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a', fontFamily: 'var(--font-serif)' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-primary)', fontFamily: 'var(--font-serif)' }}>
                 Import Bank Statement & CSV
               </h2>
-              <p style={{ fontSize: '12px', color: '#64748b', marginTop: '2px', fontFamily: 'var(--font-sans)' }}>
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px', fontFamily: 'var(--font-sans)' }}>
                 Automatically extract, parse, and categorize raw bank feeds with Iris NLP intelligence.
               </p>
             </div>
@@ -348,7 +348,7 @@ export default function StatementImportModal({ isOpen, onClose, onImportSuccess,
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              color: '#94a3b8',
+              color: 'var(--text-muted)',
               padding: '6px',
               borderRadius: '6px'
             }}
@@ -410,8 +410,8 @@ export default function StatementImportModal({ isOpen, onClose, onImportSuccess,
                     padding: '8px 14px',
                     borderRadius: '8px',
                     border: '1px solid #cbd5e1',
-                    backgroundColor: '#f8fafc',
-                    color: '#0f172a',
+                    backgroundColor: 'var(--bg-card-subtle)',
+                    color: 'var(--text-primary)',
                     fontSize: '12px',
                     fontWeight: '600',
                     cursor: 'pointer',
@@ -428,8 +428,8 @@ export default function StatementImportModal({ isOpen, onClose, onImportSuccess,
                     padding: '8px 14px',
                     borderRadius: '8px',
                     border: '1px solid #cbd5e1',
-                    backgroundColor: '#ffffff',
-                    color: '#64748b',
+                    backgroundColor: 'var(--bg-card)',
+                    color: 'var(--text-muted)',
                     fontSize: '12px',
                     fontWeight: '500',
                     cursor: 'pointer',
@@ -477,14 +477,14 @@ export default function StatementImportModal({ isOpen, onClose, onImportSuccess,
                     alignItems: 'center',
                     justifyContent: 'center',
                     margin: '0 auto 16px auto',
-                    color: '#64748b'
+                    color: 'var(--text-muted)'
                   }}>
                     <Upload size={24} />
                   </div>
-                  <h3 style={{ fontSize: '15px', fontWeight: '700', color: '#0f172a', marginBottom: '6px' }}>
+                  <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '6px' }}>
                     Click to browse or drag & drop bank statement
                   </h3>
-                  <p style={{ fontSize: '12px', color: '#64748b', maxWidth: '400px', margin: '0 auto' }}>
+                  <p style={{ fontSize: '12px', color: 'var(--text-muted)', maxWidth: '400px', margin: '0 auto' }}>
                     Supports HDFC, ICICI, SBI, Axis, or generic CSV/TXT statement exports.
                   </p>
                 </div>
@@ -531,17 +531,17 @@ export default function StatementImportModal({ isOpen, onClose, onImportSuccess,
                 flexWrap: 'wrap',
                 gap: '12px',
                 padding: '14px 18px',
-                backgroundColor: '#f0fdf4',
-                border: '1px solid #bbf7d0',
+                backgroundColor: 'var(--agent-john-glow)',
+                border: '1px solid var(--border-color)',
                 borderRadius: '10px'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <CheckCircle2 size={20} color="#059669" />
                   <div>
-                    <div style={{ fontSize: '13px', fontWeight: '700', color: '#065f46' }}>
+                    <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--accent-emerald)' }}>
                       {parsedRows.length} Transactions Detected from {fileName || 'Statement'}
                     </div>
-                    <div style={{ fontSize: '11px', color: '#047857' }}>
+                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
                       {selectedRows.length} selected for import • Auto-categorized via NLP classifier
                     </div>
                   </div>
@@ -549,10 +549,10 @@ export default function StatementImportModal({ isOpen, onClose, onImportSuccess,
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '10px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>
                       Total Selected Sum
                     </div>
-                    <div className="mono" style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>
+                    <div className="mono" style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-primary)' }}>
                       {currency}{totalSelectedAmount.toLocaleString()}
                     </div>
                   </div>
@@ -567,14 +567,14 @@ export default function StatementImportModal({ isOpen, onClose, onImportSuccess,
 
               {/* Table of Parsed Transactions */}
               <div style={{
-                border: '1px solid #e2e8f0',
+                border: '1px solid var(--border-color)',
                 borderRadius: '8px',
                 overflow: 'hidden',
                 maxHeight: '340px',
                 overflowY: 'auto'
               }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12px' }}>
-                  <thead style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0', position: 'sticky', top: 0, zIndex: 10 }}>
+                  <thead style={{ backgroundColor: 'var(--bg-card-subtle)', borderBottom: '1px solid var(--border-color)', position: 'sticky', top: 0, zIndex: 10 }}>
                     <tr>
                       <th style={{ padding: '10px 14px', width: '40px' }}>
                         <input 
@@ -583,10 +583,10 @@ export default function StatementImportModal({ isOpen, onClose, onImportSuccess,
                           onChange={handleToggleSelectAll}
                         />
                       </th>
-                      <th style={{ padding: '10px 14px', color: '#64748b', fontWeight: '700' }}>Date</th>
-                      <th style={{ padding: '10px 14px', color: '#64748b', fontWeight: '700' }}>Narration / Description</th>
-                      <th style={{ padding: '10px 14px', color: '#64748b', fontWeight: '700' }}>Category</th>
-                      <th style={{ padding: '10px 14px', color: '#64748b', fontWeight: '700', textAlign: 'right' }}>Amount</th>
+                      <th style={{ padding: '10px 14px', color: 'var(--text-muted)', fontWeight: '700' }}>Date</th>
+                      <th style={{ padding: '10px 14px', color: 'var(--text-muted)', fontWeight: '700' }}>Narration / Description</th>
+                      <th style={{ padding: '10px 14px', color: 'var(--text-muted)', fontWeight: '700' }}>Category</th>
+                      <th style={{ padding: '10px 14px', color: 'var(--text-muted)', fontWeight: '700', textAlign: 'right' }}>Amount</th>
                       <th style={{ padding: '10px 14px', width: '40px' }}></th>
                     </tr>
                   </thead>
@@ -607,10 +607,10 @@ export default function StatementImportModal({ isOpen, onClose, onImportSuccess,
                             onChange={() => handleRowToggle(row.id)}
                           />
                         </td>
-                        <td className="mono" style={{ padding: '10px 14px', color: '#64748b', whiteSpace: 'nowrap' }}>
+                        <td className="mono" style={{ padding: '10px 14px', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
                           {row.txnDate}
                         </td>
-                        <td style={{ padding: '10px 14px', fontWeight: '600', color: '#0f172a' }}>
+                        <td style={{ padding: '10px 14px', fontWeight: '600', color: 'var(--text-primary)' }}>
                           {row.rawDescription}
                         </td>
                         <td style={{ padding: '10px 14px' }}>
@@ -623,8 +623,8 @@ export default function StatementImportModal({ isOpen, onClose, onImportSuccess,
                               border: '1px solid #cbd5e1',
                               fontSize: '11px',
                               fontWeight: '600',
-                              backgroundColor: '#ffffff',
-                              color: '#0f172a'
+                              backgroundColor: 'var(--bg-card)',
+                              color: 'var(--text-primary)'
                             }}
                           >
                             {CATEGORIES.map(c => (
@@ -632,13 +632,13 @@ export default function StatementImportModal({ isOpen, onClose, onImportSuccess,
                             ))}
                           </select>
                         </td>
-                        <td className="mono" style={{ padding: '10px 14px', textAlign: 'right', fontWeight: '700', color: '#0f172a', whiteSpace: 'nowrap' }}>
+                        <td className="mono" style={{ padding: '10px 14px', textAlign: 'right', fontWeight: '700', color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
                           {currency}{row.amount.toLocaleString()}
                         </td>
                         <td style={{ padding: '10px 14px', textAlign: 'center' }}>
                           <button
                             onClick={() => handleRowDelete(row.id)}
-                            style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '2px' }}
+                            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '2px' }}
                             title="Remove row"
                           >
                             <Trash2 size={14} />
@@ -675,13 +675,13 @@ export default function StatementImportModal({ isOpen, onClose, onImportSuccess,
         {/* Footer Actions */}
         <div style={{
           padding: '16px 24px',
-          borderTop: '1px solid #e2e8f0',
+          borderTop: '1px solid var(--border-color)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          backgroundColor: '#f8fafc'
+          backgroundColor: 'var(--bg-card-subtle)'
         }}>
-          <div style={{ fontSize: '12px', color: '#64748b' }}>
+          <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
             {parsedRows.length > 0 ? (
               <span>Ready to ingest {selectedRows.length} records into your live financial record.</span>
             ) : (

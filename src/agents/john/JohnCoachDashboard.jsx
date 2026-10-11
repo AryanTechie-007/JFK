@@ -174,11 +174,11 @@ export default function JohnCoachDashboard({ userProfile, goals, onAcceptGoal, s
           {/* Header */}
           <div style={{
             padding: '16px 24px',
-            borderBottom: '1px solid #e2e8f0',
+            borderBottom: '1px solid var(--border-color)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            backgroundColor: '#ffffff',
+            backgroundColor: 'var(--bg-card)',
             borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -195,10 +195,10 @@ export default function JohnCoachDashboard({ userProfile, goals, onAcceptGoal, s
                 <Bot size={18} />
               </div>
               <div>
-                <h3 style={{ fontSize: '15px', fontWeight: '700', color: '#0f172a', fontFamily: 'var(--font-serif)' }}>
+                <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-primary)', fontFamily: 'var(--font-serif)' }}>
                   John — Master AI Coach
                 </h3>
-                <div style={{ fontSize: '11px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <Sparkles size={11} color="#059669" /> Backend Multi-Agent System Active
                 </div>
               </div>
@@ -225,7 +225,7 @@ export default function JohnCoachDashboard({ userProfile, goals, onAcceptGoal, s
             display: 'flex',
             flexDirection: 'column',
             gap: '20px',
-            backgroundColor: '#f8fafc'
+            backgroundColor: 'var(--bg-card-subtle)'
           }}>
             {messages.map((msg) => {
               const isUser = msg.sender === 'user';
@@ -241,7 +241,7 @@ export default function JohnCoachDashboard({ userProfile, goals, onAcceptGoal, s
                   }}
                 >
                   {/* Sender Label */}
-                  <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     {!isUser && <Bot size={12} color="#059669" />}
                     <span>{isUser ? 'You' : 'John (Master Coach)'}</span>
                     <span>•</span>
@@ -339,7 +339,7 @@ export default function JohnCoachDashboard({ userProfile, goals, onAcceptGoal, s
                                   key={idx}
                                   style={{
                                     padding: '10px 12px',
-                                    backgroundColor: '#f1f5f9',
+                                    backgroundColor: 'var(--bg-surface-hover)',
                                     borderRadius: 'var(--radius-sm)',
                                     borderLeft: `3px solid ${agentColor}`,
                                     fontSize: '12px'
@@ -362,19 +362,19 @@ export default function JohnCoachDashboard({ userProfile, goals, onAcceptGoal, s
                       <div style={{
                         marginTop: '16px',
                         padding: '16px',
-                        backgroundColor: '#f0fdf4',
-                        border: '1px solid #bbf7d0',
+                        backgroundColor: 'var(--agent-john-glow)',
+                        border: '1px solid var(--border-color)',
                         borderRadius: 'var(--radius-md)',
-                        color: '#166534'
+                        color: 'var(--text-secondary)'
                       }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                           <Target size={18} color="#059669" />
                           <span style={{ fontWeight: '700', fontSize: '13px' }}>John Proposes a New Savings Objective</span>
                         </div>
-                        <div style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a' }}>
+                        <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)' }}>
                           {msg.proposedGoal.name}
                         </div>
-                        <div style={{ fontSize: '12px', color: '#475569', marginTop: '4px' }}>
+                        <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
                           Target Amount: <strong>{currency}{msg.proposedGoal.target.toLocaleString()}</strong> • Priority: {msg.proposedGoal.priority || 'MEDIUM'}
                         </div>
 
@@ -385,7 +385,7 @@ export default function JohnCoachDashboard({ userProfile, goals, onAcceptGoal, s
                               <CheckCircle2 size={16} /> Goal Added to Atlas Strategist!
                             </div>
                           ) : declinedGoals[msg.id] ? (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#94a3b8' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>
                               <XCircle size={16} /> Proposal Declined
                             </div>
                           ) : (
@@ -416,7 +416,7 @@ export default function JohnCoachDashboard({ userProfile, goals, onAcceptGoal, s
 
             {/* Thinking Indicator */}
             {isThinking && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#64748b', fontSize: '13px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontSize: '13px' }}>
                 <Bot size={18} color="#059669" />
                 <span className="spin"></span>
                 <span>John (Master Coach) is synthesizing agent intelligence via backend API...</span>
@@ -426,7 +426,7 @@ export default function JohnCoachDashboard({ userProfile, goals, onAcceptGoal, s
           </div>
 
           {/* Chat Input Bar */}
-          <div style={{ padding: '16px 24px', backgroundColor: '#ffffff', borderTop: '1px solid #e2e8f0' }}>
+          <div style={{ padding: '16px 24px', backgroundColor: 'var(--bg-card)', borderTop: '1px solid var(--border-color)' }}>
             <form 
               onSubmit={(e) => { e.preventDefault(); handleSend(); }}
               style={{ display: 'flex', gap: '10px' }}

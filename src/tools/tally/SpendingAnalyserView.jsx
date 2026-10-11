@@ -129,10 +129,10 @@ export default function SpendingAnalyserView({ userProfile, onOpenImportModal })
       {/* Title Header & Actions */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
         <div>
-          <h1 style={{ fontSize: '32px', fontWeight: '800', color: '#0f172a', letterSpacing: '-0.02em', fontFamily: 'var(--font-serif)' }}>
+          <h1 style={{ fontSize: '32px', fontWeight: '800', color: 'var(--text-primary)', letterSpacing: '-0.02em', fontFamily: 'var(--font-serif)' }}>
             Spending & Trend Analyser
           </h1>
-          <p style={{ fontSize: '14px', color: '#64748b', marginTop: '4px', fontFamily: 'var(--font-sans)' }}>
+          <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '4px', fontFamily: 'var(--font-sans)' }}>
             Analyze genuine historical transactions, categorize expense velocity, and track category shifts.
           </p>
         </div>
@@ -212,7 +212,7 @@ export default function SpendingAnalyserView({ userProfile, onOpenImportModal })
       </div>
 
       {isLoading ? (
-        <div style={{ padding: '60px', textAlign: 'center', color: '#64748b' }}>
+        <div style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)' }}>
           <Loader2 size={28} className="animate-spin" style={{ margin: '0 auto 12px auto' }} />
           <span>Loading historical transactions...</span>
         </div>
@@ -221,15 +221,15 @@ export default function SpendingAnalyserView({ userProfile, onOpenImportModal })
         <div className="card" style={{
           padding: '64px 32px',
           textAlign: 'center',
-          backgroundColor: '#f8fafc',
+          backgroundColor: 'var(--bg-card-subtle)',
           borderRadius: '16px',
-          border: '1px dashed #cbd5e1'
+          border: '1px dashed var(--border-color)'
         }}>
           <BarChart3 size={44} color="#94a3b8" style={{ margin: '0 auto 16px auto' }} />
-          <h2 style={{ fontSize: '18px', fontWeight: '700', color: '#0f172a' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-primary)' }}>
             No spending history available
           </h2>
-          <p style={{ fontSize: '14px', color: '#64748b', maxWidth: '480px', margin: '8px auto 24px auto', lineHeight: '1.5' }}>
+          <p style={{ fontSize: '14px', color: 'var(--text-muted)', maxWidth: '480px', margin: '8px auto 24px auto', lineHeight: '1.5' }}>
             The Spending Analyser starts completely empty. Enter previous expenses or import a bank statement CSV to generate real spending trends and category insights.
           </p>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
@@ -259,37 +259,37 @@ export default function SpendingAnalyserView({ userProfile, onOpenImportModal })
           {/* KPI Summary Cards */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
             <div className="card" style={{ padding: '18px' }}>
-              <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 Total Recorded Outlay
               </div>
-              <div className="mono" style={{ fontSize: '24px', fontWeight: '800', color: '#0f172a', marginTop: '6px' }}>
+              <div className="mono" style={{ fontSize: '24px', fontWeight: '800', color: 'var(--text-primary)', marginTop: '6px' }}>
                 {currency}{totalHistoricSpend.toLocaleString()}
               </div>
-              <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
                 Across {transactions.length} logged transaction{transactions.length === 1 ? '' : 's'}
               </div>
             </div>
 
             <div className="card" style={{ padding: '18px' }}>
-              <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 Top Outlay Category
               </div>
               <div style={{ fontSize: '20px', fontWeight: '800', color: '#005f41', marginTop: '6px' }}>
                 {topCategory ? topCategory.category : 'N/A'}
               </div>
-              <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
                 {topCategory ? `${topCategory.share}% (${currency}${topCategory.spent.toLocaleString()}) of overall spend` : 'No category data'}
               </div>
             </div>
 
             <div className="card" style={{ padding: '18px' }}>
-              <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 Logged Timeline
               </div>
-              <div style={{ fontSize: '18px', fontWeight: '700', color: '#0f172a', marginTop: '6px' }}>
+              <div style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-primary)', marginTop: '6px' }}>
                 {chartData.length} active period{chartData.length === 1 ? '' : 's'}
               </div>
-              <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
                 Grouped by {viewMode}
               </div>
             </div>
@@ -305,7 +305,7 @@ export default function SpendingAnalyserView({ userProfile, onOpenImportModal })
                   <TrendingUp size={18} color="#005f41" />
                   <span>Expenditure Trend ({viewMode === 'month' ? 'Monthly' : 'Yearly'})</span>
                 </div>
-                <span className="mono" style={{ fontSize: '11px', color: '#64748b', backgroundColor: '#f1f5f9', padding: '4px 8px', borderRadius: '4px' }}>
+                <span className="mono" style={{ fontSize: '11px', color: 'var(--text-muted)', backgroundColor: 'var(--bg-surface-hover)', padding: '4px 8px', borderRadius: '4px' }}>
                   {chartData.length} Periods
                 </span>
               </div>
@@ -313,9 +313,9 @@ export default function SpendingAnalyserView({ userProfile, onOpenImportModal })
               <div style={{
                 height: '280px',
                 width: '100%',
-                backgroundColor: '#f8fafc',
+                backgroundColor: 'var(--bg-card-subtle)',
                 borderRadius: '12px',
-                border: '1px solid #e2e8f0',
+                border: '1px solid var(--border-color)',
                 padding: '24px',
                 display: 'flex',
                 flexDirection: 'column',
@@ -327,7 +327,7 @@ export default function SpendingAnalyserView({ userProfile, onOpenImportModal })
                     const heightPct = Math.max(12, Math.round((item.total / maxVal) * 100));
                     return (
                       <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flex: 1, height: '100%', justifyContent: 'flex-end' }}>
-                        <span className="mono" style={{ fontSize: '10px', color: '#64748b', fontWeight: '600' }}>
+                        <span className="mono" style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: '600' }}>
                           {currency}{item.total >= 1000 ? `${(item.total / 1000).toFixed(1)}k` : item.total}
                         </span>
                         <div style={{
@@ -338,7 +338,7 @@ export default function SpendingAnalyserView({ userProfile, onOpenImportModal })
                           borderRadius: '6px 6px 0 0',
                           transition: 'height 0.4s ease'
                         }} />
-                        <span style={{ fontSize: '11px', color: '#0f172a', fontWeight: '700' }}>
+                        <span style={{ fontSize: '11px', color: 'var(--text-primary)', fontWeight: '700' }}>
                           {item.label}
                         </span>
                       </div>
@@ -360,8 +360,8 @@ export default function SpendingAnalyserView({ userProfile, onOpenImportModal })
                 {categoryBreakdown.map((cat, idx) => (
                   <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
-                      <span style={{ fontWeight: '600', color: '#0f172a' }}>{cat.category}</span>
-                      <span className="mono" style={{ fontWeight: '700', color: '#0f172a' }}>
+                      <span style={{ fontWeight: '600', color: 'var(--text-primary)' }}>{cat.category}</span>
+                      <span className="mono" style={{ fontWeight: '700', color: 'var(--text-primary)' }}>
                         {currency}{cat.spent.toLocaleString()} ({cat.share}%)
                       </span>
                     </div>
@@ -393,17 +393,17 @@ export default function SpendingAnalyserView({ userProfile, onOpenImportModal })
           backdropFilter: 'blur(3px)'
         }}>
           <div style={{
-            backgroundColor: '#ffffff',
+            backgroundColor: 'var(--bg-card)',
             borderRadius: '16px',
             width: '100%',
             maxWidth: '480px',
             padding: '28px',
             boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
           }}>
-            <h2 style={{ fontSize: '18px', fontWeight: '700', color: '#0f172a', marginBottom: '4px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '4px' }}>
               Add Spending History
             </h2>
-            <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '20px' }}>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '20px' }}>
               Enter past expenses to populate real historical spending curves and trends.
             </p>
 
@@ -465,7 +465,7 @@ export default function SpendingAnalyserView({ userProfile, onOpenImportModal })
                       borderRadius: '8px',
                       border: '1px solid #cbd5e1',
                       fontSize: '14px',
-                      backgroundColor: '#ffffff',
+                      backgroundColor: 'var(--bg-card)',
                       boxSizing: 'border-box'
                     }}
                   >

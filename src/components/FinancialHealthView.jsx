@@ -51,63 +51,63 @@ export default function FinancialHealthView({ userProfile }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <h1 style={{ fontSize: '32px', fontWeight: '800', color: '#0f172a', letterSpacing: '-0.02em', fontFamily: 'var(--font-serif)' }}>
+            <h1 style={{ fontSize: '32px', fontWeight: '800', color: 'var(--text-primary)', letterSpacing: '-0.02em', fontFamily: 'var(--font-serif)' }}>
               Financial Health Scorecard
             </h1>
             <span className="badge badge-atlas">Audited by John & Atlas</span>
           </div>
-          <p style={{ fontSize: '14px', color: '#64748b', marginTop: '4px', fontFamily: 'var(--font-sans)' }}>
+          <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '4px', fontFamily: 'var(--font-sans)' }}>
             Comprehensive multi-dimensional health audit across cash flow liquidity, habit control, and risk reserves.
           </p>
         </div>
 
         <div style={{
           padding: '12px 24px',
-          backgroundColor: '#ffffff',
-          border: '1px solid #e2e8f0',
+          backgroundColor: 'var(--bg-card)',
+          border: '1px solid var(--border-color)',
           borderRadius: 'var(--radius-md)'
         }}>
-          <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '600', fontFamily: 'var(--font-sans)' }}>Overall Health Score</div>
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600', fontFamily: 'var(--font-sans)' }}>Overall Health Score</div>
           <div className="mono" style={{ fontSize: '28px', fontWeight: '700', color: '#059669', fontFamily: 'var(--font-serif)' }}>
-            {healthScore} <span style={{ fontSize: '14px', color: '#64748b' }}>/ 100</span>
+            {healthScore} <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>/ 100</span>
           </div>
         </div>
       </div>
 
       {/* How Health Score is Calculated Explanation Banner */}
-      <div className="card" style={{ padding: '24px', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0' }}>
-        <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#065f46', marginBottom: '8px' }}>
+      <div className="card" style={{ padding: '24px', backgroundColor: 'var(--agent-john-glow)', border: '1px solid var(--border-color)' }}>
+        <h3 style={{ fontSize: '16px', fontWeight: '800', color: 'var(--accent-emerald)', marginBottom: '8px' }}>
           What is Your Financial Health Score & How is it Calculated?
         </h3>
-        <p style={{ fontSize: '13px', color: '#166534', lineHeight: '1.6', marginBottom: '14px' }}>
+        <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '14px' }}>
           Your Financial Health Score is an automated 0–100 index that measures your fiscal resilience, liquidity buffer, and monthly cash flow sustainability. It combines 4 weighted financial pillars derived directly from your numbers:
         </p>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
-          <div style={{ padding: '12px', backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #dcfce7' }}>
-            <div style={{ fontSize: '12px', fontWeight: '700', color: '#0f172a' }}>1. Saving Behavior (35%)</div>
-            <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
+          <div style={{ padding: '12px', backgroundColor: 'var(--bg-card)', borderRadius: '8px', border: '1px solid #dcfce7' }}>
+            <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)' }}>1. Saving Behavior (35%)</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
               Measures percentage of gross income retained after fixed and variable outlays (Target: &ge;25%).
             </div>
           </div>
 
-          <div style={{ padding: '12px', backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #dcfce7' }}>
-            <div style={{ fontSize: '12px', fontWeight: '700', color: '#0f172a' }}>2. Budget Discipline (25%)</div>
-            <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
+          <div style={{ padding: '12px', backgroundColor: 'var(--bg-card)', borderRadius: '8px', border: '1px solid #dcfce7' }}>
+            <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)' }}>2. Budget Discipline (25%)</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
               Tracks adherence to category caps set in Nova Budget Guardian, penalizing recurring overages.
             </div>
           </div>
 
-          <div style={{ padding: '12px', backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #dcfce7' }}>
-            <div style={{ fontSize: '12px', fontWeight: '700', color: '#0f172a' }}>3. Spending Control (20%)</div>
-            <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
+          <div style={{ padding: '12px', backgroundColor: 'var(--bg-card)', borderRadius: '8px', border: '1px solid #dcfce7' }}>
+            <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)' }}>3. Spending Control (20%)</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
               Evaluates discretionary spending velocity and subscription commitments relative to earnings.
             </div>
           </div>
 
-          <div style={{ padding: '12px', backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #dcfce7' }}>
-            <div style={{ fontSize: '12px', fontWeight: '700', color: '#0f172a' }}>4. Future Planning (20%)</div>
-            <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
+          <div style={{ padding: '12px', backgroundColor: 'var(--bg-card)', borderRadius: '8px', border: '1px solid #dcfce7' }}>
+            <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)' }}>4. Future Planning (20%)</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
               Monitors progress towards your Atlas savings goals and readiness for upcoming obligations.
             </div>
           </div>
@@ -127,7 +127,7 @@ export default function FinancialHealthView({ userProfile }) {
                 {breakdown.savingBehavior}/100
               </span>
             </div>
-            <p style={{ fontSize: '12px', color: '#64748b', marginTop: '4px', fontFamily: 'var(--font-sans)' }}>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px', fontFamily: 'var(--font-sans)' }}>
               Saving {userProfile?.savingsRate || 27.7}% of gross income (₹{(userProfile?.currentSavings || 20800).toLocaleString()}/mo). Atlas benchmark recommendation is 30%.
             </p>
             <div className="progress-track" style={{ height: '8px', marginTop: '10px' }}>
@@ -142,7 +142,7 @@ export default function FinancialHealthView({ userProfile }) {
                 {breakdown.budgetDiscipline}/100
               </span>
             </div>
-            <p style={{ fontSize: '12px', color: '#64748b', marginTop: '4px', fontFamily: 'var(--font-sans)' }}>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px', fontFamily: 'var(--font-sans)' }}>
               4 out of 5 category limits respected. Subscriptions limit breached by 16%.
             </p>
             <div className="progress-track" style={{ height: '8px', marginTop: '10px' }}>
@@ -157,7 +157,7 @@ export default function FinancialHealthView({ userProfile }) {
                 {breakdown.spendingControl}/100
               </span>
             </div>
-            <p style={{ fontSize: '12px', color: '#64748b', marginTop: '4px', fontFamily: 'var(--font-sans)' }}>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px', fontFamily: 'var(--font-sans)' }}>
               Iris isolated ₹3,800/mo potential savings in food ordering. Trimming will boost score to 90+.
             </p>
             <div className="progress-track" style={{ height: '8px', marginTop: '10px' }}>
@@ -172,7 +172,7 @@ export default function FinancialHealthView({ userProfile }) {
                 {breakdown.futurePlanning}/100
               </span>
             </div>
-            <p style={{ fontSize: '12px', color: '#64748b', marginTop: '4px', fontFamily: 'var(--font-sans)' }}>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px', fontFamily: 'var(--font-sans)' }}>
               Sentinel time-series forecasting active. Upcoming September insurance risk flagged in advance.
             </p>
             <div className="progress-track" style={{ height: '8px', marginTop: '10px' }}>
@@ -209,14 +209,14 @@ export default function FinancialHealthView({ userProfile }) {
 
                 <div style={{ flex: 1, paddingBottom: idx === timelineSteps.length - 1 ? 0 : '16px', borderBottom: idx === timelineSteps.length - 1 ? 'none' : '1px solid #e2e8f0' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '14px', fontWeight: '700', color: '#0f172a', fontFamily: 'var(--font-serif)' }}>
+                    <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-primary)', fontFamily: 'var(--font-serif)' }}>
                       {step.title}
                     </span>
-                    <span className="mono" style={{ fontSize: '11px', color: '#64748b', fontFamily: 'var(--font-sans)' }}>
+                    <span className="mono" style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>
                       {step.date}
                     </span>
                   </div>
-                  <p style={{ fontSize: '12px', color: '#475569', marginTop: '4px', fontFamily: 'var(--font-sans)' }}>
+                  <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px', fontFamily: 'var(--font-sans)' }}>
                     {step.detail}
                   </p>
                 </div>

@@ -109,10 +109,10 @@ export default function SubscriptionsView({ userProfile }) {
       {/* Title & Actions */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
         <div>
-          <h1 style={{ fontSize: '32px', fontWeight: '800', color: '#0f172a', letterSpacing: '-0.02em', fontFamily: 'var(--font-serif)' }}>
+          <h1 style={{ fontSize: '32px', fontWeight: '800', color: 'var(--text-primary)', letterSpacing: '-0.02em', fontFamily: 'var(--font-serif)' }}>
             Subscriptions
           </h1>
-          <p style={{ fontSize: '14px', color: '#64748b', marginTop: '4px', fontFamily: 'var(--font-sans)' }}>
+          <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '4px', fontFamily: 'var(--font-sans)' }}>
             Manage recurring memberships, SaaS tools, and media streaming services entered by you.
           </p>
         </div>
@@ -130,37 +130,37 @@ export default function SubscriptionsView({ userProfile }) {
       {/* KPI Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
         <div className="card" style={{ padding: '20px' }}>
-          <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Active Services
           </div>
-          <div className="mono" style={{ fontSize: '28px', fontWeight: '800', color: '#0f172a', marginTop: '6px' }}>
+          <div className="mono" style={{ fontSize: '28px', fontWeight: '800', color: 'var(--text-primary)', marginTop: '6px' }}>
             {subscriptions.length}
           </div>
-          <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
+          <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
             User-configured subscriptions
           </div>
         </div>
 
         <div className="card" style={{ padding: '20px' }}>
-          <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Monthly Outlay
           </div>
           <div className="mono" style={{ fontSize: '28px', fontWeight: '800', color: '#dc2626', marginTop: '6px' }}>
             {currency}{Math.round(monthlyTotal).toLocaleString()}
           </div>
-          <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
+          <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
             Estimated per month
           </div>
         </div>
 
         <div className="card" style={{ padding: '20px' }}>
-          <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Annual Run Rate
           </div>
           <div className="mono" style={{ fontSize: '28px', fontWeight: '800', color: '#005f41', marginTop: '6px' }}>
             {currency}{Math.round(yearlyTotal).toLocaleString()}
           </div>
-          <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
+          <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
             Total 12-month recurring load
           </div>
         </div>
@@ -176,14 +176,14 @@ export default function SubscriptionsView({ userProfile }) {
           <button 
             onClick={fetchSubscriptions} 
             title="Refresh"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
           >
             <RefreshCw size={15} />
           </button>
         </div>
 
         {isLoading ? (
-          <div style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>
+          <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
             <Loader2 size={24} className="animate-spin" style={{ margin: '0 auto 10px auto' }} />
             <span>Loading subscriptions...</span>
           </div>
@@ -191,15 +191,15 @@ export default function SubscriptionsView({ userProfile }) {
           <div style={{
             padding: '48px 24px',
             textAlign: 'center',
-            backgroundColor: '#f8fafc',
+            backgroundColor: 'var(--bg-card-subtle)',
             borderRadius: '12px',
-            border: '1px dashed #cbd5e1'
+            border: '1px dashed var(--border-color)'
           }}>
             <CreditCard size={36} color="#94a3b8" style={{ margin: '0 auto 12px auto' }} />
-            <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#1e293b' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)' }}>
               No subscriptions added yet
             </h3>
-            <p style={{ fontSize: '13px', color: '#64748b', maxWidth: '420px', margin: '6px auto 16px auto', lineHeight: '1.5' }}>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', maxWidth: '420px', margin: '6px auto 16px auto', lineHeight: '1.5' }}>
               You haven't listed any subscriptions. Add streaming services, utilities, or SaaS software you pay for to monitor your monthly commitments.
             </p>
             <button
@@ -220,8 +220,8 @@ export default function SubscriptionsView({ userProfile }) {
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   padding: '14px 18px',
-                  backgroundColor: '#ffffff',
-                  border: '1px solid #e2e8f0',
+                  backgroundColor: 'var(--bg-card)',
+                  border: '1px solid var(--border-color)',
                   borderRadius: '10px',
                   transition: 'border-color 0.15s ease'
                 }}
@@ -231,7 +231,7 @@ export default function SubscriptionsView({ userProfile }) {
                     width: '38px',
                     height: '38px',
                     borderRadius: '8px',
-                    backgroundColor: '#f1f5f9',
+                    backgroundColor: 'var(--bg-surface-hover)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -240,10 +240,10 @@ export default function SubscriptionsView({ userProfile }) {
                     <CreditCard size={18} />
                   </div>
                   <div>
-                    <div style={{ fontSize: '14px', fontWeight: '700', color: '#0f172a' }}>
+                    <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-primary)' }}>
                       {sub.name}
                     </div>
-                    <div style={{ fontSize: '12px', color: '#64748b', display: 'flex', gap: '8px', marginTop: '2px' }}>
+                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'flex', gap: '8px', marginTop: '2px' }}>
                       <span>{sub.category || 'General'}</span>
                       <span>•</span>
                       <span style={{ textTransform: 'capitalize' }}>{sub.billing_cycle || 'monthly'}</span>
@@ -258,9 +258,9 @@ export default function SubscriptionsView({ userProfile }) {
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                  <div className="mono" style={{ fontSize: '15px', fontWeight: '800', color: '#0f172a' }}>
+                  <div className="mono" style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-primary)' }}>
                     {currency}{Number(sub.amount).toLocaleString()}
-                    <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '500' }}>/{sub.billing_cycle === 'yearly' ? 'yr' : 'mo'}</span>
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '500' }}>/{sub.billing_cycle === 'yearly' ? 'yr' : 'mo'}</span>
                   </div>
 
                   <button
@@ -268,7 +268,7 @@ export default function SubscriptionsView({ userProfile }) {
                     style={{
                       background: 'none',
                       border: 'none',
-                      color: '#94a3b8',
+                      color: 'var(--text-muted)',
                       cursor: 'pointer',
                       padding: '6px',
                       borderRadius: '6px',
@@ -304,17 +304,17 @@ export default function SubscriptionsView({ userProfile }) {
           backdropFilter: 'blur(3px)'
         }}>
           <div style={{
-            backgroundColor: '#ffffff',
+            backgroundColor: 'var(--bg-card)',
             borderRadius: '16px',
             width: '100%',
             maxWidth: '480px',
             padding: '28px',
             boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
           }}>
-            <h2 style={{ fontSize: '18px', fontWeight: '700', color: '#0f172a', marginBottom: '4px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '4px' }}>
               Add a Subscription
             </h2>
-            <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '20px' }}>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '20px' }}>
               Enter recurring service details so John and Nova can monitor commitments.
             </p>
 
@@ -376,7 +376,7 @@ export default function SubscriptionsView({ userProfile }) {
                       borderRadius: '8px',
                       border: '1px solid #cbd5e1',
                       fontSize: '14px',
-                      backgroundColor: '#ffffff',
+                      backgroundColor: 'var(--bg-card)',
                       boxSizing: 'border-box'
                     }}
                   >
@@ -401,7 +401,7 @@ export default function SubscriptionsView({ userProfile }) {
                       borderRadius: '8px',
                       border: '1px solid #cbd5e1',
                       fontSize: '14px',
-                      backgroundColor: '#ffffff',
+                      backgroundColor: 'var(--bg-card)',
                       boxSizing: 'border-box'
                     }}
                   >

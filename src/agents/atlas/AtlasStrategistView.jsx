@@ -143,10 +143,10 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
       {/* Title Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
-          <h1 style={{ fontSize: '32px', fontWeight: '800', color: '#0f172a', letterSpacing: '-0.02em', fontFamily: 'var(--font-serif)' }}>
+          <h1 style={{ fontSize: '32px', fontWeight: '800', color: 'var(--text-primary)', letterSpacing: '-0.02em', fontFamily: 'var(--font-serif)' }}>
             Goal Planning
           </h1>
-          <p style={{ fontSize: '14px', color: '#64748b', marginTop: '4px', fontFamily: 'var(--font-sans)' }}>
+          <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '4px', fontFamily: 'var(--font-sans)' }}>
             Your AI mentor has structured a plan to achieve your financial objectives efficiently. Add money or edit goals anytime.
           </p>
         </div>
@@ -170,8 +170,8 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
             {goals.length === 0 && (
               <div className="card" style={{ padding: '36px', textAlign: 'center', gridColumn: '1 / -1' }}>
                 <Target size={36} color="#059669" style={{ margin: '0 auto 12px auto' }} />
-                <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#0f172a' }}>No Goals Created Yet</h3>
-                <p style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>Click "+ New Goal" above to create your first savings goal or ask John AI Coach to propose one.</p>
+                <h3 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)' }}>No Goals Created Yet</h3>
+                <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>Click "+ New Goal" above to create your first savings goal or ask John AI Coach to propose one.</p>
               </div>
             )}
             {goals.map((g) => {
@@ -181,7 +181,7 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
                 <div key={g.id} className="card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '10px', fontWeight: '700', color: '#64748b', fontFamily: 'var(--font-sans)', letterSpacing: '0.05em' }}>
+                      <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)', letterSpacing: '0.05em' }}>
                         {g.priority || 'SAVINGS GOAL'}
                       </span>
                       <div style={{
@@ -198,15 +198,15 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
                       </div>
                     </div>
 
-                    <div style={{ fontSize: '20px', fontWeight: '700', color: '#0f172a', marginTop: '10px', fontFamily: 'var(--font-serif)' }}>
+                    <div style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text-primary)', marginTop: '10px', fontFamily: 'var(--font-serif)' }}>
                       {g.name}
                     </div>
 
                     <div style={{ marginTop: '14px', display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                      <span className="mono" style={{ fontSize: '24px', fontWeight: '700', color: '#0f172a', fontFamily: 'var(--font-serif)' }}>
+                      <span className="mono" style={{ fontSize: '24px', fontWeight: '700', color: 'var(--text-primary)', fontFamily: 'var(--font-serif)' }}>
                         ₹{(g?.current || 0).toLocaleString()}
                       </span>
-                      <span className="mono" style={{ fontSize: '12px', color: '#64748b', fontFamily: 'var(--font-serif)' }}>
+                      <span className="mono" style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'var(--font-serif)' }}>
                         / ₹{(g?.target || 0).toLocaleString()}
                       </span>
                     </div>
@@ -222,7 +222,7 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '16px', paddingTop: '12px', borderTop: '1px solid #e2e8f0' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '16px', paddingTop: '12px', borderTop: '1px solid var(--border-color)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: isHigh ? '#059669' : '#64748b', fontWeight: '600', fontFamily: 'var(--font-sans)' }}>
                       {isHigh ? <TrendingUp size={14} /> : <Calendar size={14} />}
                       <span>{g.targetDate}</span>
@@ -249,36 +249,36 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Sparkles size={16} color="#059669" />
-            <span style={{ fontSize: '12px', fontWeight: '700', color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: 'var(--font-sans)' }}>
+            <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: 'var(--font-sans)' }}>
               AI GENERATED PLAN
             </span>
           </div>
 
           <div>
-            <div style={{ fontSize: '13px', color: '#64748b', fontFamily: 'var(--font-sans)' }}>Monthly Recommendation</div>
+            <div style={{ fontSize: '13px', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>Monthly Recommendation</div>
             <div style={{
               marginTop: '10px',
               padding: '16px',
-              backgroundColor: '#f8fafc',
+              backgroundColor: 'var(--bg-card-subtle)',
               borderRadius: '8px',
-              border: '1px solid #e2e8f0',
+              border: '1px solid var(--border-color)',
               display: 'flex',
               flexDirection: 'column',
               gap: '12px'
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '13px', color: '#475569' }}>Save</span>
+                <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Save</span>
                 <span className="mono" style={{ fontSize: '18px', fontWeight: '700', color: '#059669', fontFamily: 'var(--font-serif)' }}>₹15,000</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #e2e8f0', paddingTop: '10px' }}>
-                <span style={{ fontSize: '13px', color: '#475569' }}>Invest</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-color)', paddingTop: '10px' }}>
+                <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Invest</span>
                 <span className="mono" style={{ fontSize: '18px', fontWeight: '700', color: '#059669', fontFamily: 'var(--font-serif)' }}>₹5,000</span>
               </div>
             </div>
           </div>
 
           <div>
-            <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '8px', fontFamily: 'var(--font-sans)' }}>Goal Completion Forecast</div>
+            <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px', fontFamily: 'var(--font-sans)' }}>Goal Completion Forecast</div>
             
             <div style={{
               padding: '16px',
@@ -286,11 +286,11 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
               borderRadius: '12px',
               border: '1px solid #a7f3d0'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#065f46', fontWeight: '700', fontSize: '14px', fontFamily: 'var(--font-serif)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-emerald)', fontWeight: '700', fontSize: '14px', fontFamily: 'var(--font-serif)' }}>
                 <Sparkles size={16} />
                 <span>8 months earlier</span>
               </div>
-              <p style={{ fontSize: '12px', color: '#047857', marginTop: '6px', lineHeight: '1.5', fontFamily: 'var(--font-sans)' }}>
+              <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '6px', lineHeight: '1.5', fontFamily: 'var(--font-sans)' }}>
                 By following this plan, you will reach your Emergency Fund goal ahead of schedule.
               </p>
             </div>
@@ -319,7 +319,7 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
           justifyContent: 'center',
           zIndex: 100
         }}>
-          <div className="card" style={{ width: '440px', backgroundColor: '#ffffff' }}>
+          <div className="card" style={{ width: '440px', backgroundColor: 'var(--bg-card)' }}>
             {errorMsg && (
               <div style={{ padding: '10px 12px', backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '6px', color: '#dc2626', fontSize: '12px' }}>
                 {errorMsg}
@@ -329,7 +329,7 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
             <form onSubmit={handleSaveEdit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               
               <div>
-                <label style={{ fontSize: '12px', color: '#64748b', fontWeight: '600', marginBottom: '4px', display: 'block' }}>
+                <label style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600', marginBottom: '4px', display: 'block' }}>
                   Goal Name
                 </label>
                 <input
@@ -348,7 +348,7 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
                 borderRadius: '8px',
                 border: '1px solid #a7f3d0'
               }}>
-                <label style={{ fontSize: '12px', color: '#065f46', fontWeight: '700', marginBottom: '4px', display: 'block' }}>
+                <label style={{ fontSize: '12px', color: 'var(--accent-emerald)', fontWeight: '700', marginBottom: '4px', display: 'block' }}>
                   + Add Extra Money to Goal (₹)
                 </label>
                 <input
@@ -358,14 +358,14 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
                   value={addFundsAmount}
                   onChange={(e) => setAddFundsAmount(e.target.value)}
                 />
-                <div style={{ fontSize: '11px', color: '#047857', marginTop: '4px' }}>
+                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>
                   Current Saved: <strong>₹{Number(editCurrent).toLocaleString()}</strong> → New Total: <strong>₹{(Number(editCurrent) + (Number(addFundsAmount) || 0)).toLocaleString()}</strong>
                 </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div>
-                  <label style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px', display: 'block' }}>
+                  <label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>
                     Direct Saved Base (₹)
                   </label>
                   <input
@@ -378,7 +378,7 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
                 </div>
 
                 <div>
-                  <label style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px', display: 'block' }}>
+                  <label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>
                     Target Amount (₹)
                   </label>
                   <input
@@ -392,7 +392,7 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
               </div>
 
               <div>
-                <label style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px', display: 'block' }}>
+                <label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>
                   Priority Level
                 </label>
                 <select
@@ -444,7 +444,7 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
           justifyContent: 'center',
           zIndex: 100
         }}>
-          <div className="card" style={{ width: '420px', backgroundColor: '#ffffff' }}>
+          <div className="card" style={{ width: '420px', backgroundColor: 'var(--bg-card)' }}>
             <div className="card-title" style={{ justifyContent: 'space-between', marginBottom: '16px' }}>
               <span>Create New Saving Objective</span>
               <button onClick={() => { setShowAddModal(false); setErrorMsg(''); }} className="btn btn-ghost btn-sm">✕</button>
@@ -458,7 +458,7 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
 
             <form onSubmit={handleAddGoal} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div>
-                <label style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px', display: 'block' }}>
+                <label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>
                   Goal Name
                 </label>
                 <input
@@ -472,7 +472,7 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
               </div>
 
               <div>
-                <label style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px', display: 'block' }}>
+                <label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>
                   Target Amount (₹)
                 </label>
                 <input
@@ -486,7 +486,7 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
               </div>
 
               <div>
-                <label style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px', display: 'block' }}>
+                <label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>
                   Monthly Contribution (₹)
                 </label>
                 <input

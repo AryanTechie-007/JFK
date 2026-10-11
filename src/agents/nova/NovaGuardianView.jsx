@@ -185,7 +185,7 @@ export default function NovaGuardianView({
           <div style={{ fontSize: '15px', fontWeight: '700', color: '#f8fafc', marginBottom: '6px' }}>
             {cognitiveSynthesis?.executive_summary || "Nova monitors Sentinel category utilization and velocity thresholds in real time."}
           </div>
-          <div style={{ fontSize: '13px', color: '#94a3b8', lineHeight: '1.5' }}>
+          <div style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: '1.5' }}>
             <strong>Grounded Findings: </strong>
             {specialistResp?.findings?.map(f => f.rendered_statement).join(' ') || cognitiveSynthesis?.root_cause_analysis}
           </div>
@@ -226,7 +226,7 @@ export default function NovaGuardianView({
             </span>
             <button
               onClick={() => setShowAgentDialogue(false)}
-              style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '12px' }}
+              style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '12px' }}
             >
               Close
             </button>
@@ -282,7 +282,7 @@ export default function NovaGuardianView({
                 <div key={idx} className={`nova-category-row ${statusClass}`}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: '14px', fontWeight: '700', color: '#0f172a' }}>
+                      <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-primary)' }}>
                         {b.category}
                       </span>
                       {isExceeded && <span className="nova-badge nova-badge-danger">EXCEEDED (&gt;100%)</span>}
@@ -318,16 +318,16 @@ export default function NovaGuardianView({
                   </div>
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginTop: '8px' }}>
-                    <span style={{ color: '#64748b' }}>
-                      Settled: <strong className="mono" style={{ color: '#0f172a' }}>{currency}{(b?.spent_settled ?? spentTotal).toLocaleString()}</strong>
+                    <span style={{ color: 'var(--text-muted)' }}>
+                      Settled: <strong className="mono" style={{ color: 'var(--text-primary)' }}>{currency}{(b?.spent_settled ?? spentTotal).toLocaleString()}</strong>
                       {(b?.spent_provisional || 0) > 0 && (
                         <span style={{ color: '#d97706', marginLeft: '6px' }}>
                           (+{currency}{b.spent_provisional.toLocaleString()} provisional)
                         </span>
                       )}
                     </span>
-                    <span style={{ color: '#64748b' }}>
-                      Cap: <strong className="mono" style={{ color: '#0f172a' }}>{currency}{limit.toLocaleString()}</strong>
+                    <span style={{ color: 'var(--text-muted)' }}>
+                      Cap: <strong className="mono" style={{ color: 'var(--text-primary)' }}>{currency}{limit.toLocaleString()}</strong>
                     </span>
                   </div>
                 </div>
@@ -395,7 +395,7 @@ export default function NovaGuardianView({
                 <Clock size={16} color="#64748b" />
                 <span>Categorized Transactions (Tally Snapshot)</span>
               </div>
-              <span className="mono" style={{ fontSize: '11px', color: '#64748b' }}>
+              <span className="mono" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
                 {recentTxs.length} Logged
               </span>
             </div>
@@ -405,8 +405,8 @@ export default function NovaGuardianView({
                 recentTxs.slice(0, 6).map((tx, idx) => (
                   <div key={tx.id || idx} className="nova-tx-item">
                     <div>
-                      <div style={{ fontWeight: '600', color: '#0f172a' }}>{tx.merchant || tx.raw_description || tx.rawDescription || tx.description}</div>
-                      <div style={{ fontSize: '10px', color: '#64748b' }}>{tx.category} • {tx.date || tx.txn_date?.slice(0, 10) || 'Recent'}</div>
+                      <div style={{ fontWeight: '600', color: 'var(--text-primary)' }}>{tx.merchant || tx.raw_description || tx.rawDescription || tx.description}</div>
+                      <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{tx.category} • {tx.date || tx.txn_date?.slice(0, 10) || 'Recent'}</div>
                     </div>
                     <span className="mono" style={{
                       fontWeight: '700',
@@ -417,7 +417,7 @@ export default function NovaGuardianView({
                   </div>
                 ))
               ) : (
-                <div style={{ padding: '24px', textAlign: 'center', color: '#64748b', fontSize: '12px' }}>
+                <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '12px' }}>
                   No transactions recorded yet. Use the form above to log an expense.
                 </div>
               )}
