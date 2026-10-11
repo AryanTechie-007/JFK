@@ -9,7 +9,8 @@ import {
   Activity, 
   Settings, 
   LogOut,
-  ChevronRight
+  ChevronRight,
+  CreditCard
 } from 'lucide-react';
 import { AGENTS } from '../data/mockFinancialData';
 
