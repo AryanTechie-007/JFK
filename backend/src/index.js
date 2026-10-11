@@ -43,6 +43,7 @@ app.use('/api/insights', require('./routes/insights'));
 app.use('/api/coach', require('./routes/coach'));
 app.use('/api/ai', require('./routes/coach'));
 app.use('/api/subscriptions', require('./routes/subscriptions'));
+app.use('/api/v1', require('./routes/v1'));
 
 app.use((_req, res) => res.status(404).json({ error: 'Not found' }));
 

@@ -1,353 +1,526 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   ShieldCheck,
   AlertOctagon,
   Plus,
   Zap,
   Clock,
-  Sparkles,
-  Bot,
-  Flame
+  Sliders,
+  RefreshCw,
+  ArrowRightLeft,
+  CheckCircle2,
+  XCircle,
+  Eye
 } from 'lucide-react';
-import { novaService } from './novaService';
-import { transactionService } from '../../services/transactionService';
+import { workspaceService, formatMinorInr } from '../../services/workspaceService';
+import WorkspaceChatPanel from '../../components/WorkspaceChatPanel';
 import './NovaGuardianView.css';
 
-export default function NovaGuardianView({
-  budgets = [],
-  userProfile
-}) {
-  const currency = userProfile?.currency || '₹';
-  const [localBudgets, setLocalBudgets] = useState(budgets || []);
-  const [recentTxs, setRecentTxs] = useState([]);
-  const [cognitiveData, setCognitiveData] = useState(null);
-  const [negotiationData, setNegotiationData] = useState(null);
-  const [showAgentDialogue, setShowAgentDialogue] = useState(false);
+const TAXONOMY_CAP_CATEGORIES = [
+  { id: 'FOOD', label: 'Food & Dining (All)' },
+  { id: 'FOOD.DELIVERY', label: 'Food Delivery (Swiggy / Zomato)' },
+  { id: 'FOOD.GROCERIES', label: 'Groceries & Supermarkets' },
+  { id: 'SHOPPING', label: 'Shopping & E-Commerce' },
+  { id: 'TRANSPORT', label: 'Transport, Fuel & Cabs' },
+  { id: 'ENTERTAINMENT', label: 'Entertainment & OTT' },
+  { id: 'ENTERTAINMENT.SUBSCRIPTIONS', label: 'Subscriptions' },
+  { id: 'UTILITIES', label: 'Bills & Utilities' },
+  { id: 'HEALTH', label: 'Healthcare & Pharmacy' }
+];
 
-  const [newDesc, setNewDesc] = useState('');
-  const [newAmount, setNewAmount] = useState('');
-  const [newCat, setNewCat] = useState('Food & Dining');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+export default function NovaGuardianView({ budgets = [], userProfile }) {
+  const currency = userProfile?.currency || '₹';
+  const [workspace, setWorkspace] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [liveBanner, setLiveBanner] = useState(null);
 
-  useEffect(() => {
-    if (budgets && budgets.length > 0) {
-      setLocalBudgets(budgets);
-    }
-  }, [budgets]);
+  // Manual expense form
+  const [newDesc, setNewDesc] = useState('');
+  const [newAmount, setNewAmount] = useState('');
+  const [newCat, setNewCat] = useState('FOOD');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    fetchAgentCognition();
-    async function loadTransactions() {
-      try {
-        const res = await transactionService.getTransactions();
-        if (res.success && Array.isArray(res.transactions)) {
-          setRecentTxs(res.transactions);
-        }
-      } catch (_) {}
+  // Cap Editor form
+  const [capCategory, setCapCategory] = useState('FOOD');
+  const [capAmountInr, setCapAmountInr] = useState('');
+  const [capScope, setCapScope] = useState('STANDING');
+  const [capValidationMsg, setCapValidationMsg] = useState(null);
+
+  const loadNovaWorkspace = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await workspaceService.getNovaWorkspace();
+      if (res && res.success) {
+        setWorkspace(res);
+      }
+    } catch (err) {
+      console.error('Failed to load Nova workspace:', err);
+    } finally {
+      setLoading(false);
     }
-    loadTransactions();
   }, []);
 
-  const fetchAgentCognition = async () => {
-    try {
-      const cycle = await novaService.getCognitiveCycle();
-      if (cycle) {
-        setCognitiveData(cycle);
-        if (cycle.specialist_response?.category_status_summary?.length > 0) {
-          setLocalBudgets(cycle.specialist_response.category_status_summary);
-        }
-      }
-    } catch (e) {
-      // Cognition offline
-    }
-  };
-
-  const handleApplyRebalance = async (move) => {
-    try {
-      const res = await novaService.applyRebalance(move);
-      setLiveBanner(res.message);
-      setTimeout(() => setLiveBanner(null), 6000);
-      fetchAgentCognition();
-    } catch (e) {
-      setLiveBanner(`Confirmed rebalance for ₹${move.amount}`);
-      setTimeout(() => setLiveBanner(null), 4000);
-    }
-  };
-
-  const handleTriggerAtlasNegotiation = async () => {
-    try {
-      const res = await novaService.negotiateWithAtlas();
-      setNegotiationData(res);
-      setShowAgentDialogue(true);
-    } catch (e) {
-      console.error(e);
-    }
-  };
+  useEffect(() => {
+    loadNovaWorkspace();
+  }, [loadNovaWorkspace]);
 
   const handleAddTransaction = async (e) => {
     e.preventDefault();
-    if (!newDesc || !newAmount) return;
-
+    if (!newDesc.trim() || !newAmount) return;
     const amt = Number(newAmount);
-    if (isNaN(amt) || amt <= 0) return;
+    if (!Number.isFinite(amt) || amt <= 0) return;
 
     setIsSubmitting(true);
-    const newTx = {
-      id: `tx-${Date.now()}`,
-      date: new Date().toISOString().split('T')[0],
-      rawDescription: newDesc,
-      amount: amt,
-      category: newCat,
-      merchant: newDesc.split(' ')[0],
-      type: 'debit'
-    };
-
-    setRecentTxs(prev => [newTx, ...prev]);
-
     try {
-      const response = await novaService.logExpense({
-        rawDescription: newDesc,
+      const res = await workspaceService.ingestManualTransaction({
+        rawDescription: newDesc.trim(),
         amount: amt,
-        category: newCat
+        category: newCat,
+        direction: 'DEBIT'
       });
-
-      if (response?.thresholdAlert?.triggered) {
-        setLiveBanner(response.thresholdAlert.message);
-        setTimeout(() => setLiveBanner(null), 6000);
+      if (res?.alerts && res.alerts.length > 0) {
+        setLiveBanner({
+          type: 'warning',
+          text: `Logged ₹${amt.toLocaleString('en-IN')} (${newDesc.trim()}). ${res.alerts.length} budget alert(s) active.`
+        });
+      } else {
+        setLiveBanner({
+          type: 'success',
+          text: `Logged ₹${amt.toLocaleString('en-IN')} (${newDesc.trim()}) via Item Categorizer v3.0.`
+        });
       }
+      setNewDesc('');
+      setNewAmount('');
+      await loadNovaWorkspace();
     } catch (err) {
-      console.log('Logging locally:', err.message);
+      setLiveBanner({ type: 'error', text: err.message });
+    } finally {
+      setIsSubmitting(false);
     }
-
-    fetchAgentCognition();
-    setNewDesc('');
-    setNewAmount('');
-    setIsSubmitting(false);
   };
 
-  const cognitiveSynthesis = cognitiveData?.cognitive_synthesis;
-  const specialistResp = cognitiveData?.specialist_response;
-  const temporal = cognitiveData?.temporal_context || { current_day: 14, days_remaining: 17 };
-  const envelopeInfo = specialistResp?.daily_spending_envelope;
-  const dailyEnvelope = envelopeInfo?.headline_amount ?? cognitiveData?.velocity?.overall?.safe_daily_spend_envelope ?? 1197;
-  const envelopeMode = envelopeInfo?.headline_mode || 'safe';
-  const uncategorizedSpent = cognitiveData?.ground_truth_metrics?.uncategorized_spent || 0;
-  const rebalanceProposal = cognitiveData?.rebalance_proposal;
+  const handleSaveCap = async (e) => {
+    e.preventDefault();
+    const amtInr = Number(capAmountInr);
+    if (!Number.isFinite(amtInr) || amtInr <= 0 || !workspace?.snapshot_id) return;
+    const capMinor = Math.round(amtInr * 100);
+
+    try {
+      const valRes = await workspaceService.validateCapChange({
+        category_id: capCategory,
+        proposed_cap_minor: capMinor,
+        scope: capScope
+      });
+      const validation = valRes?.validation?.value;
+      if (validation && validation.allowed === false) {
+        setCapValidationMsg({
+          type: 'error',
+          text: validation.violations?.[0]?.detail || 'Cap change rejected by Sentinel validation.'
+        });
+        return;
+      }
+
+      await workspaceService.executeAction({
+        action_type: 'ADJUST_BUDGET_CAP',
+        snapshot_id: workspace.snapshot_id,
+        params: {
+          category_id: capCategory,
+          cap_minor: capMinor,
+          scope: capScope
+        }
+      });
+
+      setCapValidationMsg({
+        type: 'success',
+        text: `Updated ${capCategory} cap to ${currency}${amtInr.toLocaleString('en-IN')} (${capScope}).`
+      });
+      setCapAmountInr('');
+      await loadNovaWorkspace();
+    } catch (err) {
+      setCapValidationMsg({ type: 'error', text: err.message });
+    }
+  };
+
+  const handleConfirmRebalanceMove = async (move, targetCategoryId) => {
+    if (!workspace?.snapshot_id) return;
+    try {
+      await workspaceService.executeAction({
+        action_type: 'APPLY_REBALANCE',
+        snapshot_id: workspace.snapshot_id,
+        params: {
+          month: workspace.month,
+          moves: [
+            {
+              from_category_id: move.from_category_id,
+              to_category_id: move.to_category_id || targetCategoryId,
+              amount_minor: move.transfer_minor
+            }
+          ]
+        }
+      });
+      setLiveBanner({
+        type: 'success',
+        text: `Applied one-month rebalance: moved ${formatMinorInr(move.transfer_minor, currency)} from ${move.from_category_id} to ${move.to_category_id || targetCategoryId}.`
+      });
+      await loadNovaWorkspace();
+    } catch (err) {
+      setLiveBanner({ type: 'error', text: err.message });
+    }
+  };
+
+  const handleDismissAlert = async (alertId) => {
+    if (!workspace?.snapshot_id) return;
+    try {
+      await workspaceService.executeAction({
+        action_type: 'DISMISS_ALERT',
+        snapshot_id: workspace.snapshot_id,
+        params: { alert_id: alertId, reason: 'USER_DISMISSED' }
+      });
+      await loadNovaWorkspace();
+    } catch (err) {
+      setLiveBanner({ type: 'error', text: err.message });
+    }
+  };
+
+  const utilizationCats = workspace?.utilization?.value?.categories || [];
+  const velocityVal = workspace?.velocity?.value || {};
+  const openAlerts = workspace?.alerts || [];
+  const rebalancePlan = workspace?.rebalance?.value || null;
+  const uncategorizedSpendMinor = workspace?.utilization?.value?.uncategorized_spend_minor || 0;
 
   return (
     <div className="nova-container">
+      {/* Header */}
       <div className="nova-header">
         <div>
-          <h1 className="nova-title">Nova Budget Workspace</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+            <h1 className="nova-title">Nova Budget Guardian</h1>
+            <span className="nova-badge nova-badge-healthy">
+              <ShieldCheck size={14} />
+              Nova v5.0 • Sentinel Connected
+            </span>
+          </div>
           <p className="nova-subtitle">
-            Stateless Real-Time Budget Guardian powered by Sentinel snapshots, Tally categorization events, and John Star-Topology orchestration.
+            Real-time category cap utilization, settled vs. provisional spend tracking, velocity projections, and one-month rebalance plans.
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button
-            onClick={handleTriggerAtlasNegotiation}
-            className="nova-badge"
-            style={{ background: '#f5f3ff', color: '#7c3aed', border: '1px solid #ddd6fe', cursor: 'pointer' }}
-          >
-            <Bot size={14} />
-            John → Atlas Goal Hint
-          </button>
-          <span className="nova-badge nova-badge-healthy">
-            <ShieldCheck size={14} />
-            Sentinel Connected
-          </span>
-        </div>
+
+        <button
+          onClick={loadNovaWorkspace}
+          style={{
+            padding: '8px 14px',
+            borderRadius: '8px',
+            border: '1px solid var(--border-color)',
+            backgroundColor: 'var(--bg-card)',
+            color: 'var(--text-primary)',
+            fontSize: '12px',
+            fontWeight: '600',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}
+        >
+          <RefreshCw size={13} />
+          Refresh Snapshot
+        </button>
       </div>
 
-      <div className="nova-ai-banner">
-        <div className="nova-ai-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span className="nova-ai-tag">
-              <Sparkles size={13} />
-              NOVA SPECIALIST RESPONSE
-            </span>
-            <span style={{ fontSize: '13px', fontWeight: '600', color: '#cbd5e1' }}>
-              Day {temporal.current_day} ({temporal.days_remaining} days left in calendar month)
-            </span>
+      {/* Live Banner */}
+      {liveBanner && (
+        <div style={{
+          padding: '12px 16px',
+          backgroundColor: liveBanner.type === 'error' ? 'rgba(220, 38, 38, 0.1)' : liveBanner.type === 'warning' ? 'rgba(217, 119, 6, 0.1)' : 'rgba(5, 150, 105, 0.1)',
+          border: `1px solid ${liveBanner.type === 'error' ? '#dc2626' : liveBanner.type === 'warning' ? '#d97706' : '#059669'}`,
+          borderRadius: '8px',
+          color: liveBanner.type === 'error' ? '#dc2626' : liveBanner.type === 'warning' ? '#d97706' : '#059669',
+          fontSize: '12px',
+          fontWeight: '600',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <AlertOctagon size={15} />
+            <span>{liveBanner.text}</span>
           </div>
-
-          <div className="nova-ai-envelope-pill">
-            <Flame size={14} />
-            <span>
-              {envelopeMode === 'conservative' ? 'Conservative Envelope' : 'Safe Envelope'}:{' '}
-              <strong className="mono">{currency}{dailyEnvelope}</strong>/day
-            </span>
-          </div>
+          <button onClick={() => setLiveBanner(null)} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', fontWeight: '700' }}>✕</button>
         </div>
+      )}
 
-        <div>
-          <div style={{ fontSize: '15px', fontWeight: '700', color: '#f8fafc', marginBottom: '6px' }}>
-            {cognitiveSynthesis?.executive_summary || "Nova monitors Sentinel category utilization and velocity thresholds in real time."}
+      {/* Top Velocity & Rebalance Summary Card */}
+      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span className="badge badge-nova">MONTH {workspace?.month || 'CURRENT'}</span>
+            <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-secondary)' }}>
+              Day {velocityVal.days_elapsed || 1} ({velocityVal.days_remaining ?? 15} days remaining in month)
+            </span>
           </div>
-          <div style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: '1.5' }}>
-            <strong>Grounded Findings: </strong>
-            {specialistResp?.findings?.map(f => f.rendered_statement).join(' ') || cognitiveSynthesis?.root_cause_analysis}
-          </div>
-          {uncategorizedSpent > 0 && (
-            <div style={{ fontSize: '12px', color: '#fbbf24', marginTop: '6px' }}>
-              Uncategorized spend (excluded from caps): <strong>{currency}{uncategorizedSpent.toLocaleString()}</strong> — review recommended.
-            </div>
+          {uncategorizedSpendMinor > 0 && (
+            <span style={{ fontSize: '12px', color: '#d97706', fontWeight: '600' }}>
+              Uncategorized spend (outside caps): {formatMinorInr(uncategorizedSpendMinor, currency)}
+            </span>
           )}
         </div>
 
-        {rebalanceProposal?.has_proposals && (
-          <div className="nova-intervention-card" style={{ background: '#1e293b', border: '1px solid #334155', color: '#f8fafc' }}>
-            <div>
-              <div style={{ fontSize: '13px', fontWeight: '700', color: '#fca5a5' }}>
-                John Confirmation Card: APPLY_REBALANCE Proposal (Tier T2)
+        {/* Open Alerts Strip */}
+        {openAlerts.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)' }}>
+              Active Budget Alerts ({openAlerts.length})
+            </div>
+            {openAlerts.map((alr) => (
+              <div
+                key={alr.alert_id}
+                style={{
+                  padding: '10px 12px',
+                  borderRadius: '8px',
+                  backgroundColor: 'var(--bg-card-subtle)',
+                  border: '1px solid var(--border-color)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: '10px'
+                }}
+              >
+                <div>
+                  <span style={{
+                    fontSize: '10px',
+                    fontWeight: '700',
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    marginRight: '8px',
+                    backgroundColor: alr.severity === 'CRITICAL' || alr.severity === 'WARN' ? 'rgba(220, 38, 38, 0.12)' : 'rgba(217, 119, 6, 0.12)',
+                    color: alr.severity === 'CRITICAL' || alr.severity === 'WARN' ? '#dc2626' : '#d97706'
+                  }}>
+                    {alr.severity}
+                  </span>
+                  <strong style={{ fontSize: '12px', color: 'var(--text-primary)' }}>{alr.title}</strong>
+                </div>
+                <button
+                  onClick={() => handleDismissAlert(alr.alert_id)}
+                  style={{
+                    padding: '4px 10px',
+                    borderRadius: '6px',
+                    border: '1px solid var(--border-color)',
+                    backgroundColor: 'var(--bg-card)',
+                    color: 'var(--text-muted)',
+                    fontSize: '11px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Dismiss
+                </button>
               </div>
-              <div style={{ fontSize: '12px', color: '#cbd5e1', marginTop: '2px' }}>
-                {rebalanceProposal.moves[0]?.reasoning}
+            ))}
+          </div>
+        )}
+
+        {/* Rebalance Proposal Card (if a category is in BREACH/SEVERE and Sentinel found donor headroom) */}
+        {rebalancePlan?.moves?.length > 0 && (
+          <div style={{
+            padding: '14px',
+            borderRadius: '8px',
+            backgroundColor: 'var(--bg-card-subtle)',
+            border: '1px solid var(--border-focus)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '12px'
+          }}>
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <ArrowRightLeft size={15} color="#d97706" />
+                <span>Sentinel One-Month Rebalance Proposal (Tier T2)</span>
+              </div>
+              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                Shift <strong>{formatMinorInr(rebalancePlan.moves[0].transfer_minor, currency)}</strong> of unused headroom from{' '}
+                <strong>{rebalancePlan.moves[0].from_category_id}</strong> to{' '}
+                <strong>{rebalancePlan.moves[0].to_category_id}</strong> for {workspace?.month} only (standing caps unchanged).
               </div>
             </div>
             <button
-              onClick={() => handleApplyRebalance(rebalanceProposal.moves[0])}
-              className="nova-intervention-btn"
-              style={{ background: '#dc2626', color: '#fff' }}
+              onClick={() => handleConfirmRebalanceMove(rebalancePlan.moves[0])}
+              style={{
+                padding: '8px 14px',
+                borderRadius: '8px',
+                border: 'none',
+                backgroundColor: '#059669',
+                color: '#ffffff',
+                fontSize: '12px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
             >
-              Confirm &amp; Apply Rebalance
+              <CheckCircle2 size={14} />
+              <span>Confirm &amp; Apply Rebalance</span>
             </button>
           </div>
         )}
       </div>
 
-      {showAgentDialogue && (
-        <div className="nova-card" style={{ background: '#090d16', border: '1px solid #1e293b', color: '#f8fafc' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-            <span style={{ fontSize: '13px', fontWeight: '700', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Bot size={16} />
-              Star-Topology Orchestration Trace (Nova → John → Atlas)
-            </span>
-            <button
-              onClick={() => setShowAgentDialogue(false)}
-              style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '12px' }}
-            >
-              Close
-            </button>
-          </div>
-          <div className="nova-agent-dialogue">
-            {negotiationData?.dialogue?.map((msg, idx) => (
-              <div key={idx} className={`nova-agent-msg ${msg.from.includes('Atlas') ? 'atlas' : 'nova'}`}>
-                <div style={{ fontWeight: '700', color: msg.from.includes('Atlas') ? '#c084fc' : '#38bdf8', marginBottom: '4px' }}>
-                  {msg.from} → {msg.to || 'John'}
-                </div>
-                <div>{msg.content || msg.analysis}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {liveBanner && (
-        <div style={{
-          padding: '12px 16px',
-          backgroundColor: '#fef2f2',
-          border: '1px solid #fecaca',
-          borderRadius: '8px',
-          color: '#dc2626',
-          fontSize: '13px',
-          fontWeight: '600',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px'
-        }}>
-          <AlertOctagon size={16} />
-          <span>{liveBanner}</span>
-        </div>
-      )}
-
+      {/* Main Grid */}
       <div className="nova-grid">
+        {/* Left Column: Category Caps & Utilization */}
         <div className="nova-card">
           <div className="nova-card-title">
             <ShieldCheck size={18} color="#dc2626" />
-            <span>Category Caps &amp; Live Status (Healthy &lt;80%, Warning 80%–100%, Exceeded &gt;100%)</span>
+            <span>Category Caps &amp; Live Utilization (NORMAL &lt;80%, WATCH 80–99%, BREACH ≥100%, SEVERE ≥120%)</span>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {localBudgets.map((b, idx) => {
-              const spentTotal = b.spent_total ?? b.spent ?? 0;
-              const limit = b.monthly_cap ?? b.limit ?? 1;
-              const pct = b.utilization_pct ?? b.percent ?? Math.round((spentTotal / limit) * 100);
-              const isExceeded = pct > 100;
-              const isWarning = pct >= 80 && pct <= 100;
-              const statusClass = isExceeded ? 'exceeded' : isWarning ? 'warning' : 'healthy';
+          {utilizationCats.length === 0 ? (
+            <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px', border: '1px dashed var(--border-color)', borderRadius: '8px' }}>
+              No category caps configured yet. Use the Cap Configuration panel on the right to set your first monthly category cap.
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {utilizationCats.map((cat) => {
+                const pct = Math.round((cat.utilization_bp || 0) / 100);
+                const isExceeded = cat.tier === 'BREACH' || cat.tier === 'SEVERE';
+                const isWarning = cat.tier === 'WATCH';
+                const statusClass = isExceeded ? 'exceeded' : isWarning ? 'warning' : 'healthy';
+                const velProj = (velocityVal.projections || []).find((p) => p.category_id === cat.category_id);
 
-              return (
-                <div key={idx} className={`nova-category-row ${statusClass}`}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-primary)' }}>
-                        {b.category}
+                return (
+                  <div key={cat.cap_id || cat.category_id} className={`nova-category-row ${statusClass}`}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-primary)' }}>
+                          {cat.category_id}
+                        </span>
+                        <span className={`nova-badge ${isExceeded ? 'nova-badge-danger' : isWarning ? 'nova-badge-warning' : 'nova-badge-healthy'}`}>
+                          {cat.tier}
+                        </span>
+                        {cat.is_override && (
+                          <span className="nova-badge" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}>
+                            THIS-MONTH OVERRIDE
+                          </span>
+                        )}
+                        {cat.tier_is_provisional && (
+                          <span className="nova-badge" style={{ backgroundColor: 'rgba(217, 119, 6, 0.15)', color: '#d97706' }}>
+                            PROVISIONAL (Review Queue)
+                          </span>
+                        )}
+                      </div>
+
+                      <span className="mono" style={{
+                        fontSize: '13px',
+                        fontWeight: '700',
+                        color: isExceeded ? '#dc2626' : isWarning ? '#d97706' : '#059669'
+                      }}>
+                        {pct}%
                       </span>
-                      {isExceeded && <span className="nova-badge nova-badge-danger">EXCEEDED (&gt;100%)</span>}
-                      {isWarning && <span className="nova-badge nova-badge-warning">WARNING (80%–100%)</span>}
-                      {b.tier_is_provisional && (
-                        <a
-                          href="/api/transactions/review-queue"
-                          className="nova-badge"
-                          style={{ background: '#fef3c7', color: '#92400e', textDecoration: 'none' }}
-                        >
-                          PROVISIONAL (Review List)
-                        </a>
-                      )}
                     </div>
 
-                    <span className="mono" style={{
-                      fontSize: '13px',
-                      fontWeight: '700',
-                      color: isExceeded ? '#dc2626' : isWarning ? '#d97706' : '#059669'
-                    }}>
-                      {pct}%
-                    </span>
-                  </div>
+                    <div className="nova-progress-track">
+                      <div
+                        className="nova-progress-fill"
+                        style={{
+                          width: `${Math.min(100, pct)}%`,
+                          backgroundColor: isExceeded ? '#dc2626' : isWarning ? '#d97706' : '#059669'
+                        }}
+                      />
+                    </div>
 
-                  <div className="nova-progress-track">
-                    <div
-                      className="nova-progress-fill"
-                      style={{
-                        width: `${Math.min(100, pct)}%`,
-                        backgroundColor: isExceeded ? '#dc2626' : isWarning ? '#d97706' : '#059669'
-                      }}
-                    />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginTop: '8px', flexWrap: 'wrap', gap: '6px' }}>
+                      <span style={{ color: 'var(--text-muted)' }}>
+                        Settled: <strong className="mono" style={{ color: 'var(--text-primary)' }}>{formatMinorInr(cat.settled_spend_minor, currency)}</strong>
+                        {cat.provisional_spend_minor > 0 && (
+                          <span style={{ color: '#d97706', marginLeft: '6px' }}>
+                            (+{formatMinorInr(cat.provisional_spend_minor, currency)} provisional)
+                          </span>
+                        )}
+                      </span>
+                      <span style={{ color: 'var(--text-muted)' }}>
+                        Safe Daily: <strong className="mono" style={{ color: 'var(--text-primary)' }}>{formatMinorInr(velProj?.safe_daily_minor || 0, currency)}/day</strong>
+                        {' • '}
+                        Cap: <strong className="mono" style={{ color: 'var(--text-primary)' }}>{formatMinorInr(cat.effective_cap_minor, currency)}</strong>
+                      </span>
+                    </div>
                   </div>
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginTop: '8px' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>
-                      Settled: <strong className="mono" style={{ color: 'var(--text-primary)' }}>{currency}{(b?.spent_settled ?? spentTotal).toLocaleString()}</strong>
-                      {(b?.spent_provisional || 0) > 0 && (
-                        <span style={{ color: '#d97706', marginLeft: '6px' }}>
-                          (+{currency}{b.spent_provisional.toLocaleString()} provisional)
-                        </span>
-                      )}
-                    </span>
-                    <span style={{ color: 'var(--text-muted)' }}>
-                      Cap: <strong className="mono" style={{ color: 'var(--text-primary)' }}>{currency}{limit.toLocaleString()}</strong>
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
+        {/* Right Column: Cap Editor + Manual Expense Logger */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* Set / Adjust Cap Form */}
+          <div className="nova-card">
+            <div className="nova-card-title">
+              <Sliders size={16} color="#dc2626" />
+              <span>Set or Adjust Category Cap</span>
+            </div>
+
+            <form onSubmit={handleSaveCap} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <select
+                className="nova-input-field"
+                value={capCategory}
+                onChange={(e) => setCapCategory(e.target.value)}
+              >
+                {TAXONOMY_CAP_CATEGORIES.map((c) => (
+                  <option key={c.id} value={c.id}>{c.label} ({c.id})</option>
+                ))}
+              </select>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <input
+                  type="number"
+                  className="nova-input-field"
+                  placeholder="Monthly Cap (₹)"
+                  value={capAmountInr}
+                  onChange={(e) => setCapAmountInr(e.target.value)}
+                  required
+                />
+                <select
+                  className="nova-input-field"
+                  value={capScope}
+                  onChange={(e) => setCapScope(e.target.value)}
+                >
+                  <option value="STANDING">Standing Cap (Every Month)</option>
+                  <option value="MONTH">This Month Only ({workspace?.month || 'Override'})</option>
+                </select>
+              </div>
+
+              <button type="submit" className="nova-button-primary">
+                <ShieldCheck size={14} />
+                <span>Validate with Sentinel &amp; Save Cap</span>
+              </button>
+            </form>
+
+            {capValidationMsg && (
+              <div style={{
+                marginTop: '10px',
+                padding: '8px 10px',
+                borderRadius: '6px',
+                fontSize: '11px',
+                fontWeight: '600',
+                backgroundColor: capValidationMsg.type === 'error' ? 'rgba(220, 38, 38, 0.1)' : 'rgba(5, 150, 105, 0.1)',
+                color: capValidationMsg.type === 'error' ? '#dc2626' : '#059669'
+              }}>
+                {capValidationMsg.text}
+              </div>
+            )}
+          </div>
+
+          {/* Manual Expense Ingestion */}
           <div className="nova-card">
             <div className="nova-card-title">
               <Plus size={16} color="#dc2626" />
-              <span>Tally Transaction Ingestion Trigger</span>
+              <span>Log Expense (Item Categorizer v3.0)</span>
             </div>
 
             <form onSubmit={handleAddTransaction} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <input
                 type="text"
                 className="nova-input-field"
-                placeholder="Merchant / Expense Description (e.g. Swiggy Gourmet)"
+                placeholder="Merchant / Description (e.g. Swiggy Order)"
                 value={newDesc}
                 onChange={(e) => setNewDesc(e.target.value)}
                 required
@@ -368,12 +541,9 @@ export default function NovaGuardianView({
                   value={newCat}
                   onChange={(e) => setNewCat(e.target.value)}
                 >
-                  <option value="Food & Dining">Food &amp; Dining</option>
-                  <option value="Shopping & Lifestyle">Shopping &amp; Lifestyle</option>
-                  <option value="Subscriptions">Subscriptions</option>
-                  <option value="Transport">Transport</option>
-                  <option value="Bills & Utilities">Bills &amp; Utilities</option>
-                  <option value="Healthcare">Healthcare</option>
+                  {TAXONOMY_CAP_CATEGORIES.map((c) => (
+                    <option key={c.id} value={c.id}>{c.label}</option>
+                  ))}
                 </select>
               </div>
 
@@ -381,50 +551,22 @@ export default function NovaGuardianView({
                 type="submit"
                 className="nova-button-primary"
                 disabled={isSubmitting}
-                style={{ marginTop: '6px' }}
               >
                 <Zap size={14} />
-                <span>{isSubmitting ? 'Publishing categorization.updated...' : 'Ingest via Tally & Run Threshold Job'}</span>
+                <span>{isSubmitting ? 'Categorizing & Scanning...' : 'Log Expense & Run Budget Scan'}</span>
               </button>
             </form>
           </div>
-
-          <div className="nova-card" style={{ flex: 1 }}>
-            <div className="nova-card-title" style={{ justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Clock size={16} color="#64748b" />
-                <span>Categorized Transactions (Tally Snapshot)</span>
-              </div>
-              <span className="mono" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                {recentTxs.length} Logged
-              </span>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', maxHeight: '280px', overflowY: 'auto' }}>
-              {recentTxs.length > 0 ? (
-                recentTxs.slice(0, 6).map((tx, idx) => (
-                  <div key={tx.id || idx} className="nova-tx-item">
-                    <div>
-                      <div style={{ fontWeight: '600', color: 'var(--text-primary)' }}>{tx.merchant || tx.raw_description || tx.rawDescription || tx.description}</div>
-                      <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{tx.category} • {tx.date || tx.txn_date?.slice(0, 10) || 'Recent'}</div>
-                    </div>
-                    <span className="mono" style={{
-                      fontWeight: '700',
-                      color: tx.type === 'credit' ? '#059669' : '#dc2626'
-                    }}>
-                      {tx.type === 'credit' ? '+' : '-'}₹{(Number(tx.amount) || 0).toLocaleString()}
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '12px' }}>
-                  No transactions recorded yet. Use the form above to log an expense.
-                </div>
-              )}
-            </div>
-          </div>
         </div>
       </div>
+
+      {/* Embedded Nova Workspace Chat */}
+      <WorkspaceChatPanel
+        workspace="NOVA"
+        title="Ask Nova (Budget Caps, Velocity & Rebalancing)"
+        placeholder="Ask Nova e.g. 'How is my budget doing?' or 'Set my FOOD cap to ₹12,000'"
+        onActionExecuted={loadNovaWorkspace}
+      />
     </div>
   );
 }

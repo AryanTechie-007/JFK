@@ -2,12 +2,15 @@ const express = require('express');
 const db = require('../db');
 const { requireAuth } = require('../middleware/auth');
 const { categorizeTransaction } = require('../utils/categorize');
+const { syncLegacyTransactionsForUser, getTransactionsAsOf } = require('../engines/categorizer');
+const { scanUserBudgets } = require('../platform/budget-monitor');
 
 const router = express.Router();
 router.use(requireAuth);
 
 // GET /api/transactions?month=2026-08&category=Food%20Delivery
 router.get('/', (req, res) => {
+  syncLegacyTransactionsForUser(req.userId);
   const { month, category, limit } = req.query;
   const clauses = ['user_id = ?'];
   const params = [req.userId];
@@ -29,7 +32,12 @@ router.get('/', (req, res) => {
     .all(...params, Number(limit) || 200);
 
   const total = rows.reduce((sum, t) => sum + t.amount, 0);
-  res.json({ transactions: rows, count: rows.length, total });
+  res.json({
+    transactions: rows,
+    v1_transactions: getTransactionsAsOf(req.userId, null, { month }).slice(0, Number(limit) || 200),
+    count: rows.length,
+    total,
+  });
 });
 
 // POST /api/transactions — Nova's live expense logger. Category is auto-derived if omitted.
@@ -47,12 +55,14 @@ router.post('/', (req, res) => {
     )
     .run(req.userId, rawDescription, Number(amount), resolvedCategory, txnDate || null);
 
+  syncLegacyTransactionsForUser(req.userId);
+  scanUserBudgets(req.userId);
+
   const txn = db.prepare('SELECT * FROM transactions WHERE id = ?').get(info.lastInsertRowid);
   res.status(201).json({ transaction: txn });
 });
 
 // POST /api/transactions/import — bulk parse of raw bank statement lines
-// Body: { lines: [{ rawDescription, amount, txnDate }] }
 router.post('/import', (req, res) => {
   const lines = (req.body || {}).lines;
   if (!Array.isArray(lines) || lines.length === 0) {
@@ -82,11 +92,15 @@ router.post('/import', (req, res) => {
   });
 
   const imported = importAll(lines);
+  syncLegacyTransactionsForUser(req.userId);
+  scanUserBudgets(req.userId);
+
   res.status(201).json({ imported: imported.length, results: imported });
 });
 
-// GET /api/transactions/distribution?month=2026-08 — TransactionCategorizerView share %
+// GET /api/transactions/distribution?month=2026-08
 router.get('/distribution', (req, res) => {
+  syncLegacyTransactionsForUser(req.userId);
   const month = req.query.month || new Date().toISOString().slice(0, 7);
   const rows = db
     .prepare(
@@ -125,6 +139,7 @@ router.patch('/:id', (req, res) => {
     txn.id
   );
 
+  syncLegacyTransactionsForUser(req.userId);
   res.json({
     transaction: db.prepare('SELECT * FROM transactions WHERE id = ?').get(txn.id),
   });

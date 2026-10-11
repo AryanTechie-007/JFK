@@ -84,10 +84,10 @@ export default function Sidebar({ activeTab, setActiveTab, userProfile, onLogout
                   justifyContent: 'space-between',
                   padding: '10px 14px',
                   borderRadius: 'var(--radius-md)',
-                  backgroundColor: isActive ? '#e2e8f0' : 'transparent',
+                  backgroundColor: isActive ? 'var(--bg-tertiary)' : 'transparent',
                   border: '1px solid',
-                  borderColor: isActive ? '#cbd5e1' : 'transparent',
-                  color: isActive ? '#0f172a' : '#475569',
+                  borderColor: isActive ? 'var(--border-focus)' : 'transparent',
+                  color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
                   fontSize: '13px',
                   fontWeight: isActive ? '600' : '500',
                   cursor: 'pointer',
@@ -96,7 +96,7 @@ export default function Sidebar({ activeTab, setActiveTab, userProfile, onLogout
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <Icon size={18} color={isActive ? '#005f41' : '#64748b'} />
+                  <Icon size={18} color={isActive ? 'var(--accent-emerald)' : 'var(--text-muted)'} />
                   <span>{item.label}</span>
                 </div>
                 {isActive && (
@@ -104,7 +104,7 @@ export default function Sidebar({ activeTab, setActiveTab, userProfile, onLogout
                     width: '3px',
                     height: '16px',
                     borderRadius: '2px',
-                    backgroundColor: '#005f41'
+                    backgroundColor: 'var(--accent-emerald)'
                   }} />
                 )}
               </button>

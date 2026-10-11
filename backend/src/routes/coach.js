@@ -1,11 +1,13 @@
 const express = require('express');
 const db = require('../db');
 const { requireAuth } = require('../middleware/auth');
+const { handleChatRequest } = require('../agents/john');
+const { createSnapshot } = require('../platform/snapshot');
+const { getStatus } = require('../engines/categorizer');
 
 const router = express.Router();
 router.use(requireAuth);
 
-// Builds the comprehensive financial snapshot John and team reason over.
 function buildContext(userId) {
   const month = new Date().toISOString().slice(0, 7);
 
@@ -42,7 +44,19 @@ function buildContext(userId) {
     )
     .all(userId);
 
-  return { month, user, goals, spendByCategory, caps, upcomingBills: bills };
+  const snap = createSnapshot(userId);
+  const dataQuality = getStatus(userId, snap.ledger_version);
+
+  return {
+    month,
+    user,
+    goals,
+    spendByCategory,
+    caps,
+    upcomingBills: bills,
+    snapshot: snap,
+    dataQuality,
+  };
 }
 
 function generateAgentTraces(context) {
@@ -56,202 +70,96 @@ function generateAgentTraces(context) {
   return [
     {
       agent: 'sentinel',
-      role: 'Predictor & Risk Radar',
-      title: 'Sentinel Risk Forecast',
-      thought: billCount > 0 
+      role: 'Financial Observer v5.0',
+      title: 'Sentinel Snapshot & Coverage',
+      thought: billCount > 0
         ? `Sentinel detected ${billCount} upcoming bill(s). Fixed housing expense is ₹${fixed.toLocaleString()}.`
-        : `Sentinel projected monthly cash outflow out of ₹${income.toLocaleString()} income.`
+        : `Sentinel pinned snapshot ${context.snapshot?.snapshot_id || 'live'} over ₹${income.toLocaleString()} monthly income.`,
     },
     {
       agent: 'iris',
-      role: 'Spending Advisor',
-      title: 'Iris Habit Audit',
-      thought: topSpend 
+      role: 'Spending Advisor v5.0',
+      title: 'Iris Simulation & Outlook',
+      thought: topSpend
         ? `Iris isolated top monthly category: ${topSpend.category} (₹${topSpend.spent.toLocaleString()} across ${topSpend.txns} transactions).`
-        : `Iris audited discretionary variable spending streams.`
+        : `Iris evaluated discretionary spending streams.`,
     },
     {
       agent: 'nova',
-      role: 'Budget Guardian',
-      title: 'Nova Threshold Status',
-      thought: context.caps?.length > 0 
+      role: 'Budget Guardian v5.0',
+      title: 'Nova Cap Utilization',
+      thought: context.caps?.length > 0
         ? `Nova is monitoring ${context.caps.length} category caps against monthly limits.`
-        : `Nova verified overall cash flow ceiling.`
+        : `Nova verified overall cash flow ceiling.`,
     },
     {
       agent: 'atlas',
-      role: 'Saving Strategist',
-      title: 'Atlas Wealth Strategy',
+      role: 'Savings Strategist v5.0',
+      title: 'Atlas Goal Feasibility',
       thought: goalCount > 0
         ? `Atlas is tracking ${goalCount} active financial objective(s). Net surplus buffer is ₹${Math.max(0, income - fixed).toLocaleString()}.`
-        : `Atlas calculated optimal goal contribution path.`
-    }
+        : `Atlas calculated optimal goal contribution path.`,
+    },
   ];
 }
 
-const SYSTEM_PROMPT = `You are John, a personal financial coach at FinMate AI. You synthesise findings from four
-specialist agents: Sentinel (forecasting upcoming expenses), Iris (spending habit optimisation),
-Atlas (goal and savings strategy), and Nova (budget cap enforcement).
-
-Rules:
-- Use only the figures in the provided context. Never invent numbers.
-- All amounts are in Indian rupees (INR).
-- Be concrete and specific. Reference actual categories and amounts from the context.
-- Format advice clearly using bold markdown and bullet points.
-- If you want to suggest a savings goal, end your reply with a JSON block on its own line:
-  {"proposal": {"name": "...", "target": 0, "targetAmount": 0, "monthlyAdd": 0, "monthlyAllocation": 0, "priority": "MEDIUM PRIORITY", "category": "Savings"}}
-  Include at most one proposal per reply.`;
-
 async function handleChatExecution(req, res) {
-  const { message, history } = req.body || {};
+  const { message } = req.body || {};
   const queryText = message || req.body?.userQuery;
 
   if (!queryText || typeof queryText !== 'string') {
     return res.status(400).json({ error: 'message is required' });
   }
 
-  const context = buildContext(req.userId);
-  const defaultTraces = generateAgentTraces(context);
-
-  if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY.includes('your_gemini')) {
-    // Return structured default response if Gemini key is omitted
+  try {
+    const johnResponse = await handleChatRequest(req.userId, req.body || {});
+    return res.json(johnResponse);
+  } catch (err) {
+    console.error('John v2.0 chat error:', err);
+    const context = buildContext(req.userId);
+    const defaultTraces = generateAgentTraces(context);
     return res.json({
       success: true,
-      reply: `I have evaluated your financial state alongside **Sentinel**, **Iris**, **Nova**, and **Atlas**:\n\n- **Monthly Net Income**: ₹${(context.user?.monthly_income || 0).toLocaleString()}\n- **Fixed Expenses**: ₹${(context.user?.fixed_housing_expense || 0).toLocaleString()}\n- **Active Goals**: ${context.goals?.length || 0}\n\nHow can our team guide your financial strategy today?`,
-      text: `I have evaluated your financial state alongside **Sentinel**, **Iris**, **Nova**, and **Atlas**:\n\n- **Monthly Net Income**: ₹${(context.user?.monthly_income || 0).toLocaleString()}\n- **Fixed Expenses**: ₹${(context.user?.fixed_housing_expense || 0).toLocaleString()}\n- **Active Goals**: ${context.goals?.length || 0}\n\nHow can our team guide your financial strategy today?`,
+      reply: `I have evaluated your financial state alongside **Sentinel**, **Iris**, **Nova**, and **Atlas**. How can we help optimize your budget today?`,
+      text: `I have evaluated your financial state alongside **Sentinel**, **Iris**, **Nova**, and **Atlas**. How can we help optimize your budget today?`,
       traces: defaultTraces,
+      proposals: [],
       proposal: null,
-      contextUsed: context
-    });
-  }
-
-  const contents = [
-    ...(Array.isArray(history) ? history : [])
-      .slice(-10)
-      .filter((m) => m && (m.text || m.message))
-      .map((m) => ({
-        role: m.role === 'model' ? 'model' : 'user',
-        parts: [{ text: String(m.text || m.message) }],
-      })),
-    {
-      role: 'user',
-      parts: [
-        {
-          text: `Financial context (JSON):\n${JSON.stringify(context, null, 2)}\n\nUser Question: ${queryText}`,
-        },
-      ],
-    },
-  ];
-
-  const model = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`;
-
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents,
-        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-        generationConfig: { temperature: 0.4, maxOutputTokens: 1024 },
-      }),
-    });
-
-    if (!response.ok) {
-      const detail = await response.text();
-      console.error('Gemini API error:', response.status, detail);
-      return res.json({
-        success: true,
-        reply: `I have analyzed your financial details alongside **Sentinel**, **Iris**, **Nova**, and **Atlas**. Your current net surplus is ₹${Math.max(0, (context.user?.monthly_income || 0) - (context.user?.fixed_housing_expense || 0)).toLocaleString()}/mo.`,
-        text: `I have analyzed your financial details alongside **Sentinel**, **Iris**, **Nova**, and **Atlas**. Your current net surplus is ₹${Math.max(0, (context.user?.monthly_income || 0) - (context.user?.fixed_housing_expense || 0)).toLocaleString()}/mo.`,
-        traces: defaultTraces,
-        proposal: null
-      });
-    }
-
-    const data = await response.json();
-    const reply =
-      (data.candidates?.[0]?.content?.parts || []).map((p) => p.text || '').join('').trim() || '';
-
-    // Extract proposal card if generated
-    let proposal = null;
-    const match = reply.match(/\{[\s\S]*"proposal"[\s\S]*\}/);
-    if (match) {
-      try {
-        proposal = JSON.parse(match[0]).proposal;
-      } catch (_) {
-        proposal = null;
-      }
-    }
-
-    const cleanReply = proposal ? reply.replace(match[0], '').trim() : reply;
-
-    const proposedGoal = proposal ? {
-      name: proposal.name || 'New Savings Reserve',
-      target: Number(proposal.target || proposal.targetAmount) || 50000,
-      monthlyAdd: Number(proposal.monthlyAdd || proposal.monthlyAllocation) || 5000,
-      priority: proposal.priority || 'MEDIUM PRIORITY',
-      category: proposal.category || 'Savings',
-      iconType: 'target'
-    } : null;
-
-    res.json({
-      success: true,
-      reply: cleanReply,
-      text: cleanReply,
-      traces: defaultTraces,
-      proposal,
-      proposedGoal,
-      contextUsed: context,
-    });
-  } catch (err) {
-    console.error('Coach request exception:', err);
-    res.json({
-      success: true,
-      reply: `I am monitoring your cash flow with **Sentinel**, **Iris**, **Nova**, and **Atlas**. How can we help optimize your budget today?`,
-      text: `I am monitoring your cash flow with **Sentinel**, **Iris**, **Nova**, and **Atlas**. How can we help optimize your budget today?`,
-      traces: defaultTraces,
-      proposal: null
     });
   }
 }
 
-// POST /api/coach/chat & POST /api/ai/chat
 router.post('/chat', handleChatExecution);
 
-// GET /api/coach/context
 router.get('/context', (req, res) => {
   const context = buildContext(req.userId);
   res.json({
     success: true,
     context,
-    traces: generateAgentTraces(context)
+    traces: generateAgentTraces(context),
   });
 });
 
-// GET /api/ai/conversations
-router.get('/conversations', (req, res) => {
+router.get('/conversations', (_req, res) => {
   res.json({
     success: true,
     conversations: [
-      { id: 'conv-default', title: 'John Coaching Session', updatedAt: new Date().toISOString() }
-    ]
+      { id: 'conv-default', title: 'John Coaching Session', updatedAt: new Date().toISOString() },
+    ],
   });
 });
 
-// POST /api/ai/conversations
 router.post('/conversations', (req, res) => {
   res.json({
     success: true,
     conversation: {
       id: `conv-${Date.now()}`,
       title: req.body?.title || 'New Coaching Session',
-      messages: []
-    }
+      messages: [],
+    },
   });
 });
 
-// POST /api/ai/conversations/:id/messages
 router.post('/conversations/:id/messages', handleChatExecution);
 
 module.exports = router;

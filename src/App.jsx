@@ -392,7 +392,7 @@ export default function App() {
           />
         );
       case 'sentinel':
-        return <SentinelPredictorView userProfile={userProfile} />;
+        return <SentinelPredictorView userProfile={userProfile} onOpenImportModal={() => setIsImportModalOpen(true)} />;
       case 'iris':
         return <IrisAdvisorView userProfile={userProfile} />;
       case 'atlas':
