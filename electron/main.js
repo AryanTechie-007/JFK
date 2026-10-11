@@ -5,6 +5,30 @@ const { execFile } = require('child_process');
 
 let mainWindow = null;
 let novaServerInstance = null;
+let finmateBackendInstance = null;
+
+/**
+ * Boots the embedded FinMate API Backend Server (port 4000) inside the Electron process
+ */
+function startEmbeddedFinmateBackend() {
+  try {
+    process.env.JWT_SECRET = process.env.JWT_SECRET || 'finmate_jwt_super_secret_key_2026';
+    const backendApp = require('../backend/src/index.js');
+    const port = process.env.PORT || 4000;
+    finmateBackendInstance = backendApp.listen(port, () => {
+      console.log(`[Electron Desktop] Embedded FinMate API Backend listening on http://localhost:${port}`);
+    });
+    finmateBackendInstance.on('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        console.log(`[Electron Desktop] Port ${port} already active — reusing running FinMate backend.`);
+      } else {
+        console.warn('[Electron Desktop] FinMate backend warning:', err.message);
+      }
+    });
+  } catch (err) {
+    console.warn('[Electron Desktop] Embedded FinMate backend startup note:', err.message);
+  }
+}
 
 /**
  * Boots the embedded Nova V4 Express API Server (port 4001) inside the Electron process
@@ -151,6 +175,7 @@ ipcMain.handle('finmate:get-branch-info', () => {
 });
 
 app.whenReady().then(() => {
+  startEmbeddedFinmateBackend();
   startEmbeddedNovaBackend();
   createApplicationMenu();
   createMainWindow();
@@ -163,6 +188,13 @@ app.whenReady().then(() => {
 });
 
 app.on('window-all-closed', () => {
+  if (finmateBackendInstance) {
+    try {
+      finmateBackendInstance.close();
+    } catch (_) {
+      // ignore
+    }
+  }
   if (novaServerInstance) {
     try {
       novaServerInstance.close();

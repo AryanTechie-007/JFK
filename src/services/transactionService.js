@@ -49,10 +49,22 @@ export const transactionService = {
    */
   async getBudgets() {
     try {
-      const response = await api.get('/budgets');
+      const response = await api.get('/budget');
+      const cats = Array.isArray(response)
+        ? response
+        : (response.budgets || response.categories || []);
+      const formatted = cats.map(c => ({
+        category: c.category,
+        spent: c.spent || 0,
+        limit: c.monthly_cap || c.limit || 0,
+        monthly_cap: c.monthly_cap || c.limit || 0,
+        percent: c.used_pct != null ? c.used_pct : (c.monthly_cap ? Math.round(((c.spent || 0) / c.monthly_cap) * 100) : (c.percent || 0)),
+        status: c.status || 'healthy'
+      }));
       return {
         success: true,
-        budgets: Array.isArray(response) ? response : (response.budgets || []),
+        budgets: formatted,
+        cashflow: response.cashflow,
       };
     } catch (error) {
       return {

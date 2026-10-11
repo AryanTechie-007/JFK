@@ -1,28 +1,30 @@
 import React from 'react';
 import { Bell, Sparkles, RefreshCw, Zap } from 'lucide-react';
-import { USER_PROFILE, AGENTS } from '../data/mockFinancialData';
+import { AGENTS } from '../data/mockFinancialData';
 
-export default function Header({ activeTab, onSync, onOpenImportModal }) {
+export default function Header({ activeTab, onSync, onOpenImportModal, userProfile }) {
   const getTabInfo = () => {
     switch (activeTab) {
       case 'home':
-        return { title: 'Home Overview Dashboard', subtitle: 'Live financial summary, active budget alerts, and AI coaching pulse', agent: null };
+        return { title: 'Home Overview' };
+      case 'subscriptions':
+        return { title: 'Subscriptions' };
       case 'john':
-        return { title: 'John — AI Financial Coach', subtitle: 'Master orchestrator synthesizing predictions, spending habits, budgets, and savings goals', agent: AGENTS.john };
+        return { title: 'Financial Coach' };
       case 'iris':
-        return { title: 'Iris — Smart Spending Advisor', subtitle: 'Behavioral spending analyst isolating wasteful habits and food/subscription inflation', agent: AGENTS.iris };
+        return { title: 'Smart Spending Advisor' };
       case 'atlas':
-        return { title: 'Atlas — Saving Strategist', subtitle: 'Wealth planner managing liquidity goals, SIP investment engines, and asset timelines', agent: AGENTS.atlas };
+        return { title: 'Saving Strategist' };
       case 'nova':
-        return { title: 'Nova — Real-Time Budget Guardian', subtitle: 'Active security sentinel enforcing spending caps, alerting on limit breaches', agent: AGENTS.nova };
+        return { title: 'Budget Guardian' };
       case 'analyser':
-        return { title: 'Spending & Trend Analyser', subtitle: 'Interactive monthly and annual spending trend analysis fed into John Master Agent', agent: null };
+        return { title: 'Spending & Trend Analyser' };
       case 'health':
-        return { title: 'Financial Health Scorecard', subtitle: 'Comprehensive financial wellness diagnostic across saving, spending, and planning', agent: null };
+        return { title: 'Financial Health Scorecard' };
       case 'settings':
-        return { title: 'Financial Profile & Settings', subtitle: 'User custom income, housing bills, and monthly category budget caps', agent: null };
+        return { title: 'Profile & Settings' };
       default:
-        return { title: 'FinMate AI Dashboard', subtitle: 'Personalized AI financial command center', agent: AGENTS.john };
+        return { title: 'Command Center' };
     }
   };
 
@@ -30,31 +32,21 @@ export default function Header({ activeTab, onSync, onOpenImportModal }) {
 
   return (
     <header className="content-header" style={{
-      height: '64px',
-      padding: '0 32px',
+      height: '56px',
+      padding: '0 28px',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      borderBottom: '1px solid #e2e8f0',
-      backgroundColor: '#ffffff',
+      borderBottom: '1px solid var(--border-color)',
+      backgroundColor: 'var(--bg-card)',
       position: 'sticky',
       top: 0,
       zIndex: 20
     }}>
       <div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <h1 style={{ fontSize: '18px', fontWeight: '700', color: '#0f172a', fontFamily: 'var(--font-serif)' }}>
-            {info.title}
-          </h1>
-          {info.agent && (
-            <span className={`badge ${info.agent.badgeClass}`}>
-              {info.agent.avatar} {info.agent.name}
-            </span>
-          )}
-        </div>
-        <p style={{ fontSize: '12px', color: '#64748b', marginTop: '2px', fontFamily: 'var(--font-sans)' }}>
-          {info.subtitle}
-        </p>
+        <h1 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-primary)', fontFamily: 'var(--font-serif)', margin: 0 }}>
+          {info.title}
+        </h1>
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -62,7 +54,7 @@ export default function Header({ activeTab, onSync, onOpenImportModal }) {
           <button 
             onClick={onOpenImportModal}
             className="btn btn-secondary btn-sm"
-            style={{ color: '#005f41', fontWeight: '700' }}
+            style={{ color: 'var(--accent-emerald)', fontWeight: '700' }}
             title="Import Bank Statement or CSV"
           >
             <span>+ Import CSV</span>
@@ -83,14 +75,14 @@ export default function Header({ activeTab, onSync, onOpenImportModal }) {
           alignItems: 'center',
           gap: '8px',
           padding: '6px 12px',
-          backgroundColor: '#f8fafc',
-          border: '1px solid #e2e8f0',
+          backgroundColor: 'var(--bg-surface)',
+          border: '1px solid var(--border-color)',
           borderRadius: 'var(--radius-sm)'
         }}>
-          <Zap size={14} color="#059669" />
-          <span style={{ fontSize: '12px', color: '#475569', fontFamily: 'var(--font-sans)' }}>Health Score:</span>
-          <span className="mono" style={{ fontSize: '13px', fontWeight: '700', color: '#059669', fontFamily: 'var(--font-serif)' }}>
-            {USER_PROFILE.healthScore}/100
+          <Zap size={14} color="var(--accent-emerald)" />
+          <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)' }}>Health Score:</span>
+          <span className="mono" style={{ fontSize: '13px', fontWeight: '700', color: 'var(--accent-emerald)', fontFamily: 'var(--font-serif)' }}>
+            {userProfile?.healthScore || 75}/100
           </span>
         </div>
       </div>

@@ -38,9 +38,11 @@ app.use('/api/profile', require('./routes/users'));
 app.use('/api/goals', require('./routes/goals'));
 app.use('/api/transactions', require('./routes/transactions'));
 app.use('/api/budget', require('./routes/budget'));
+app.use('/api/budgets', require('./routes/budget'));
 app.use('/api/insights', require('./routes/insights'));
 app.use('/api/coach', require('./routes/coach'));
 app.use('/api/ai', require('./routes/coach'));
+app.use('/api/subscriptions', require('./routes/subscriptions'));
 
 app.use((_req, res) => res.status(404).json({ error: 'Not found' }));
 
@@ -50,4 +52,8 @@ app.use((err, _req, res, _next) => {
 });
 
 const port = process.env.PORT || 4000;
-app.listen(port, () => console.log(`FinMate backend listening on http://localhost:${port}`));
+if (require.main === module) {
+  app.listen(port, () => console.log(`FinMate backend listening on http://localhost:${port}`));
+}
+
+module.exports = app;

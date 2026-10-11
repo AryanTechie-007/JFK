@@ -22,13 +22,25 @@ function saveLocalAccount(userData) {
   }
 }
 
+const DEMO_ACCOUNT = {
+  name: 'Demo User',
+  email: 'demo@finmate.ai',
+  password: 'demopass123',
+  createdAt: '2026-01-01T00:00:00.000Z'
+};
+
 /**
  * Helper to retrieve local account by email
  */
 function getLocalAccount(email) {
+  const normalizedEmail = (email || '').toLowerCase().trim();
+  if (normalizedEmail === DEMO_ACCOUNT.email) {
+    return DEMO_ACCOUNT;
+  }
+
   try {
     const existingAccounts = JSON.parse(localStorage.getItem(LOCAL_STORAGE_ACCOUNTS_KEY) || '[]');
-    return existingAccounts.find(acc => acc.email.toLowerCase() === (email || '').toLowerCase());
+    return existingAccounts.find(acc => acc.email.toLowerCase() === normalizedEmail);
   } catch (e) {
     return null;
   }
@@ -96,7 +108,15 @@ export const authService = {
         token: response?.token,
       };
     } catch (error) {
-      console.info('Backend auth server error or offline; validating against local account registry.');
+      // If the backend specifically rejected credentials (HTTP 401), pass through the message
+      if (error && error.status === 401) {
+        return {
+          success: false,
+          error: error.message || 'Invalid email or password.',
+        };
+      }
+
+      console.info('Backend auth server offline or unreachable; validating against local account registry.');
       
       const localAcc = getLocalAccount(credentials.email);
       
@@ -149,13 +169,6 @@ export const authService = {
         user: response?.user || response,
       };
     } catch (error) {
-      if (typeof window !== 'undefined' && window.finmateDesktop?.isDesktopApp) {
-        return {
-          success: true,
-          user: { name: 'Aryan', email: 'aryan@finmate.ai' },
-          isDesktopDefault: true
-        };
-      }
       return {
         success: false,
         error: error.message,

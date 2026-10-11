@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   DollarSign, 
   TrendingUp, 
@@ -17,44 +17,54 @@ import {
   PieChart, 
   Clock,
   Zap,
-  CreditCard
+  CreditCard,
+  Info
 } from 'lucide-react';
-import { USER_PROFILE, SENTINEL_FORECAST, TRANSACTIONS } from '../data/mockFinancialData';
+import { api } from '../services/api';
 
 export default function HomeDashboardView({ 
   userProfile, 
-  budgets, 
-  goals, 
+  budgets = [], 
+  goals = [], 
+  transactions = [],
   setActiveTab, 
   onOpenImportModal 
 }) {
-  const profile = userProfile || USER_PROFILE;
+  const profile = userProfile || {};
   const currency = profile.currency || '₹';
-  const income = profile.monthlyIncome || 75000;
-  const fixed = profile.fixedExpenses || profile.fixed_housing_expense || 20000;
+  const income = Number(profile.monthlyIncome || profile.monthly_income || 0);
+  const fixed = Number(profile.fixedExpenses || profile.fixed_housing_expense || 0);
   
-  // Calculate total spent from budgets or mock
-  const activeBudgets = budgets && budgets.length > 0 ? budgets : [
-    { category: 'Food & Dining', spent: 9200, limit: 10000, percent: 92, status: 'warning', color: '#d97706' },
-    { category: 'Shopping & Lifestyle', spent: 8400, limit: 10000, percent: 84, status: 'normal', color: '#2563eb' },
-    { category: 'Subscriptions', spent: 3500, limit: 3000, percent: 116, status: 'exceeded', color: '#dc2626' },
-    { category: 'Bills & Utilities', spent: 5000, limit: 5000, percent: 100, status: 'limit', color: '#7c3aed' },
-    { category: 'Transport', spent: 3100, limit: 5000, percent: 62, status: 'normal', color: '#059669' }
-  ];
+  const [upcomingBills, setUpcomingBills] = useState([]);
 
-  const totalSpent = activeBudgets.reduce((sum, b) => sum + (b.spent || 0), 0);
-  const totalLimit = activeBudgets.reduce((sum, b) => sum + (b.limit || 0), 0);
+  useEffect(() => {
+    async function fetchInsights() {
+      try {
+        const res = await api.get('/insights/sentinel');
+        if (res && Array.isArray(res.bills)) {
+          setUpcomingBills(res.bills);
+        }
+      } catch (err) {
+        // No bills or offline
+      }
+    }
+    fetchInsights();
+  }, []);
+
+  const activeBudgets = Array.isArray(budgets) ? budgets : [];
+  const activeGoals = Array.isArray(goals) ? goals : [];
+  const recentTransactions = Array.isArray(transactions) ? transactions : [];
+
+  const totalSpent = activeBudgets.reduce((sum, b) => sum + (Number(b.spent) || 0), 0);
+  const totalLimit = activeBudgets.reduce((sum, b) => sum + (Number(b.limit || b.monthly_cap) || 0), 0);
   const netSurplus = Math.max(0, income - fixed - totalSpent);
-  const budgetUtilization = totalLimit > 0 ? Math.round((totalSpent / totalLimit) * 100) : 78;
+  const budgetUtilization = totalLimit > 0 ? Math.round((totalSpent / totalLimit) * 100) : 0;
 
-  const activeGoals = goals && goals.length > 0 ? goals : [
-    { id: 'g1', name: 'Emergency Fund', current: 50000, target: 100000, category: 'Safety', monthlyAdd: 10000 },
-    { id: 'g2', name: 'Laptop Purchase', current: 40000, target: 80000, category: 'Asset', monthlyAdd: 7500 },
-    { id: 'g3', name: 'Vacation Fund', current: 20000, target: 50000, category: 'Lifestyle', monthlyAdd: 5000 }
-  ];
-
-  // Top overspent/warning categories
-  const warningBudgets = activeBudgets.filter(b => (b.percent || (b.spent / b.limit) * 100) >= 80);
+  // Warning or exceeded categories
+  const warningBudgets = activeBudgets.filter(b => {
+    const pct = b.percent != null ? b.percent : (b.limit ? (b.spent / b.limit) * 100 : 0);
+    return pct >= 80;
+  });
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -84,11 +94,11 @@ export default function HomeDashboardView({
               fontWeight: '700'
             }}>
               <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#059669' }}></span>
-              FinMate Synced
+              FinMate Live
             </span>
           </div>
           <p style={{ fontSize: '13px', color: '#64748b', marginTop: '4px', fontFamily: 'var(--font-sans)' }}>
-            Here is your live financial snapshot, budget alerts, and AI coaching insights for August 2026.
+            Here is your live financial snapshot, budget guardian status, and AI coaching pulse.
           </p>
         </div>
 
@@ -123,7 +133,7 @@ export default function HomeDashboardView({
             }}
           >
             <PlusCircle size={15} color="#dc2626" />
-            <span>Log Expense</span>
+            <span>Manage Budgets</span>
           </button>
 
           <button
@@ -172,7 +182,7 @@ export default function HomeDashboardView({
         <div className="card" style={{ padding: '18px 20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              August Variable Spent
+              Category Spends
             </span>
             <div style={{ width: '28px', height: '28px', borderRadius: '6px', backgroundColor: '#fef2f2', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#dc2626' }}>
               <CreditCard size={16} />
@@ -181,8 +191,8 @@ export default function HomeDashboardView({
           <div className="mono" style={{ fontSize: '24px', fontWeight: '800', color: '#0f172a', marginTop: '6px' }}>
             {currency}{totalSpent.toLocaleString()}
           </div>
-          <div style={{ fontSize: '11px', color: '#dc2626', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: '600' }}>
-            <span>{budgetUtilization}% of monthly cap used</span>
+          <div style={{ fontSize: '11px', color: totalLimit > 0 ? (budgetUtilization > 100 ? '#dc2626' : (budgetUtilization >= 80 ? '#d97706' : '#059669')) : '#64748b', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: '600' }}>
+            <span>{totalLimit > 0 ? `${budgetUtilization}% of monthly cap used` : 'No category limits set'}</span>
           </div>
         </div>
 
@@ -200,25 +210,49 @@ export default function HomeDashboardView({
             {currency}{netSurplus.toLocaleString()}
           </div>
           <div style={{ fontSize: '11px', color: '#059669', marginTop: '4px', fontWeight: '600' }}>
-            Ready for Atlas Goal Allocation
+            Available for Goal Funding & SIP
           </div>
         </div>
 
         {/* Card 4: Financial Health Score */}
         <div className="card" style={{ padding: '18px 20px', cursor: 'pointer' }} onClick={() => setActiveTab('health')}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Health Diagnostic
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Health Score
+              </span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveTab('health');
+                }}
+                title="Learn more about Health Score"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#64748b',
+                  cursor: 'pointer',
+                  padding: '2px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '50%'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.color = '#059669'}
+                onMouseLeave={(e) => e.currentTarget.style.color = '#64748b'}
+              >
+                <Info size={14} />
+              </button>
+            </div>
             <div style={{ width: '28px', height: '28px', borderRadius: '6px', backgroundColor: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#059669' }}>
               <ShieldCheck size={16} />
             </div>
           </div>
           <div className="mono" style={{ fontSize: '24px', fontWeight: '800', color: '#059669', marginTop: '6px' }}>
-            {profile.healthScore || 84}/100
+            {profile.healthScore || (income > 0 ? (netSurplus / income > 0.2 ? 84 : 72) : 75)}/100
           </div>
           <div style={{ fontSize: '11px', color: '#059669', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: '600' }}>
-            <span>Solid Financial Health</span>
+            <span>Learn more about Health Score</span>
             <ArrowRight size={12} />
           </div>
         </div>
@@ -259,8 +293,19 @@ export default function HomeDashboardView({
               <span className="badge badge-john" style={{ fontSize: '10px' }}>Active Synthesis</span>
             </div>
             <p style={{ fontSize: '13px', color: '#047857', marginTop: '4px', lineHeight: '1.5' }}>
-              <strong>Sentinel Risk Detected:</strong> ₹12,000 Car Insurance premium is due on Sep 15th. 
-              <strong> Iris advises:</strong> Trim Swiggy/Zomato orders from 18 to 6 orders this month to free up ₹3,800/mo and preserve your emergency fund.
+              {warningBudgets.length > 0 ? (
+                <span>
+                  <strong>Threshold Alert:</strong> <strong>{warningBudgets[0].category}</strong> has utilized {warningBudgets[0].percent || Math.round(((warningBudgets[0].spent || 0) / (warningBudgets[0].limit || 1)) * 100)}% of its allocated monthly cap. Click below to consult John for dynamic rebalancing.
+                </span>
+              ) : activeGoals.length > 0 ? (
+                <span>
+                  <strong>Goal Strategy Active:</strong> John and Atlas are monitoring {activeGoals.length} savings goal(s). With an unallocated cash surplus of {currency}{netSurplus.toLocaleString()}, your trajectory is on track.
+                </span>
+              ) : (
+                <span>
+                  <strong>Welcome to FinMate AI!</strong> Your deterministic tools and AI coach are standing by. Import a statement or set budget limits to receive real-time financial protection and coaching advice.
+                </span>
+              )}
             </p>
           </div>
         </div>
@@ -294,52 +339,50 @@ export default function HomeDashboardView({
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '12px' }}>
-              <div style={{
-                padding: '12px 14px',
-                backgroundColor: '#fef2f2',
-                border: '1px solid #fecaca',
-                borderRadius: '8px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <AlertTriangle size={18} color="#dc2626" />
-                  <div>
-                    <div style={{ fontSize: '13px', fontWeight: '700', color: '#991b1b' }}>
-                      Annual Car Insurance Renewal
+              {upcomingBills.length > 0 ? (
+                upcomingBills.map((bill, idx) => (
+                  <div key={bill.id || idx} style={{
+                    padding: '12px 14px',
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <AlertTriangle size={18} color="#7c3aed" />
+                      <div>
+                        <div style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a' }}>
+                          {bill.label}
+                        </div>
+                        <div style={{ fontSize: '11px', color: '#64748b' }}>
+                          Due date: {bill.due_date || 'Upcoming'}
+                        </div>
+                      </div>
                     </div>
-                    <div style={{ fontSize: '11px', color: '#b91c1c' }}>
-                      Due on September 15, 2026 (27 days remaining)
+                    <div className="mono" style={{ fontSize: '14px', fontWeight: '800', color: '#0f172a' }}>
+                      {currency}{Number(bill.amount || 0).toLocaleString()}
                     </div>
                   </div>
-                </div>
-                <div className="mono" style={{ fontSize: '14px', fontWeight: '800', color: '#991b1b' }}>
-                  ₹12,000
-                </div>
-              </div>
-
-              <div style={{
-                padding: '12px 14px',
-                backgroundColor: '#ffffff',
-                border: '1px solid #e2e8f0',
-                borderRadius: '8px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
-              }}>
-                <div>
-                  <div style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a' }}>
-                    Apartment Maintenance & Water Bill
+                ))
+              ) : (
+                <div style={{
+                  padding: '24px',
+                  textAlign: 'center',
+                  backgroundColor: '#f8fafc',
+                  borderRadius: '8px',
+                  border: '1px dashed #e2e8f0'
+                }}>
+                  <CheckCircle2 size={24} color="#059669" style={{ margin: '0 auto 8px auto' }} />
+                  <div style={{ fontSize: '13px', fontWeight: '600', color: '#475569' }}>
+                    No upcoming bill spikes detected
                   </div>
-                  <div style={{ fontSize: '11px', color: '#64748b' }}>
-                    Due on September 1, 2026
+                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+                    Sentinel monitors upcoming recurring outlays and flags cash flow risks before they occur.
                   </div>
                 </div>
-                <div className="mono" style={{ fontSize: '14px', fontWeight: '700', color: '#0f172a' }}>
-                  ₹3,200
-                </div>
-              </div>
+              )}
             </div>
           </div>
 
@@ -385,39 +428,60 @@ export default function HomeDashboardView({
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
-              {TRANSACTIONS.slice(0, 5).map((tx) => (
-                <div 
-                  key={tx.id}
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '10px 12px',
-                    borderRadius: '8px',
-                    backgroundColor: '#ffffff',
-                    border: '1px solid #f1f5f9'
-                  }}
-                >
-                  <div>
-                    <div style={{ fontSize: '13px', fontWeight: '600', color: '#0f172a' }}>
-                      {tx.description}
+              {recentTransactions.length > 0 ? (
+                recentTransactions.slice(0, 5).map((tx) => (
+                  <div 
+                    key={tx.id || `${tx.raw_description}-${tx.amount}`}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '10px 12px',
+                      borderRadius: '8px',
+                      backgroundColor: '#ffffff',
+                      border: '1px solid #f1f5f9'
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: '600', color: '#0f172a' }}>
+                        {tx.description || tx.raw_description}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px', display: 'flex', gap: '6px' }}>
+                        <span className="mono">{tx.date || tx.txn_date || 'Today'}</span>
+                        <span>•</span>
+                        <span style={{ color: '#005f41', fontWeight: '600' }}>{tx.category || 'General'}</span>
+                      </div>
                     </div>
-                    <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px', display: 'flex', gap: '6px' }}>
-                      <span className="mono">{tx.date}</span>
-                      <span>•</span>
-                      <span style={{ color: '#005f41', fontWeight: '600' }}>{tx.category}</span>
-                    </div>
-                  </div>
 
-                  <div className="mono" style={{
-                    fontSize: '13px',
-                    fontWeight: '700',
-                    color: tx.type === 'credit' ? '#059669' : '#0f172a'
-                  }}>
-                    {tx.type === 'credit' ? '+' : '-'}{currency}{tx.amount.toLocaleString()}
+                    <div className="mono" style={{
+                      fontSize: '13px',
+                      fontWeight: '700',
+                      color: tx.type === 'credit' ? '#059669' : '#0f172a'
+                    }}>
+                      {tx.type === 'credit' ? '+' : '-'}{currency}{Number(tx.amount || 0).toLocaleString()}
+                    </div>
                   </div>
+                ))
+              ) : (
+                <div style={{
+                  padding: '28px',
+                  textAlign: 'center',
+                  backgroundColor: '#f8fafc',
+                  borderRadius: '8px',
+                  border: '1px dashed #cbd5e1'
+                }}>
+                  <CreditCard size={28} color="#94a3b8" style={{ margin: '0 auto 8px auto' }} />
+                  <div style={{ fontSize: '13px', fontWeight: '600', color: '#475569' }}>
+                    No transactions recorded yet
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+                    Import a bank statement CSV or log an expense to begin automated categorization and budget tracking.
+                  </div>
+                  <button onClick={onOpenImportModal} className="btn btn-emerald btn-sm" style={{ marginTop: '12px' }}>
+                    <Upload size={13} /> Import Statement CSV
+                  </button>
                 </div>
-              ))}
+              )}
             </div>
           </div>
 
@@ -442,31 +506,54 @@ export default function HomeDashboardView({
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '12px' }}>
-              {activeBudgets.slice(0, 4).map((b, idx) => {
-                const pct = b.percent || Math.round((b.spent / b.limit) * 100);
-                const isOver = pct > 100;
-                const isWarn = pct >= 80 && pct <= 100;
-                return (
-                  <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
-                      <span style={{ fontWeight: '700', color: '#0f172a' }}>{b.category}</span>
-                      <span className="mono" style={{ fontWeight: '700', color: isOver ? '#dc2626' : (isWarn ? '#d97706' : '#64748b') }}>
-                        {currency}{b.spent.toLocaleString()} / {currency}{b.limit.toLocaleString()} ({pct}%)
-                      </span>
-                    </div>
+              {activeBudgets.length > 0 ? (
+                activeBudgets.slice(0, 4).map((b, idx) => {
+                  const spent = Number(b.spent || 0);
+                  const limit = Number(b.limit || b.monthly_cap || 1);
+                  const pct = b.percent != null ? b.percent : Math.round((spent / limit) * 100);
+                  const isOver = pct > 100;
+                  const isWarn = pct >= 80 && pct <= 100;
+                  return (
+                    <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
+                        <span style={{ fontWeight: '700', color: '#0f172a' }}>{b.category}</span>
+                        <span className="mono" style={{ fontWeight: '700', color: isOver ? '#dc2626' : (isWarn ? '#d97706' : '#64748b') }}>
+                          {currency}{spent.toLocaleString()} / {currency}{limit.toLocaleString()} ({pct}%)
+                        </span>
+                      </div>
 
-                    <div className="progress-track" style={{ height: '6px' }}>
-                      <div 
-                        className="progress-fill" 
-                        style={{ 
-                          width: `${Math.min(100, pct)}%`,
-                          backgroundColor: isOver ? '#dc2626' : (isWarn ? '#d97706' : '#059669')
-                        }} 
-                      />
+                      <div className="progress-track" style={{ height: '6px' }}>
+                        <div 
+                          className="progress-fill" 
+                          style={{ 
+                            width: `${Math.min(100, pct)}%`,
+                            backgroundColor: isOver ? '#dc2626' : (isWarn ? '#d97706' : '#059669')
+                          }} 
+                        />
+                      </div>
                     </div>
+                  );
+                })
+              ) : (
+                <div style={{
+                  padding: '24px',
+                  textAlign: 'center',
+                  backgroundColor: '#f8fafc',
+                  borderRadius: '8px',
+                  border: '1px dashed #cbd5e1'
+                }}>
+                  <ShieldCheck size={28} color="#94a3b8" style={{ margin: '0 auto 8px auto' }} />
+                  <div style={{ fontSize: '13px', fontWeight: '600', color: '#475569' }}>
+                    No budget caps configured
                   </div>
-                );
-              })}
+                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+                    Set category spending limits in Nova Budget Guardian to activate real-time threshold monitoring.
+                  </div>
+                  <button onClick={() => setActiveTab('nova')} className="btn btn-secondary btn-sm" style={{ marginTop: '12px' }}>
+                    Configure Caps
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -486,39 +573,60 @@ export default function HomeDashboardView({
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
-              {activeGoals.map((g) => {
-                const cur = g.current || g.saved_amount || 0;
-                const tgt = g.target || g.target_amount || 100000;
-                const pct = Math.min(100, Math.round((cur / tgt) * 100));
+              {activeGoals.length > 0 ? (
+                activeGoals.slice(0, 3).map((g) => {
+                  const cur = Number(g.current || g.saved_amount || 0);
+                  const tgt = Number(g.target || g.target_amount || 1);
+                  const pct = Math.min(100, Math.round((cur / tgt) * 100));
 
-                return (
-                  <div 
-                    key={g.id || g.name}
-                    style={{
-                      padding: '12px',
-                      backgroundColor: '#f8fafc',
-                      borderRadius: '8px',
-                      border: '1px solid #e2e8f0'
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a' }}>{g.name}</span>
-                      <span className="mono" style={{ fontSize: '11px', fontWeight: '700', color: '#059669' }}>
-                        {pct}% Completed
-                      </span>
-                    </div>
+                  return (
+                    <div 
+                      key={g.id || g.name}
+                      style={{
+                        padding: '12px',
+                        backgroundColor: '#f8fafc',
+                        borderRadius: '8px',
+                        border: '1px solid #e2e8f0'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a' }}>{g.name}</span>
+                        <span className="mono" style={{ fontSize: '11px', fontWeight: '700', color: '#059669' }}>
+                          {pct}% Completed
+                        </span>
+                      </div>
 
-                    <div className="progress-track" style={{ height: '6px', marginTop: '8px' }}>
-                      <div className="progress-fill" style={{ width: `${pct}%`, backgroundColor: '#059669' }} />
-                    </div>
+                      <div className="progress-track" style={{ height: '6px', marginTop: '8px' }}>
+                        <div className="progress-fill" style={{ width: `${pct}%`, backgroundColor: '#059669' }} />
+                      </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#64748b', marginTop: '6px' }}>
-                      <span className="mono">{currency}{cur.toLocaleString()} saved</span>
-                      <span className="mono">Target: {currency}{tgt.toLocaleString()}</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#64748b', marginTop: '6px' }}>
+                        <span className="mono">{currency}{cur.toLocaleString()} saved</span>
+                        <span className="mono">Target: {currency}{tgt.toLocaleString()}</span>
+                      </div>
                     </div>
+                  );
+                })
+              ) : (
+                <div style={{
+                  padding: '24px',
+                  textAlign: 'center',
+                  backgroundColor: '#f8fafc',
+                  borderRadius: '8px',
+                  border: '1px dashed #cbd5e1'
+                }}>
+                  <Target size={28} color="#94a3b8" style={{ margin: '0 auto 8px auto' }} />
+                  <div style={{ fontSize: '13px', fontWeight: '600', color: '#475569' }}>
+                    No savings goals created
                   </div>
-                );
-              })}
+                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+                    Create your first wealth milestone in Atlas Strategist or ask John to propose a goal.
+                  </div>
+                  <button onClick={() => setActiveTab('atlas')} className="btn btn-emerald btn-sm" style={{ marginTop: '12px' }}>
+                    + Create Goal
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 

@@ -72,41 +72,7 @@ export const AGENTS = {
   }
 };
 
-export const INITIAL_SAVINGS_GOALS = [
-  { 
-    id: "goal-1", 
-    name: "Emergency Fund", 
-    priority: "HIGH PRIORITY", 
-    current: 50000, 
-    target: 100000, 
-    targetDate: "On track for Oct 2026", 
-    category: "Safety", 
-    iconType: "shield",
-    monthlyAdd: 10000 
-  },
-  { 
-    id: "goal-2", 
-    name: "Laptop Purchase", 
-    priority: "MEDIUM PRIORITY", 
-    current: 40000, 
-    target: 80000, 
-    targetDate: "Expected by Dec 2026", 
-    category: "Asset", 
-    iconType: "laptop",
-    monthlyAdd: 7500 
-  },
-  { 
-    id: "goal-3", 
-    name: "Vacation Fund", 
-    priority: "LOW PRIORITY", 
-    current: 20000, 
-    target: 50000, 
-    targetDate: "Expected by Mar 2027", 
-    category: "Lifestyle", 
-    iconType: "plane",
-    monthlyAdd: 5000 
-  }
-];
+export const INITIAL_SAVINGS_GOALS = [];
 
 export const TRANSACTIONS = [
   { id: "tx-101", date: "2026-08-07", description: "SWIGGY * GOURMET BOWL", amount: 680, category: "Food & Dining", merchant: "Swiggy", type: "debit" },

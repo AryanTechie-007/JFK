@@ -12,17 +12,27 @@ import SettingsView from './components/SettingsView';
 import AuthView from './components/AuthView';
 import OnboardingView from './components/OnboardingView';
 import HomeDashboardView from './components/HomeDashboardView';
+import SubscriptionsView from './components/SubscriptionsView';
 import StatementImportModal from './components/StatementImportModal';
-import { 
-  USER_PROFILE, 
-  BUDGET_BUDGETS, 
-  INITIAL_SAVINGS_GOALS 
-} from './data/mockFinancialData';
 import { authService } from './services/authService';
 import { profileService } from './services/profileService';
 import { goalService } from './services/goalService';
 import { transactionService } from './services/transactionService';
 import { Target, Sparkles } from 'lucide-react';
+
+const EMPTY_USER_PROFILE = {
+  name: '',
+  email: '',
+  occupation: '',
+  currency: '₹',
+  monthlyIncome: 0,
+  fixedExpenses: 0,
+  variableExpenses: 0,
+  totalSpentThisMonth: 0,
+  currentSavings: 0,
+  savingsRate: 0,
+  healthScore: 75,
+};
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -59,7 +69,7 @@ class ErrorBoundary extends React.Component {
             boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05)',
             textAlign: 'center'
           }}>
-            <div style={{ fontSize: '36px', marginBottom: '12px' }}>🛡️</div>
+            <div style={{ fontSize: '36px', marginBottom: '12px' }}></div>
             <h2 style={{ fontSize: '20px', fontWeight: '700', color: '#0f172a', marginBottom: '8px', fontFamily: 'var(--font-serif)' }}>
               FinMate Command Center
             </h2>
@@ -97,11 +107,43 @@ export default function App() {
   const [onboardingInitialData, setOnboardingInitialData] = useState(null);
 
   const [activeTab, setActiveTab] = useState('home');
-  const [userProfile, setUserProfile] = useState(USER_PROFILE);
-  const [budgets, setBudgets] = useState(BUDGET_BUDGETS);
-  const [goals, setGoals] = useState(INITIAL_SAVINGS_GOALS);
+  const [userProfile, setUserProfile] = useState(EMPTY_USER_PROFILE);
+  const [budgets, setBudgets] = useState([]);
+  const [goals, setGoals] = useState([]);
+  const [transactions, setTransactions] = useState([]);
   const [toastMessage, setToastMessage] = useState(null);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+
+  // Theme mode: 'system' | 'light' | 'dark'
+  const [themeMode, setThemeMode] = useState(() => {
+    return localStorage.getItem('finmate_theme_mode') || 'system';
+  });
+
+  const [systemPrefersDark, setSystemPrefersDark] = useState(() => {
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = (e) => setSystemPrefersDark(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  const isDarkMode = themeMode === 'dark' || (themeMode === 'system' && systemPrefersDark);
+
+  useEffect(() => {
+    localStorage.setItem('finmate_theme_mode', themeMode);
+    if (isDarkMode) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+  }, [themeMode, isDarkMode]);
 
   const showNotification = (title, detail) => {
     setToastMessage({ title, detail });
@@ -109,27 +151,12 @@ export default function App() {
   };
 
   const handleImportSuccess = (importedLines, count) => {
-    // Dynamically update category spends in budgets (V4 tier rules: <80% healthy, 80-100% warning, >100% exceeded)
     if (importedLines && importedLines.length > 0) {
-      setBudgets(prevBudgets => {
-        const nextBudgets = prevBudgets.map(b => {
-          const addedSpend = importedLines
-            .filter(l => l.category === b.category)
-            .reduce((sum, l) => sum + (Number(l.amount) || 0), 0);
-          
-          if (addedSpend > 0) {
-            const newSpent = (b.spent || 0) + addedSpend;
-            const newPct = Math.round((newSpent / (b.limit || 1)) * 100);
-            return {
-              ...b,
-              spent: newSpent,
-              percent: newPct,
-              status: newPct > 100 ? 'exceeded' : (newPct >= 80 ? 'warning' : 'normal')
-            };
-          }
-          return b;
-        });
-        return nextBudgets;
+      setTransactions(prev => [...importedLines, ...(prev || [])]);
+      transactionService.getBudgets().then(res => {
+        if (res.success && Array.isArray(res.budgets)) {
+          setBudgets(res.budgets);
+        }
       });
     }
 
@@ -152,23 +179,37 @@ export default function App() {
           if (profRes.success && profRes.profile) {
             setUserProfile(profRes.profile);
           } else {
-            setUserProfile(prev => ({ 
-              ...(prev || USER_PROFILE), 
+            setUserProfile({ 
+              ...EMPTY_USER_PROFILE,
               name: sessionUser.name || 'User',
-              email: sessionUser.email 
-            }));
+              email: sessionUser.email,
+              monthlyIncome: sessionUser.monthly_income || 0,
+              fixedExpenses: sessionUser.fixed_housing_expense || 0,
+            });
           }
 
           // Fetch user goals from API
           const goalsRes = await goalService.getGoals();
-          if (goalsRes.success && goalsRes.goals.length > 0) {
+          if (goalsRes.success && Array.isArray(goalsRes.goals)) {
             setGoals(goalsRes.goals);
+          } else {
+            setGoals([]);
           }
 
           // Fetch category budgets from API
           const budgetRes = await transactionService.getBudgets();
-          if (budgetRes.success && budgetRes.budgets.length > 0) {
+          if (budgetRes.success && Array.isArray(budgetRes.budgets)) {
             setBudgets(budgetRes.budgets);
+          } else {
+            setBudgets([]);
+          }
+
+          // Fetch user transactions from API
+          const txRes = await transactionService.getTransactions();
+          if (txRes.success && Array.isArray(txRes.transactions)) {
+            setTransactions(txRes.transactions);
+          } else {
+            setTransactions([]);
           }
 
           setIsAuthenticated(true);
@@ -203,17 +244,22 @@ export default function App() {
     if (newGoal) {
       setGoals(prev => [newGoal, ...(prev || [])]);
     }
+    transactionService.getBudgets().then(res => {
+      if (res.success && Array.isArray(res.budgets)) setBudgets(res.budgets);
+    });
     setIsAuthenticated(true);
     setAuthMode('authenticated');
     showNotification("Account Setup Complete!", `Welcome to FinMate AI, ${newProfile.name}. John AI Coach is synced to your financial details.`);
   };
 
   const handleLoginSuccess = async (userObj) => {
-    setUserProfile(prev => ({ 
-      ...(prev || USER_PROFILE), 
-      name: userObj.name || prev?.name || 'User', 
-      email: userObj.email || prev?.email 
-    }));
+    setUserProfile({ 
+      ...EMPTY_USER_PROFILE,
+      name: userObj.name || 'User', 
+      email: userObj.email,
+      monthlyIncome: userObj.monthly_income || 0,
+      fixedExpenses: userObj.fixed_housing_expense || 0,
+    });
 
     try {
       const profRes = await profileService.getProfile();
@@ -222,8 +268,24 @@ export default function App() {
       }
 
       const goalsRes = await goalService.getGoals();
-      if (goalsRes.success && goalsRes.goals.length > 0) {
+      if (goalsRes.success && Array.isArray(goalsRes.goals)) {
         setGoals(goalsRes.goals);
+      } else {
+        setGoals([]);
+      }
+
+      const budgetRes = await transactionService.getBudgets();
+      if (budgetRes.success && Array.isArray(budgetRes.budgets)) {
+        setBudgets(budgetRes.budgets);
+      } else {
+        setBudgets([]);
+      }
+
+      const txRes = await transactionService.getTransactions();
+      if (txRes.success && Array.isArray(txRes.transactions)) {
+        setTransactions(txRes.transactions);
+      } else {
+        setTransactions([]);
       }
     } catch (e) {
       console.warn('Backend load on login fallback:', e.message);
@@ -238,7 +300,10 @@ export default function App() {
     await authService.logout();
     setIsAuthenticated(false);
     setAuthMode('login');
-    setUserProfile(USER_PROFILE);
+    setUserProfile(EMPTY_USER_PROFILE);
+    setBudgets([]);
+    setGoals([]);
+    setTransactions([]);
     showNotification("Logged Out", "You have been logged out securely.");
   };
 
@@ -289,6 +354,7 @@ export default function App() {
         <OnboardingView 
           initialData={onboardingInitialData}
           onCompleteOnboarding={handleCompleteOnboarding}
+          isDarkMode={isDarkMode}
         />
       );
     }
@@ -296,6 +362,7 @@ export default function App() {
       <AuthView 
         onLoginSuccess={handleLoginSuccess}
         onStartOnboarding={handleStartOnboarding}
+        isDarkMode={isDarkMode}
       />
     );
   }
@@ -308,10 +375,13 @@ export default function App() {
             userProfile={userProfile}
             budgets={budgets}
             goals={goals}
+            transactions={transactions}
             setActiveTab={setActiveTab}
             onOpenImportModal={() => setIsImportModalOpen(true)}
           />
         );
+      case 'subscriptions':
+        return <SubscriptionsView userProfile={userProfile} />;
       case 'john':
         return (
           <JohnCoachDashboard 
@@ -341,6 +411,9 @@ export default function App() {
             budgets={budgets}
             setBudgets={setBudgets}
             showNotification={showNotification}
+            themeMode={themeMode}
+            setThemeMode={setThemeMode}
+            isDarkMode={isDarkMode}
           />
         );
       default:
@@ -349,6 +422,7 @@ export default function App() {
             userProfile={userProfile}
             budgets={budgets}
             goals={goals}
+            transactions={transactions}
             setActiveTab={setActiveTab}
             onOpenImportModal={() => setIsImportModalOpen(true)}
           />
@@ -364,6 +438,7 @@ export default function App() {
         <main className="main-content">
           <Header 
             activeTab={activeTab} 
+            userProfile={userProfile}
             onSync={() => showNotification("Network Synced", "All agent states refreshed.")} 
             onOpenImportModal={() => setIsImportModalOpen(true)}
           />

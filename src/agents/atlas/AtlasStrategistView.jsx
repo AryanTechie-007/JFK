@@ -167,9 +167,16 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+            {goals.length === 0 && (
+              <div className="card" style={{ padding: '36px', textAlign: 'center', gridColumn: '1 / -1' }}>
+                <Target size={36} color="#059669" style={{ margin: '0 auto 12px auto' }} />
+                <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#0f172a' }}>No Goals Created Yet</h3>
+                <p style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>Click "+ New Goal" above to create your first savings goal or ask John AI Coach to propose one.</p>
+              </div>
+            )}
             {goals.map((g) => {
-              const pct = Math.min(100, Math.round((g.current / g.target) * 100));
-              const isHigh = g.priority === 'HIGH PRIORITY';
+              const pct = Math.min(100, Math.round(((g.current || g.saved_amount || 0) / (g.target || g.target_amount || 1)) * 100));
+              const isHigh = (g.priority || '').includes('HIGH');
               return (
                 <div key={g.id} className="card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                   <div>
@@ -315,7 +322,7 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
           <div className="card" style={{ width: '440px', backgroundColor: '#ffffff' }}>
             {errorMsg && (
               <div style={{ padding: '10px 12px', backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '6px', color: '#dc2626', fontSize: '12px' }}>
-                ⚠️ {errorMsg}
+                {errorMsg}
               </div>
             )}
 
@@ -445,7 +452,7 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
 
             {errorMsg && (
               <div style={{ padding: '10px 12px', marginBottom: '12px', backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '6px', color: '#dc2626', fontSize: '12px' }}>
-                ⚠️ {errorMsg}
+                {errorMsg}
               </div>
             )}
 

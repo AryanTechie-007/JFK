@@ -185,6 +185,17 @@ CREATE TABLE IF NOT EXISTS upcoming_bills (
   due_date TEXT NOT NULL,
   is_paid INTEGER DEFAULT 0
 );
+
+CREATE TABLE IF NOT EXISTS subscriptions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  amount REAL NOT NULL,
+  billing_cycle TEXT DEFAULT 'monthly', -- monthly | yearly | weekly
+  category TEXT DEFAULT 'Entertainment',
+  next_billing_date TEXT,
+  created_at TEXT DEFAULT (datetime('now'))
+);
 `);
 
 module.exports = db;

@@ -11,13 +11,14 @@ import {
   LogOut,
   ChevronRight
 } from 'lucide-react';
-import { AGENTS, USER_PROFILE } from '../data/mockFinancialData';
+import { AGENTS } from '../data/mockFinancialData';
 
 export default function Sidebar({ activeTab, setActiveTab, userProfile, onLogout }) {
-  const profile = userProfile || USER_PROFILE;
+  const profile = userProfile || {};
 
   const navItems = [
     { id: 'home', label: 'Home Overview', icon: LayoutGrid, color: '#005f41' },
+    { id: 'subscriptions', label: 'Subscriptions', icon: CreditCard, color: '#6366f1' },
     { id: 'john', label: 'John AI Coach', icon: Bot, color: '#059669' },
     { id: 'analyser', label: 'Spending Analyser', icon: BarChart3, color: '#005f41' },
     { id: 'iris', label: 'Spending Advisor', icon: Sparkles, color: '#d97706' },
@@ -30,8 +31,8 @@ export default function Sidebar({ activeTab, setActiveTab, userProfile, onLogout
   return (
     <aside style={{
       width: '260px',
-      backgroundColor: '#f8fafc',
-      borderRight: '1px solid #e2e8f0',
+      backgroundColor: 'var(--bg-sidebar)',
+      borderRight: '1px solid var(--border-color)',
       display: 'flex',
       flexDirection: 'column',
       height: '100vh',
@@ -48,7 +49,7 @@ export default function Sidebar({ activeTab, setActiveTab, userProfile, onLogout
           width: '36px',
           height: '36px',
           borderRadius: '10px',
-          backgroundColor: '#005f41',
+          backgroundColor: 'var(--accent-emerald)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -57,10 +58,10 @@ export default function Sidebar({ activeTab, setActiveTab, userProfile, onLogout
           <Sparkles size={20} />
         </div>
         <div>
-          <div style={{ fontSize: '17px', fontWeight: '700', color: '#0f172a', letterSpacing: '-0.02em', fontFamily: 'var(--font-serif)' }}>
+          <div style={{ fontSize: '17px', fontWeight: '700', color: 'var(--text-primary)', letterSpacing: '-0.02em', fontFamily: 'var(--font-serif)' }}>
             FinMate AI
           </div>
-          <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '500', fontFamily: 'var(--font-sans)' }}>
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '500', fontFamily: 'var(--font-sans)' }}>
             FinHack Financial Mentor
           </div>
         </div>
@@ -114,18 +115,18 @@ export default function Sidebar({ activeTab, setActiveTab, userProfile, onLogout
       {/* Footer Profile Snippet & Logout */}
       <div style={{
         padding: '16px',
-        borderTop: '1px solid #e2e8f0',
+        borderTop: '1px solid var(--border-color)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        backgroundColor: '#ffffff'
+        backgroundColor: 'var(--bg-card)'
       }}>
         <div>
-          <div style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a', fontFamily: 'var(--font-serif)' }}>
-            {profile.name}
+          <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)', fontFamily: 'var(--font-serif)' }}>
+            {profile.name || 'Account Holder'}
           </div>
-          <div className="mono" style={{ fontSize: '11px', color: '#64748b', fontFamily: 'var(--font-sans)' }}>
-            Income: ₹{(profile?.monthlyIncome || 0).toLocaleString()}/mo
+          <div className="mono" style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>
+            Income: ₹{(Number(profile?.monthlyIncome || profile?.monthly_income) || 0).toLocaleString()}/mo
           </div>
         </div>
 
@@ -141,7 +142,7 @@ export default function Sidebar({ activeTab, setActiveTab, userProfile, onLogout
           <button 
             onClick={onLogout}
             className="btn btn-ghost btn-sm"
-            title="Log Out & Return to FinHack Auth"
+            title="Log Out & Return to Sign In"
             style={{ color: '#dc2626' }}
           >
             <LogOut size={16} />

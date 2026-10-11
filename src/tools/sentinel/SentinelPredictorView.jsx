@@ -64,8 +64,7 @@ export default function SentinelPredictorView({ userProfile }) {
               justifyContent: 'center',
               fontSize: '24px'
             }}>
-              🔮
-            </div>
+              </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <h2 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-primary)' }}>
@@ -154,7 +153,7 @@ export default function SentinelPredictorView({ userProfile }) {
                   </span>
                 </div>
                 <div className="mono" style={{ fontSize: '18px', fontWeight: '700', color: '#a78bfa', marginTop: '6px' }}>
-                  {USER_PROFILE.currency}{pred.predicted.toLocaleString()}
+                  {currency}{pred.predicted.toLocaleString()}
                 </div>
                 <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
                   {pred.note}

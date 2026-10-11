@@ -9,9 +9,25 @@ export const goalService = {
   async getGoals() {
     try {
       const response = await api.get('/goals');
+      const list = Array.isArray(response) ? response : (response.goals || []);
+      const formatted = list.map(g => ({
+        id: g.id,
+        name: g.name,
+        target: Number(g.target_amount || g.target || 0),
+        target_amount: Number(g.target_amount || g.target || 0),
+        current: Number(g.saved_amount || g.current || 0),
+        saved_amount: Number(g.saved_amount || g.current || 0),
+        monthlyAdd: Number(g.monthly_allocation || g.monthlyAdd || 0),
+        monthly_allocation: Number(g.monthly_allocation || g.monthlyAdd || 0),
+        priority: (g.priority || 'medium').toUpperCase().includes('PRIORITY')
+          ? g.priority
+          : `${(g.priority || 'medium').toUpperCase()} PRIORITY`,
+        category: g.category || 'Savings',
+        status: g.status || 'active'
+      }));
       return {
         success: true,
-        goals: Array.isArray(response) ? response : (response.goals || []),
+        goals: formatted,
       };
     } catch (error) {
       return {

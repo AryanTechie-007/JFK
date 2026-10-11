@@ -52,7 +52,7 @@ export default function FinancialHealthView({ userProfile }) {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <h1 style={{ fontSize: '32px', fontWeight: '800', color: '#0f172a', letterSpacing: '-0.02em', fontFamily: 'var(--font-serif)' }}>
-              Financial Wellness Scorecard
+              Financial Health Scorecard
             </h1>
             <span className="badge badge-atlas">Audited by John & Atlas</span>
           </div>
@@ -67,9 +67,49 @@ export default function FinancialHealthView({ userProfile }) {
           border: '1px solid #e2e8f0',
           borderRadius: 'var(--radius-md)'
         }}>
-          <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '600', fontFamily: 'var(--font-sans)' }}>Overall Health Rating</div>
+          <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '600', fontFamily: 'var(--font-sans)' }}>Overall Health Score</div>
           <div className="mono" style={{ fontSize: '28px', fontWeight: '700', color: '#059669', fontFamily: 'var(--font-serif)' }}>
             {healthScore} <span style={{ fontSize: '14px', color: '#64748b' }}>/ 100</span>
+          </div>
+        </div>
+      </div>
+
+      {/* How Health Score is Calculated Explanation Banner */}
+      <div className="card" style={{ padding: '24px', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0' }}>
+        <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#065f46', marginBottom: '8px' }}>
+          What is Your Financial Health Score & How is it Calculated?
+        </h3>
+        <p style={{ fontSize: '13px', color: '#166534', lineHeight: '1.6', marginBottom: '14px' }}>
+          Your Financial Health Score is an automated 0–100 index that measures your fiscal resilience, liquidity buffer, and monthly cash flow sustainability. It combines 4 weighted financial pillars derived directly from your numbers:
+        </p>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+          <div style={{ padding: '12px', backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #dcfce7' }}>
+            <div style={{ fontSize: '12px', fontWeight: '700', color: '#0f172a' }}>1. Saving Behavior (35%)</div>
+            <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
+              Measures percentage of gross income retained after fixed and variable outlays (Target: &ge;25%).
+            </div>
+          </div>
+
+          <div style={{ padding: '12px', backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #dcfce7' }}>
+            <div style={{ fontSize: '12px', fontWeight: '700', color: '#0f172a' }}>2. Budget Discipline (25%)</div>
+            <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
+              Tracks adherence to category caps set in Nova Budget Guardian, penalizing recurring overages.
+            </div>
+          </div>
+
+          <div style={{ padding: '12px', backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #dcfce7' }}>
+            <div style={{ fontSize: '12px', fontWeight: '700', color: '#0f172a' }}>3. Spending Control (20%)</div>
+            <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
+              Evaluates discretionary spending velocity and subscription commitments relative to earnings.
+            </div>
+          </div>
+
+          <div style={{ padding: '12px', backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #dcfce7' }}>
+            <div style={{ fontSize: '12px', fontWeight: '700', color: '#0f172a' }}>4. Future Planning (20%)</div>
+            <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
+              Monitors progress towards your Atlas savings goals and readiness for upcoming obligations.
+            </div>
           </div>
         </div>
       </div>
@@ -164,7 +204,7 @@ export default function FinancialHealthView({ userProfile }) {
                   fontSize: '12px',
                   flexShrink: 0
                 }}>
-                  {step.status === 'Completed' ? '✓' : step.status === 'Active' ? '⚡' : '🎯'}
+                  {step.status === 'Completed' ? '✓' : step.status === 'Active' ? '' : ''}
                 </div>
 
                 <div style={{ flex: 1, paddingBottom: idx === timelineSteps.length - 1 ? 0 : '16px', borderBottom: idx === timelineSteps.length - 1 ? 'none' : '1px solid #e2e8f0' }}>

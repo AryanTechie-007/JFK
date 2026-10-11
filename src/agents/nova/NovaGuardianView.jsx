@@ -9,17 +9,17 @@ import {
   Bot,
   Flame
 } from 'lucide-react';
-import { DEFAULT_BUDGET_CAPS, RECENT_TRANSACTIONS, DEMO_USER_PROFILE } from '../../data/mockNovaData';
 import { novaService } from './novaService';
+import { transactionService } from '../../services/transactionService';
 import './NovaGuardianView.css';
 
 export default function NovaGuardianView({
-  budgets = DEFAULT_BUDGET_CAPS,
-  userProfile = DEMO_USER_PROFILE
+  budgets = [],
+  userProfile
 }) {
   const currency = userProfile?.currency || '₹';
-  const [localBudgets, setLocalBudgets] = useState(budgets);
-  const [recentTxs, setRecentTxs] = useState(RECENT_TRANSACTIONS);
+  const [localBudgets, setLocalBudgets] = useState(budgets || []);
+  const [recentTxs, setRecentTxs] = useState([]);
   const [cognitiveData, setCognitiveData] = useState(null);
   const [negotiationData, setNegotiationData] = useState(null);
   const [showAgentDialogue, setShowAgentDialogue] = useState(false);
@@ -31,7 +31,22 @@ export default function NovaGuardianView({
   const [liveBanner, setLiveBanner] = useState(null);
 
   useEffect(() => {
+    if (budgets && budgets.length > 0) {
+      setLocalBudgets(budgets);
+    }
+  }, [budgets]);
+
+  useEffect(() => {
     fetchAgentCognition();
+    async function loadTransactions() {
+      try {
+        const res = await transactionService.getTransactions();
+        if (res.success && Array.isArray(res.transactions)) {
+          setRecentTxs(res.transactions);
+        }
+      } catch (_) {}
+    }
+    loadTransactions();
   }, []);
 
   const fetchAgentCognition = async () => {
@@ -44,7 +59,7 @@ export default function NovaGuardianView({
         }
       }
     } catch (e) {
-      console.log('[Nova V4] Offline cognition fallback');
+      // Cognition offline
     }
   };
 
@@ -124,7 +139,7 @@ export default function NovaGuardianView({
     <div className="nova-container">
       <div className="nova-header">
         <div>
-          <h1 className="nova-title">Nova Budget Workspace (V4 Spec)</h1>
+          <h1 className="nova-title">Nova Budget Workspace</h1>
           <p className="nova-subtitle">
             Stateless Real-Time Budget Guardian powered by Sentinel snapshots, Tally categorization events, and John Star-Topology orchestration.
           </p>
@@ -150,7 +165,7 @@ export default function NovaGuardianView({
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span className="nova-ai-tag">
               <Sparkles size={13} />
-              NOVA V4 SPECIALIST RESPONSE
+              NOVA SPECIALIST RESPONSE
             </span>
             <span style={{ fontSize: '13px', fontWeight: '600', color: '#cbd5e1' }}>
               Day {temporal.current_day} ({temporal.days_remaining} days left in calendar month)
@@ -185,7 +200,7 @@ export default function NovaGuardianView({
           <div className="nova-intervention-card" style={{ background: '#1e293b', border: '1px solid #334155', color: '#f8fafc' }}>
             <div>
               <div style={{ fontSize: '13px', fontWeight: '700', color: '#fca5a5' }}>
-                ⚡ John Confirmation Card: APPLY_REBALANCE Proposal (Tier T2)
+                John Confirmation Card: APPLY_REBALANCE Proposal (Tier T2)
               </div>
               <div style={{ fontSize: '12px', color: '#cbd5e1', marginTop: '2px' }}>
                 {rebalanceProposal.moves[0]?.reasoning}
@@ -386,20 +401,26 @@ export default function NovaGuardianView({
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', maxHeight: '280px', overflowY: 'auto' }}>
-              {recentTxs.slice(0, 6).map((tx) => (
-                <div key={tx.id} className="nova-tx-item">
-                  <div>
-                    <div style={{ fontWeight: '600', color: '#0f172a' }}>{tx.merchant || tx.raw_description || tx.rawDescription}</div>
-                    <div style={{ fontSize: '10px', color: '#64748b' }}>{tx.category} • {tx.date || tx.txn_date?.slice(0, 10)}</div>
+              {recentTxs.length > 0 ? (
+                recentTxs.slice(0, 6).map((tx, idx) => (
+                  <div key={tx.id || idx} className="nova-tx-item">
+                    <div>
+                      <div style={{ fontWeight: '600', color: '#0f172a' }}>{tx.merchant || tx.raw_description || tx.rawDescription || tx.description}</div>
+                      <div style={{ fontSize: '10px', color: '#64748b' }}>{tx.category} • {tx.date || tx.txn_date?.slice(0, 10) || 'Recent'}</div>
+                    </div>
+                    <span className="mono" style={{
+                      fontWeight: '700',
+                      color: tx.type === 'credit' ? '#059669' : '#dc2626'
+                    }}>
+                      {tx.type === 'credit' ? '+' : '-'}₹{(Number(tx.amount) || 0).toLocaleString()}
+                    </span>
                   </div>
-                  <span className="mono" style={{
-                    fontWeight: '700',
-                    color: tx.type === 'credit' ? '#059669' : '#dc2626'
-                  }}>
-                    {tx.type === 'credit' ? '+' : '-'}₹{(tx.amount || 0).toLocaleString()}
-                  </span>
+                ))
+              ) : (
+                <div style={{ padding: '24px', textAlign: 'center', color: '#64748b', fontSize: '12px' }}>
+                  No transactions recorded yet. Use the form above to log an expense.
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>

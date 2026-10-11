@@ -39,14 +39,8 @@ export default function JohnCoachDashboard({ userProfile, goals, onAcceptGoal, s
     {
       id: 'init-1',
       sender: 'john',
-      text: `Hello ${userName}! 👋 I am **John**, your Master AI Financial Coach.\n\nI have analyzed your cash flow alongside **Sentinel**, **Iris**, **Atlas**, and **Nova**:\n\n- **Monthly Net Income**: ${currency}${userProfile?.monthlyIncome?.toLocaleString() || '0'}\n- **Monthly Net Surplus**: ${currency}${surplus.toLocaleString()}\n- **Financial Health Score**: **${userProfile?.healthScore || 84}/100**\n\nHow can our team help guide your money decisions today?`,
-      hasIntervenerCard: true,
-      intervenerData: {
-        agent: "INTERVENER AGENT",
-        title: "Unused Subscriptions Detected",
-        detail: "3 streaming services haven't been used in 45 days.",
-        action: "Review & Cancel"
-      },
+      text: `Hello ${userName}! I am **John**, your Master AI Financial Coach.\n\nI have evaluated your financial state alongside **Sentinel**, **Iris**, **Atlas**, and **Nova**:\n\n- **Monthly Net Income**: ${currency}${(userProfile?.monthlyIncome || 0).toLocaleString()}\n- **Monthly Net Surplus**: ${currency}${(surplus || 0).toLocaleString()}\n- **Financial Health Score**: **${userProfile?.healthScore || 75}/100**\n\nHow can our team help guide your money decisions today?`,
+      hasIntervenerCard: false,
       timestamp: 'Just now'
     }
   ]);
@@ -165,7 +159,7 @@ export default function JohnCoachDashboard({ userProfile, goals, onAcceptGoal, s
       {
         id: `init-${Date.now()}`,
         sender: 'john',
-        text: `Hello ${userName}! 👋 New coaching session started. How can John and the agent team assist you?`,
+        text: `Hello ${userName}! New coaching session started. How can John and the agent team assist you?`,
         timestamp: 'Just now'
       }
     ]);
@@ -174,11 +168,8 @@ export default function JohnCoachDashboard({ userProfile, goals, onAcceptGoal, s
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       
-      {/* Main Layout Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '24px' }}>
-        
-        {/* Left Column: Coach AI Session */}
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '670px', padding: 0 }}>
+      {/* Coach AI Session */}
+      <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '720px', padding: 0 }}>
           
           {/* Header */}
           <div style={{
@@ -427,7 +418,7 @@ export default function JohnCoachDashboard({ userProfile, goals, onAcceptGoal, s
             {isThinking && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#64748b', fontSize: '13px' }}>
                 <Bot size={18} color="#059669" />
-                <span className="spin">⚡</span>
+                <span className="spin"></span>
                 <span>John (Master Coach) is synthesizing agent intelligence via backend API...</span>
               </div>
             )}
@@ -460,91 +451,6 @@ export default function JohnCoachDashboard({ userProfile, goals, onAcceptGoal, s
           </div>
 
         </div>
-
-        {/* Right Column: Suggested Queries & Agent Overview */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          
-          {/* Sample Prompts */}
-          <div className="card">
-            <h4 style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px', fontFamily: 'var(--font-serif)' }}>
-              <Lightbulb size={16} color="#d97706" /> Sample Coaching Questions
-            </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {SAMPLE_QUERIES.map((q, idx) => {
-                const queryLabel = typeof q === 'string' ? q : (q.label || q.query);
-                const queryText = typeof q === 'string' ? q : (q.query || q.label);
-                return (
-                  <button
-                    key={idx}
-                    onClick={() => handleSend(queryText)}
-                    style={{
-                      textAlign: 'left',
-                      padding: '10px 12px',
-                      backgroundColor: '#f8fafc',
-                      border: '1px solid #e2e8f0',
-                      borderRadius: 'var(--radius-sm)',
-                      fontSize: '12px',
-                      color: '#334155',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.borderColor = '#059669'}
-                    onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e2e8f0'}
-                  >
-                    <span>"{queryLabel}"</span>
-                    <ArrowRight size={12} color="#94a3b8" />
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Underlying Specialist Team */}
-          <div className="card">
-            <h4 style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a', marginBottom: '12px', fontFamily: 'var(--font-serif)' }}>
-              Specialist Agent Team
-            </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {Object.values(AGENTS).filter(a => a.id !== 'john').map((agent) => (
-                <div 
-                  key={agent.id}
-                  onClick={() => setActiveTab(agent.id)}
-                  style={{
-                    padding: '10px 12px',
-                    backgroundColor: '#ffffff',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: 'var(--radius-sm)',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ fontSize: '18px' }}>{agent.avatar}</span>
-                    <div>
-                      <div style={{ fontSize: '12px', fontWeight: '700', color: agent.color }}>
-                        {agent.name}
-                      </div>
-                      <div style={{ fontSize: '11px', color: '#64748b' }}>
-                        {agent.role}
-                      </div>
-                    </div>
-                  </div>
-                  <span className={`badge ${agent.badgeClass}`} style={{ fontSize: '10px' }}>
-                    READY
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-        </div>
-
       </div>
-    </div>
   );
 }

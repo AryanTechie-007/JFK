@@ -8,13 +8,25 @@ import {
   CheckCircle2, 
   Sparkles,
   Sliders,
-  Wallet
+  Wallet,
+  Sun,
+  Moon,
+  Laptop
 } from 'lucide-react';
 
 import { profileService } from '../services/profileService';
 import { transactionService } from '../services/transactionService';
 
-export default function SettingsView({ userProfile, setUserProfile, budgets, setBudgets, showNotification }) {
+export default function SettingsView({ 
+  userProfile, 
+  setUserProfile, 
+  budgets, 
+  setBudgets, 
+  showNotification,
+  themeMode,
+  setThemeMode,
+  isDarkMode
+}) {
   const [name, setName] = useState(userProfile?.name || '');
   const [income, setIncome] = useState(userProfile?.monthlyIncome || 0);
   const [fixedExpenses, setFixedExpenses] = useState(userProfile?.fixedExpenses || 0);
@@ -99,12 +111,104 @@ export default function SettingsView({ userProfile, setUserProfile, budgets, set
       
       {/* Title Header */}
       <div>
-        <h1 style={{ fontSize: '32px', fontWeight: '800', color: '#0f172a', letterSpacing: '-0.02em' }}>
+        <h1 style={{ fontSize: '32px', fontWeight: '800', color: 'var(--text-primary)', letterSpacing: '-0.02em', fontFamily: 'var(--font-serif)' }}>
           Financial Profile & Settings
         </h1>
-        <p style={{ fontSize: '14px', color: '#64748b', marginTop: '4px' }}>
+        <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '4px', fontFamily: 'var(--font-sans)' }}>
           Customize your income, fixed housing bills, and monthly category caps. John and all agents use these live inputs.
         </p>
+      </div>
+
+      {/* Theme Appearance Mode Toggle */}
+      <div className="card" style={{ padding: '20px 24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+          <div>
+            <h3 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)', fontFamily: 'var(--font-serif)' }}>
+              App Appearance & Theme Mode
+            </h3>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '2px', fontFamily: 'var(--font-sans)' }}>
+              Choose between light mode (warm cream forest), dark mode (prismatic iridescent obsidian), or follow your system preference.
+            </p>
+          </div>
+
+          <div style={{
+            display: 'flex',
+            backgroundColor: 'var(--bg-surface)',
+            border: '1px solid var(--border-color)',
+            borderRadius: '10px',
+            padding: '4px',
+            gap: '4px'
+          }}>
+            <button
+              type="button"
+              onClick={() => setThemeMode && setThemeMode('light')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 14px',
+                borderRadius: '8px',
+                border: 'none',
+                backgroundColor: themeMode === 'light' ? 'var(--bg-card)' : 'transparent',
+                color: themeMode === 'light' ? 'var(--text-primary)' : 'var(--text-muted)',
+                fontWeight: themeMode === 'light' ? '700' : '500',
+                fontSize: '12px',
+                cursor: 'pointer',
+                boxShadow: themeMode === 'light' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <Sun size={15} color={themeMode === 'light' ? 'var(--accent-amber)' : 'currentColor'} />
+              <span>Light</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setThemeMode && setThemeMode('dark')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 14px',
+                borderRadius: '8px',
+                border: 'none',
+                backgroundColor: themeMode === 'dark' ? 'var(--bg-card)' : 'transparent',
+                color: themeMode === 'dark' ? 'var(--text-primary)' : 'var(--text-muted)',
+                fontWeight: themeMode === 'dark' ? '700' : '500',
+                fontSize: '12px',
+                cursor: 'pointer',
+                boxShadow: themeMode === 'dark' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <Moon size={15} color={themeMode === 'dark' ? 'var(--accent-emerald)' : 'currentColor'} />
+              <span>Dark</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setThemeMode && setThemeMode('system')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 14px',
+                borderRadius: '8px',
+                border: 'none',
+                backgroundColor: themeMode === 'system' ? 'var(--bg-card)' : 'transparent',
+                color: themeMode === 'system' ? 'var(--text-primary)' : 'var(--text-muted)',
+                fontWeight: themeMode === 'system' ? '700' : '500',
+                fontSize: '12px',
+                cursor: 'pointer',
+                boxShadow: themeMode === 'system' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <Laptop size={15} />
+              <span>System ({isDarkMode ? 'Dark' : 'Light'})</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Validation Error Alert */}
@@ -120,7 +224,7 @@ export default function SettingsView({ userProfile, setUserProfile, budgets, set
           alignItems: 'center',
           gap: '8px'
         }}>
-          <span>⚠️ {errorMsg}</span>
+          <span>{errorMsg}</span>
         </div>
       )}
 

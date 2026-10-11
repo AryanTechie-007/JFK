@@ -2,14 +2,34 @@ import React, { useState } from 'react';
 import { Sparkles, Target, DollarSign, User, AlertCircle, Loader2, ShieldCheck } from 'lucide-react';
 import { profileService } from '../services/profileService';
 import { goalService } from '../services/goalService';
+import { subscriptionService } from '../services/subscriptionService';
+import InteractiveSpotsBackground from './InteractiveSpotsBackground';
 
-export default function OnboardingView({ initialData, onCompleteOnboarding }) {
+export default function OnboardingView({ initialData, onCompleteOnboarding, isDarkMode = false }) {
   const [name, setName] = useState(initialData?.name || '');
   const [email, setEmail] = useState(initialData?.email || '');
   const [occupation, setOccupation] = useState('');
   const [monthlyIncome, setMonthlyIncome] = useState('');
   const [fixedExpenses, setFixedExpenses] = useState('');
   const [variableExpenses, setVariableExpenses] = useState('');
+  
+  // Subscriptions
+  const [subscriptionsList, setSubscriptionsList] = useState([]);
+  const [subName, setSubName] = useState('');
+  const [subAmount, setSubAmount] = useState('');
+
+  const handleAddSubscriptionItem = () => {
+    if (!subName.trim()) return;
+    const amt = Number(subAmount);
+    if (isNaN(amt) || amt <= 0) return;
+    setSubscriptionsList(prev => [...prev, { name: subName.trim(), amount: amt, billingCycle: 'monthly', category: 'Entertainment' }]);
+    setSubName('');
+    setSubAmount('');
+  };
+
+  const handleRemoveSubscriptionItem = (idx) => {
+    setSubscriptionsList(prev => prev.filter((_, i) => i !== idx));
+  };
   
   // Primary Goal Details
   const [primaryGoalName, setPrimaryGoalName] = useState('Emergency Reserve Vault');
@@ -122,6 +142,15 @@ export default function OnboardingView({ initialData, onCompleteOnboarding }) {
       // Save initial goal to backend API (POST /api/goals)
       await goalService.createGoal(initialGoal);
 
+      // Save user-entered subscriptions to backend API
+      if (subscriptionsList.length > 0) {
+        for (const sub of subscriptionsList) {
+          try {
+            await subscriptionService.addSubscription(sub);
+          } catch (_) {}
+        }
+      }
+
       const finalProfile = profileResult.profile || onboardingProfile;
       onCompleteOnboarding(finalProfile, initialGoal);
     } catch (err) {
@@ -134,22 +163,26 @@ export default function OnboardingView({ initialData, onCompleteOnboarding }) {
   };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      backgroundColor: '#f4f6f8',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '36px 24px'
-    }}>
-      <div className="card" style={{
-        width: '100%',
-        maxWidth: '680px',
-        padding: '36px',
-        backgroundColor: '#ffffff',
-        boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05)',
-        borderRadius: '16px'
+    <InteractiveSpotsBackground isDarkMode={isDarkMode}>
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '36px 24px'
       }}>
+        <div className="card" style={{
+          width: '100%',
+          maxWidth: '680px',
+          padding: '36px',
+          backgroundColor: 'var(--bg-card)',
+          boxShadow: isDarkMode 
+            ? '0 20px 40px -10px rgba(0, 0, 0, 0.7), 0 0 30px rgba(36, 210, 154, 0.1)' 
+            : '0 20px 40px -10px rgba(28, 48, 36, 0.15)',
+          borderRadius: '16px',
+          border: '1px solid var(--border-color)',
+          backdropFilter: 'blur(10px)'
+        }}>
         
         {/* Onboarding Header */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
@@ -342,7 +375,65 @@ export default function OnboardingView({ initialData, onCompleteOnboarding }) {
             </div>
           </div>
 
-          {/* Section 4: Risk Profile */}
+          {/* Section 4: Active Subscriptions */}
+          <div>
+            <div style={{ fontSize: '14px', fontWeight: '700', color: '#0f172a', marginBottom: '8px', fontFamily: 'var(--font-serif)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Sparkles size={16} color="#059669" />
+              <span>4. Subscriptions You Pay For (Optional)</span>
+            </div>
+            <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '12px' }}>
+              Enter any services you currently subscribe to (e.g. Netflix, Spotify, Gym, Cloud Storage).
+            </p>
+
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+              <input
+                type="text"
+                className="input"
+                placeholder="Service name (e.g. Netflix)"
+                value={subName}
+                onChange={(e) => setSubName(e.target.value)}
+                style={{ flex: 2, minWidth: '140px' }}
+              />
+              <input
+                type="number"
+                className="input"
+                placeholder="₹/mo"
+                value={subAmount}
+                onChange={(e) => setSubAmount(e.target.value)}
+                style={{ flex: 1, minWidth: '90px' }}
+              />
+              <button
+                type="button"
+                onClick={handleAddSubscriptionItem}
+                className="btn btn-secondary"
+                style={{ padding: '0 16px', fontWeight: '700' }}
+              >
+                + Add
+              </button>
+            </div>
+
+            {subscriptionsList.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', backgroundColor: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                {subscriptionsList.map((sub, idx) => (
+                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
+                    <span style={{ fontWeight: '600', color: '#1e293b' }}>{sub.name}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span className="mono" style={{ color: '#059669', fontWeight: '700' }}>₹{sub.amount}/mo</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveSubscriptionItem(idx)}
+                        style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '14px', lineHeight: 1 }}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Section 5: Risk Profile */}
           <div>
             <label style={{ fontSize: '12px', color: '#64748b', fontWeight: '600', marginBottom: '6px', display: 'block', fontFamily: 'var(--font-sans)' }}>
               Financial Risk & Planning Strategy
@@ -371,7 +462,7 @@ export default function OnboardingView({ initialData, onCompleteOnboarding }) {
                 <span>Saving Profile & Launching John AI Coach...</span>
               </div>
             ) : (
-              <span>Complete Onboarding & Launch John AI Coach 🚀</span>
+              <span>Complete Onboarding & Launch John AI Coach </span>
             )}
           </button>
 
@@ -379,5 +470,6 @@ export default function OnboardingView({ initialData, onCompleteOnboarding }) {
 
       </div>
     </div>
+    </InteractiveSpotsBackground>
   );
 }
