@@ -88,7 +88,7 @@ export default function InteractiveSpotsBackground({ isDarkMode = false, childre
       mouse.y += (mouse.targetY - mouse.y) * 0.05;
 
       // Base background color
-      ctx.fillStyle = isDarkMode ? '#0a0d0c' : '#D9D7B6';
+      ctx.fillStyle = isDarkMode ? '#0a0d0c' : '#F7F5EE';
       ctx.fillRect(0, 0, width, height);
 
       spots.forEach((spot, i) => {

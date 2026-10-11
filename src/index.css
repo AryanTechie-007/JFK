@@ -1,22 +1,22 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
-/* Default Light Mode (Sunlit Pine & Forest Lake theme from Image 1, Base Cream #D9D7B6) */
+/* Default Light Mode (Sunlit Pine & Forest Lake theme, Luminous Ivory Cream Base) */
 :root {
-  --bg-primary: #D9D7B6;
-  --bg-surface: #eae8cb;
-  --bg-surface-hover: #e2dfbe;
-  --bg-surface-active: #d6d3af;
-  --bg-sidebar: #cfcdab;
-  --bg-card: #f2f1dd;
-  --bg-card-subtle: #eae8cd;
+  --bg-primary: #F7F5EE;
+  --bg-surface: #EFECE1;
+  --bg-surface-hover: #E7E3D3;
+  --bg-surface-active: #DFDAC5;
+  --bg-sidebar: #EFECE1;
+  --bg-card: #FAF9F4;
+  --bg-card-subtle: #F3F0E6;
 
-  --border-color: #bebc96;
-  --border-color-hover: #9c9a72;
-  --border-color-focus: #1c5236;
+  --border-color: #DDD8C8;
+  --border-color-hover: #C5BFAC;
+  --border-color-focus: #1e5a3c;
 
   --text-primary: #15241b;
   --text-secondary: #324438;
-  --text-muted: #5e6f64;
+  --text-muted: #64756b;
   --text-inverse: #ffffff;
 
   /* Accent Colors - Deep Pine & Sunlit Amber */
