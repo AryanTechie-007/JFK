@@ -5,7 +5,7 @@
 | Folder | `docs/prototype-design/` |
 | Status | **Proposed — awaiting team-lead approval** (Stage D). No implementation, task sets or code until approved. |
 | Date | 2026-10-11 |
-| Inputs inspected | Repository `AryanTechie-007/JFK` at `origin/main` 485ed0f (plus branch `docs/requirements-freeze-specs` carrying `docs/specifications/`), the six frozen specifications and `system-contracts.md` |
+| Inputs inspected | The application code of the **previous project repository** at commit `485ed0f` (historical provenance only — that repository is out of scope for this project; see `docs/repository-migration-notes.md`), the six frozen specifications and `system-contracts.md` |
 | Authoritative behaviour | `docs/specifications/*.md` (frozen 2026-10-10). This package defines **how much** of that behaviour the prototype builds and **how**; it never redefines component behaviour. Where the prototype simplifies, the simplification is named and justified. |
 
 ## Documents in this package
@@ -18,8 +18,15 @@
 | 4 | `04-component-specifications.md` | Prototype slice of John, Iris, Nova, Sentinel, Atlas, Item Categorizer (+ platform services) |
 | 5 | `05-security-and-reliability.md` | Minimum safeguards, what is deferred to production hardening |
 | 6 | `06-testing-and-acceptance.md` | Test layers, acceptance criteria, demonstration script |
+| 7 | `07-ui-screens-and-interactions.md` (**added 2026-10-13**, awaiting approval) | Screen-by-screen UI design: shell, navigation, shared components, fields, states, flows, accessibility |
 
 Spec references use `SC §n` for `system-contracts.md` and `<Component> §x` for a component spec.
+
+> **Repository notes (added 2026-10-13, repository migration — no architecture change).**
+> 1. This package now lives in the project repository `https://github.com/Kathir-M-03/finmate-ai`. "The repository" / "existing code" in §1 and §4 below describe the **source baseline** — the application code these documents were written against, which is **not yet present** in the new repository (team decision TD-01 in `docs/team-decisions.md`).
+> 2. R-11 / prerequisite P-0 ("merge the frozen specs") is **satisfied**: `docs/specifications/` and `docs/prototype-design/` are on `main` of the new repository from its first commit.
+> 3. §4 describes a six-person team and a branch-per-workstream model (U-4 default below). For execution these are **superseded** by `docs/implementation-plan/workstream-assignments.md` (four developers, short-lived plan branches) and `docs/development-workflow.md`. U-3 (browser vs Electron) is recorded as resolved to Electron in `docs/implementation-plan/baseline.md` C-2, pending confirmation Q-UI-01.
+> 4. Document 7, `07-ui-screens-and-interactions.md`, was **added** on 2026-10-13 to give screen-level UI design for WS-UI; it is generated from Docs 0–6 and the specifications and awaits approval (TD-05).
 
 ---
 
@@ -79,7 +86,7 @@ A cap changed in the Nova workspace (Backend B) is invisible to John's coach (Ba
 | R-8 | Nine nav items; no Sentinel workspace; Health page shown | Five workspaces + Settings (SC §18); Analyser, Subscriptions and Predictor merge into Sentinel; Health becomes an on-demand John answer |
 | R-9 | Chat path (Gemini + SQL dump) bypasses the orchestrator and grounding | All chat goes through John's orchestrator |
 | R-10 | README says 4 developers / 6 branches; this task says 6 developers | Plan for 6 developers; branch-per-module model kept |
-| R-11 | Frozen specs live on an unmerged branch (`docs/requirements-freeze-specs`) | Merge it before implementation (prerequisite P-0 in §4) |
+| R-11 | Frozen specs live on an unmerged branch (`docs/requirements-freeze-specs`) | Merge it before implementation (prerequisite P-0 in §4) — **satisfied 2026-10-13** (see repository notes at the top of this file) |
 | R-12 | Committed `dist/` | Remove from VCS; build in CI/launch script |
 
 ### 1.6 Existing code to reuse (not rewrite)
