@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| New repository | `https://github.com/Kathir-M-03/finmate-ai` — owner `Kathir-M-03`, **private** |
+| New repository | `https://github.com/Kathir-M-03/FINNMIN-JFK-John` — owner `Kathir-M-03`, **private** |
 | Project name | **FinMate AI** (product name used throughout `docs/specifications/` and `docs/prototype-design/`; "John Financial Coach" is the chat persona, not the product) |
 | Migration date | 2026-10-13 |
 | Input received | `finmate-docs-all.zip` — 54 Markdown files under `docs/` (specifications, prototype design, implementation plans, tracking) |
@@ -27,7 +27,7 @@
 ### 2.1 Identity
 | Item | Value | Basis |
 | --- | --- | --- |
-| Name | `finmate-ai` | Product name "FinMate AI" in every specification and design document; lower-case kebab case per GitHub convention. Chosen by the project lead on 2026-10-13 |
+| Name | `FINNMIN-JFK-John` | Chosen by the project lead on 2026-10-13 (replacing the initially prepared name `finmate-ai`). The product name in all specifications remains **FinMate AI**. The "JFK" in the repository name is the owner's naming choice and does **not** refer to or depend on the previous repository |
 | Owner | `Kathir-M-03` | Chosen by the project lead on 2026-10-13 |
 | Visibility | Private | Chosen by the project lead on 2026-10-13. Consequence: branch protection is enforced only with GitHub Pro/Team (TD-04) |
 | Default branch | `main` | Plans assume `main` |
@@ -39,12 +39,12 @@
 | Local repository prepared | Yes — `main` with the commits listed in §7 |
 | Pushed | **No** (pending owner action) |
 
-*Update this table after publishing:* replace "Not yet verified" with the date and the URL check, e.g. `gh repo view Kathir-M-03/finmate-ai --json url,visibility`.
+*Update this table after publishing:* replace "Not yet verified" with the date and the URL check, e.g. `gh repo view Kathir-M-03/FINNMIN-JFK-John --json url,visibility`.
 
 ### 2.3 Publishing procedure (owner)
-1. Create an **empty** private repository `finmate-ai` under `Kathir-M-03` (no README, no `.gitignore`, no licence — the prepared history already has them): `gh repo create Kathir-M-03/finmate-ai --private` or github.com → *New repository*.
-2. From the prepared repository (delivered as a Git bundle): `git clone finmate-ai.bundle finmate-ai && cd finmate-ai && git remote set-url origin https://github.com/Kathir-M-03/finmate-ai.git && git push -u origin main`.
-3. Verify: `gh repo view Kathir-M-03/finmate-ai --json url,visibility,defaultBranchRef` and open `README.md` on GitHub; check that the relative links resolve.
+1. Create an **empty** private repository `FINNMIN-JFK-John` under `Kathir-M-03` (no README, no `.gitignore`, no licence — the prepared history already has them): `gh repo create Kathir-M-03/FINNMIN-JFK-John --private` or github.com → *New repository*.
+2. From the prepared repository (delivered as `FINNMIN-JFK-John.bundle`): `git clone FINNMIN-JFK-John.bundle FINNMIN-JFK-John`, `cd FINNMIN-JFK-John`, `git remote set-url origin https://github.com/Kathir-M-03/FINNMIN-JFK-John.git`, `git push -u origin main`. Step-by-step Windows instructions were given to the owner on 2026-10-13.
+3. Verify: `gh repo view Kathir-M-03/FINNMIN-JFK-John --json url,visibility,defaultBranchRef` and open `README.md` on GitHub; check that the relative links resolve.
 4. Invite Dev A–D (TD-03) and configure `main` as described in `development-workflow.md` §2.
 5. Update §2.2 of this file in a `docs/` PR.
 
@@ -73,11 +73,11 @@
 ### 4.1 Categories of references updated
 | Category | Example before | After |
 | --- | --- | --- |
-| Repository identity | "Repository state planned against `AryanTechie-007/JFK` `main` @ `54f9f6f`" | "Project repository `https://github.com/Kathir-M-03/finmate-ai`"; code state described as the **source baseline** (commit IDs kept as provenance) |
+| Repository identity | "Repository state planned against `AryanTechie-007/JFK` `main` @ `54f9f6f`" | "Project repository `https://github.com/Kathir-M-03/FINNMIN-JFK-John`"; code state described as the **source baseline** (commit IDs kept as provenance) |
 | "On `main`" meaning existing code | "already implemented on `main`", "`main` lacks", "physical names on `main`" | "in the source baseline" / "the source baseline lacks" |
 | Docs-merge instructions | "Merge `docs/requirements-freeze-specs` into `main`" (WS-FND-P1 step 1, first-day plan step 2, gate G1) | Marked satisfied (docs are on `main` since initialisation); replaced by a source-baseline check |
 | Old branch model | "long-lived module branches `atlas`, `iris`, `john`, `nova`, `sentinel`, `tally`; `sentinel_web` diverged; frozen" | Not carried over; must not be recreated; short-lived plan branches only |
-| Clone / setup | "Everyone clones `main`" | "Everyone clones `https://github.com/Kathir-M-03/finmate-ai`" + link to the workflow guide |
+| Clone / setup | "Everyone clones `main`" | "Everyone clones `https://github.com/Kathir-M-03/FINNMIN-JFK-John`" + link to the workflow guide |
 | Push failures / delivered patch | "Push to `AryanTechie-007/JFK` (403) … delivered patch/zip" | "Push to the previous repository (403)" — historical, with a banner that it is superseded |
 | Destructive recovery advice | "`git reset --hard <last good>` on the plan branch" | Restricted to unpushed commits on your own local branch; `git revert` otherwise |
 | UI design references | WS-UI plans and execution manual §1.4 | Added Doc 7 references |
@@ -216,15 +216,16 @@ Method: case-insensitive search of every file in the repository for `JFK`, `Arya
 ### 8.1 Results
 | Search | Matches remaining | Where | Verdict |
 | --- | --- | --- | --- |
-| `JFK`, `AryanTechie` | 1 file | This file only (§0 header, §4.1 "before" examples) | **Historical.** Labelled; nowhere an instruction |
-| GitHub URLs | Only `Kathir-M-03/finmate-ai` | README, workflow guide, plans' banners, planning files | **Correct target.** No other repository URL anywhere |
+| `AryanTechie` (previous repository owner) | 1 file | This file only (§0 header, §4.1 "before" examples) | **Historical.** Labelled; nowhere an instruction |
+| `JFK` | Every file that names the new repository `Kathir-M-03/FINNMIN-JFK-John`, plus this file's historical references | Repository name chosen 2026-10-13 | **Correct target** in the new repository name; the only references to the *previous* repository `AryanTechie-007/JFK` are in this file |
+| GitHub URLs | Only `Kathir-M-03/FINNMIN-JFK-John` (no `AryanTechie-007` URL anywhere) | README, workflow guide, plans' banners, planning files | **Correct target.** No other repository URL anywhere |
 | Old docs branch `docs/requirements-freeze-specs` | 4 mentions | `audit-report.md` (2, under the historical banner), `prototype-design/00-overview.md` R-11 (marked *satisfied*), this file | **Historical**, each marked |
 | Old module branches (`sentinel_web`, `atlas`, …) | `baseline.md` re-check note (marked historical: must not be recreated), `audit-report.md` (historical), `workstream-assignments.md` §7 (states they were not carried over) | | **Historical / prohibitive**, not active |
 | Commit IDs `54f9f6f`, `fc0981d`, `485ed0f`, `546a226` | `baseline.md`, plans README, `audit-report.md`, Doc 0, this file, `team-decisions.md` | | **Provenance of the source baseline.** Needed for TD-02 (which commit to import, if any) |
 | "on `main`" describing existing code | Remaining occurrences are covered by the banner in every plan and in `baseline.md` ("read 'in the source baseline'"); the explicit cases in plans were rewritten (§4.2) | | **Reinterpreted**, not an instruction to use the old repository |
 | Instructions to clone, pull from, push to or open PRs against the old repository | **0** | — | — |
 
-**Conclusion:** no active implementation plan or development instruction directs a developer or AI coding assistant to the previous repository. All active instructions target `https://github.com/Kathir-M-03/finmate-ai`. The remaining dependency on the old code base is the explicit, documented **TD-01** gate, not a silent assumption.
+**Conclusion:** no active implementation plan or development instruction directs a developer or AI coding assistant to the previous repository. All active instructions target `https://github.com/Kathir-M-03/FINNMIN-JFK-John`. The remaining dependency on the old code base is the explicit, documented **TD-01** gate, not a silent assumption.
 
 ### 8.2 Other validation performed (2026-10-13)
 | Check | Result |

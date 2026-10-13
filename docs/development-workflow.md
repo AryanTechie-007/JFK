@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Repository | `https://github.com/Kathir-M-03/finmate-ai` (private) |
+| Repository | `https://github.com/Kathir-M-03/FINNMIN-JFK-John` (private) |
 | Audience | Dev A, Dev B, Dev C, Dev D — including anyone new to collaborative Git |
 | Authoritative rules this guide explains | `implementation-plan/workstream-assignments.md` §5–§7 (ownership, branching), `implementation-plan/execution-manual.md` §2 (per-plan loop), `implementation-plan/cross-workstream-dependencies.md` (what blocks what), `implementation-plan/tracking/README.md` (status and evidence) |
 | If this guide and those files disagree | Those files win; fix this guide in a `docs/` PR |
@@ -82,8 +82,8 @@ Authenticate to GitHub once, e.g. with GitHub CLI (`gh auth login`) or Git Crede
 
 ## 3. Get the repository
 ```bash
-git clone https://github.com/Kathir-M-03/finmate-ai.git   # downloads the repository into ./finmate-ai
-cd finmate-ai
+git clone https://github.com/Kathir-M-03/FINNMIN-JFK-John.git   # downloads the repository into ./FINNMIN-JFK-John
+cd FINNMIN-JFK-John
 git status                                               # should say: On branch main, nothing to commit
 ```
 After the application code exists (TD-01) follow `implementation-plan/first-day-action-plan.md` §1 step 3: `npm ci`, `npm --prefix backend ci`, copy `backend/.env.example` to `backend/.env`, set a local `JWT_SECRET`. **Never commit `backend/.env`** — it is ignored by `.gitignore`.

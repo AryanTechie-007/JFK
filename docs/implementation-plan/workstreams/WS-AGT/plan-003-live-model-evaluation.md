@@ -2,7 +2,7 @@
 
 > **Local plan number: Plan 3 of 3 in WS-AGT** · Unique ID: **`WS-AGT-P3`** · Branch: `ws-agt/p3-live-eval` · **Status: BLOCKED by decision U-2 until the endpoint is known**
 
-> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/finmate-ai` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). This plan edits no source-baseline file directly, but it evaluates code delivered by WS-AGT-P1/P2 and WS-JON-P1, which modify source-baseline files; it is therefore also gated by team decision **TD-01** (source baseline) and by **U-2** (Qwen endpoint). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`.
+> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/FINNMIN-JFK-John` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). This plan edits no source-baseline file directly, but it evaluates code delivered by WS-AGT-P1/P2 and WS-JON-P1, which modify source-baseline files; it is therefore also gated by team decision **TD-01** (source baseline) and by **U-2** (Qwen endpoint). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`.
 
 ## 1. Plan identity
 | Field | Value |

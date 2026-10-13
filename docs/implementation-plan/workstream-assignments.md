@@ -111,7 +111,7 @@ Contingency rules (decided at the daily stand-up, recorded in `tracking/STATUS.m
 | `.oxlintrc.json`, CI workflow | A, D | Dev A (CI), Dev D (lint rules for `src/`) | Lint rule changes reviewed by Dev A |
 
 ## 7. Branching, review and integration workflow
-The project repository is `https://github.com/Kathir-M-03/finmate-ai`. It starts with documentation only, no CI and a single `main` branch (the long-lived module branches of the previous repository were **not** carried over and must not be recreated). The smallest workflow that prevents integration failure is below; the beginner-friendly, step-by-step version with commands is [`../development-workflow.md`](../development-workflow.md):
+The project repository is `https://github.com/Kathir-M-03/FINNMIN-JFK-John`. It starts with documentation only, no CI and a single `main` branch (the long-lived module branches of the previous repository were **not** carried over and must not be recreated). The smallest workflow that prevents integration failure is below; the beginner-friendly, step-by-step version with commands is [`../development-workflow.md`](../development-workflow.md):
 1. `main` is protected: PR + 1 owner review + green CI; squash merge; no direct pushes. (Enforced by GitHub only if the account's plan supports branch protection on private repositories — TD-04; otherwise by team agreement.)
 2. One short-lived branch per plan: `ws-<id>/p<n>-<slug>` (e.g. `ws-cat/p2-canonical-ingestion`); rebase on `main` at least daily; ≤ 600 changed lines per PR (split a plan into several PRs if larger, plan ID in every PR title).
 3. **Contract PRs first** (separate, small, approved by every consumer listed in §6) before implementation PRs that depend on them.

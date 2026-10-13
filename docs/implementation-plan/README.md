@@ -3,7 +3,7 @@
 | Attribute | Value |
 | --- | --- |
 | Status | **Planning only.** No application code is changed by this package. Implementation starts only when the team lead says so. |
-| Project repository | `https://github.com/Kathir-M-03/finmate-ai` (private). All branches, PRs and merges happen here — see [`../development-workflow.md`](../development-workflow.md) |
+| Project repository | `https://github.com/Kathir-M-03/FINNMIN-JFK-John` (private). All branches, PRs and merges happen here — see [`../development-workflow.md`](../development-workflow.md) |
 | Code state planned against | The **source baseline**: application code at commit `54f9f6f` of the previous project repository (re-verified against `fc0981d`, lockfile-only change). **This code is not in the new repository** — see team decision TD-01 ([`../team-decisions.md`](../team-decisions.md)) and [`../repository-migration-notes.md`](../repository-migration-notes.md). The previous repository is out of scope and must not be used for this project's work |
 | Team | **Four developers** (Dev A–Dev D) — see `workstream-assignments.md` §2 |
 | Audit | `audit-report.md` — verdict **PASS WITH CORRECTIONS**; corrections applied |

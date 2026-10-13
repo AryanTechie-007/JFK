@@ -73,7 +73,7 @@ These versions are taken from the planning documents. None of it is installed in
 
 **Current:**
 ```text
-finmate-ai/
+FINNMIN-JFK-John/
 ├── README.md                           ← this file
 ├── .gitignore
 └── docs/
@@ -99,8 +99,8 @@ finmate-ai/
 ## Installation and setup
 
 ```bash
-git clone https://github.com/Kathir-M-03/finmate-ai.git
-cd finmate-ai
+git clone https://github.com/Kathir-M-03/FINNMIN-JFK-John.git
+cd FINNMIN-JFK-John
 ```
 There is nothing to install yet. Once the application code exists (TD-01 and then WS-FND-P1), setup will follow [`first-day-action-plan.md`](docs/implementation-plan/first-day-action-plan.md) §1: `npm ci`, `npm --prefix backend ci`, then copy `backend/.env.example` to `backend/.env` and set a local `JWT_SECRET`. **Never commit `.env` files or API keys.**
 

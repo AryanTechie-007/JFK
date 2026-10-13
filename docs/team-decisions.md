@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Repository | `https://github.com/Kathir-M-03/finmate-ai` |
+| Repository | `https://github.com/Kathir-M-03/FINNMIN-JFK-John` |
 | Created | 2026-10-13, during the repository migration and implementation-readiness review |
 | Purpose | One place for every decision the team still has to make before or during implementation, with options, a recommendation and the tasks each one blocks |
 | How to use | Review §2 together before D1. For each item, fill in **Decision**, **Decided by** and **Date**, and set **Status** to `Approved` (or `Deferred`). Then the owner listed under "Docs to update" changes those documents in a PR titled `decisions: TD-nn …` |
@@ -297,7 +297,7 @@ Categories: **Implementation blocker** = a task cannot begin. **Pre-implementati
 | Writes | Only through the Action Service (ingestion excepted) | D-001 |
 | Contracts first | Contract changes are separate PRs approved by consumers | `implementation-plan/README.md` global rules |
 | Doc 0 §4 "six-person team" | Superseded for execution by the four-developer allocation | `implementation-plan/audit-report.md` §5 |
-| Repository | `Kathir-M-03/finmate-ai`, private, named after the product "FinMate AI" (decided by the project lead on 2026-10-13) | `repository-migration-notes.md` §2 |
+| Repository | `Kathir-M-03/FINNMIN-JFK-John`, private (name and owner decided by the project lead on 2026-10-13; product name stays FinMate AI) | `repository-migration-notes.md` §2 |
 | Documentation layout | Plans stay in `docs/implementation-plan/` (singular, as referenced throughout the plans) rather than being renamed | `repository-migration-notes.md` §3 |
 
 ---

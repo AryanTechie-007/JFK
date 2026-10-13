@@ -122,7 +122,7 @@ Run on every diff before the PR (and give to the reviewer model in Template C):
 | --- | --- | --- |
 | Architecture and scope | `docs/prototype-design` + specs as frozen (A-ARCH, C-1 default: LLM layer per spec) | D1 start |
 | Developer mapping | Names → Dev A–D (`workstream-assignments.md` §2); CODEOWNERS handles | WS-FND-P1 CODEOWNERS PR (D1) |
-| Repository and branches | `https://github.com/Kathir-M-03/finmate-ai`; short-lived plan branches, protected `main`, squash merges (U-4 default); procedure in [`../development-workflow.md`](../development-workflow.md) | D1 start |
+| Repository and branches | `https://github.com/Kathir-M-03/FINNMIN-JFK-John`; short-lived plan branches, protected `main`, squash merges (U-4 default); procedure in [`../development-workflow.md`](../development-workflow.md) | D1 start |
 | Source baseline | TD-01 resolved; imported code merged and re-verified (or plans re-planned) | Before D1 |
 | Action names | SC §13.2 canonical (C-5 default) | WS-PLT-P1 contract PR (D2) |
 | Table names | Keep physical names (D-PLAN-2 default) | WS-FND-P2 (D2) |
