@@ -2,6 +2,8 @@
 
 > **Local plan number: Plan 2 of 2 in WS-SEN** · Unique ID: **`WS-SEN-P2`** · Branch: `ws-sen/p2-rules-and-views`
 
+> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/finmate-ai` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). **That code is not in the repository yet.** This plan cannot start until team decision **TD-01** (how the source baseline enters the repository) is resolved and, if the code is imported, the import PR is merged and verified (see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`.
+
 ## 1. Plan identity
 | Field | Value |
 | --- | --- |

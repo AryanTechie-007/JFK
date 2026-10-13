@@ -61,7 +61,9 @@ Dependency types: **decision** (a choice must be made), **interface** (an agreed
 | 43 | WS-PLT-P1 | WS-FND-P4 | Canonical action names and `createProposal`/`confirmAndExecute` used by the seed script | interface | Yes | Seed calls an internal `seedAction()` wrapper; switched to the final functions when PLT-P1 merges | After WS-PLT-P1 contract PR (D2) |
 | 44 | WS-JON-P1 | WS-AGT-P3 | `POST /chat/messages` for end-to-end live cases | interface | Yes | Specialist-level live cases first | After WS-JON-P1 merge (D4 am) |
 | 45 | WS-AGT-P2 | WS-JON-P2 | Atlas `HANDLE_PEER_FINDING` and Iris `PeerHint@1` for the dependency-edge and parallel tests | interface | Yes | Use fixture specialist responses until AGT-P2 merges | Immediately with fixture responses |
-| 46 | Decision D-PLAN-2 | WS-FND-P2 | Keep physical table names on `main` (Doc 2 §3 names are logical) | decision | Yes (default: keep) | Rename migration in WS-FND-P5 only if vetoed | Default applies on D1 |
+| 46 | Decision D-PLAN-2 | WS-FND-P2 | Keep physical table names of the source baseline (Doc 2 §3 names are logical) | decision | Yes (default: keep) | Rename migration in WS-FND-P5 only if vetoed | Default applies on D1 |
+
+| 47 *(added 2026-10-13)* | Decision TD-01 (source baseline) | **all 21 plans** | Source-baseline code present on `main` (or plans re-planned for greenfield) | decision | No | None — without code there is nothing to modify; see `../team-decisions.md` | After TD-01 resolved and import PR merged |
 
 ## 3. Acyclicity
 The graph in `roadmap.md` §3 was checked: every edge points from a plan to a plan that does not (transitively) depend back on it. Interface edges (#4, #7–#9, #14–#17, #19, #21, #24, #26, #31, #32, #43–#45) are listed so that implementation can start in parallel; none of them creates a cycle with implementation edges.

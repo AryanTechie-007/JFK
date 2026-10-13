@@ -2,6 +2,8 @@
 
 > **Local plan number: Plan 1 of 2 in WS-PLT** · Unique ID: **`WS-PLT-P1`** · Branch: `ws-plt/p1-consent-safe-actions`
 
+> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/finmate-ai` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). **That code is not in the repository yet.** This plan cannot start until team decision **TD-01** (how the source baseline enters the repository) is resolved and, if the code is imported, the import PR is merged and verified (see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`.
+
 ## 1. Plan identity
 | Field | Value |
 | --- | --- |
@@ -29,7 +31,7 @@
 | File | Action | Purpose | Ownership | Shared-file risk |
 | --- | --- | --- | --- | --- |
 | `backend/src/platform/action-service.js` | Modify (major) | Algorithm, tokens, registry dispatch; remove inline writes to other owners' tables | WS-PLT | **High** — WS-CAT-P3 edits the same file afterwards (sequenced) |
-| `backend/src/platform/plan-store.js` | Create | Goal/cap/override/rebalance executors incl. `REMOVE_CAP` (in the Doc 4 §8.1 subset, not yet on `main`) and the existing `RESTORE_GOAL` (sole writer of `goals_v1`, `caps_v1`, `*_month_overrides`) | WS-PLT | Low |
+| `backend/src/platform/plan-store.js` | Create | Goal/cap/override/rebalance executors incl. `REMOVE_CAP` (in the Doc 4 §8.1 subset, not yet in the source baseline) and the existing `RESTORE_GOAL` (sole writer of `goals_v1`, `caps_v1`, `*_month_overrides`) | WS-PLT | Low |
 | `backend/src/platform/tokens.js` | Create | Intent + confirmation token issue/verify/consume | WS-PLT | Low |
 | `backend/src/shared/contracts/action-registry.js` | Modify | SC §13.2 names, tiers, proposers, direct initiators; prototype subset flag (Doc 4 §8.1) | WS-PLT | Medium — read by John/specialists |
 | `backend/src/shared/contracts/action-aliases.js` | Create (temporary) | Old → SC name map (`CORRECT_TRANSACTION_CATEGORY`/`CONFIRM_TRANSACTION_CATEGORY`→`RECATEGORIZE_TRANSACTION`, `CONFIRM_PROVISIONAL_CATEGORY`→`CONFIRM_CATEGORY`, `SET_TRANSACTION_MOVEMENT_TYPE`→`SET_TRANSACTION_TYPE`, `CREATE_MANUAL_TRANSACTION`→`ADD_MANUAL_TRANSACTION`, `UPDATE_USER_PROFILE`→`UPDATE_PROFILE`, `UPDATE_USER_PREFERENCES`→`UPDATE_PREFERENCE`, `CREATE_DECLARED_BILL`→`ADD_DECLARED_BILL`, `SET_CATEGORY_WATCH`→`CREATE_ALERT`); every alias use logged with `trace_id`; deleted in WS-FND-P5 | WS-PLT | Low |
@@ -59,7 +61,7 @@ HTTP (Doc 2 §6): `POST /proposals {action, params}` (T2/T3 forms); `POST /propo
 3. Refactor `registerProposal` → `createProposal`: validate params schema, compute `params_hash` (canonical JSON), `base_versions`, run validator at creation, supersede previous proposals for the same target, **no token returned**.
 4. `confirmAndExecute`: SC §13.6 steps 1–11; executor lookup; one transaction; `events.append(tx, userId, 'plan.changed', …)` (or executor's event); re-read verification; `reconcile_action` job via `jobs.enqueueJob`.
 5. `executeT1` with intent token; `undo` for T1 within 24 h.
-6. Move plan writes into `plan-store.js` and register; register Profile executors in `profile.js` (`UPDATE_PROFILE`, `UPDATE_PREFERENCE`, `ADD_DECLARED_BILL`, `DELETE_DECLARED_BILL`) — same owner (WS-PLT). `UPDATE_DECLARED_BILL` is deferred (Doc 0 §3.2) and not built. `RESTORE_GOAL` and `CREATE_ALERT` (← `SET_CATEGORY_WATCH`) are deferred in Doc 0 §3.2 but already exist on `main` and are used by the UI; they are migrated as-is, not extended (audit A-18).
+6. Move plan writes into `plan-store.js` and register; register Profile executors in `profile.js` (`UPDATE_PROFILE`, `UPDATE_PREFERENCE`, `ADD_DECLARED_BILL`, `DELETE_DECLARED_BILL`) — same owner (WS-PLT). `UPDATE_DECLARED_BILL` is deferred (Doc 0 §3.2) and not built. `RESTORE_GOAL` and `CREATE_ALERT` (← `SET_CATEGORY_WATCH`) are deferred in Doc 0 §3.2 but already exist in the source baseline and are used by its UI; they are migrated as-is, not extended (audit A-18). If TD-01 is decided as a greenfield rebuild, they are not built (Doc 0 §3.2 applies; Q-UI-09).
 7. Keep categorization case bodies callable until WS-CAT-P3 registers its executors (dispatcher prefers registered executors; fallback marked `TODO(WS-CAT-P3)`).
 8. Routes; old `/actions/execute` with `action_type` for T2/T3 → `410 GONE` with ErrorBody `{code:'CONFIRMATION_REQUIRED'}`; `/actions/propose` → alias of `/proposals` for one sprint.
 9. Rate limits (in-memory token bucket per user).

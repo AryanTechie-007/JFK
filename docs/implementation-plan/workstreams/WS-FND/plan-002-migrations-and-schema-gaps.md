@@ -2,6 +2,8 @@
 
 > **Local plan number: Plan 2 of 6 in WS-FND** · Unique ID: **`WS-FND-P2`** · Branch: `ws-fnd/p2-migrations`
 
+> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/finmate-ai` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). **That code is not in the repository yet.** This plan cannot start until team decision **TD-01** (how the source baseline enters the repository) is resolved and, if the code is imported, the import PR is merged and verified (see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`.
+
 ## 1. Plan identity
 | Field | Value |
 | --- | --- |
@@ -9,7 +11,7 @@
 | Local plan number | **Plan 2** |
 | Unique ID | `WS-FND-P2` |
 | Owner / subagent | Dev A — Integration Lead / WS-FND subagent |
-| Objective | Replace the inline `CREATE TABLE IF NOT EXISTS` block in `backend/src/db.js` with versioned SQL migrations, reproduce today's schema exactly, and add the tables the prototype design needs but `main` lacks (gap G-13) |
+| Objective | Replace the inline `CREATE TABLE IF NOT EXISTS` block in `backend/src/db.js` with versioned SQL migrations, reproduce today's schema exactly, and add the tables the prototype design needs but the source baseline lacks (gap G-13) |
 | Expected outcome | `db.js` opens the DB, sets pragmas and runs `migrate()`; `000_baseline.sql` = today's schema; `010_*.sql` adds `tool_results`, `intent_tokens`, `event_deliveries`, `jobs`, `jobs_dead_letter`, `traces`, `ingestion_batches`, `ingestion_errors`, `rolling_summaries` |
 | Size | ~0.5 day; 2 PRs (framework + baseline, new tables) |
 
@@ -33,13 +35,13 @@
 | `backend/src/db/migrations/000_baseline.sql` | Create | Exact DDL currently in `db.js` (legacy + v1 tables, indexes) | WS-FND | Low |
 | `backend/src/db/migrations/010_platform_tables.sql` | Create | `tool_results`, `intent_tokens`, `event_deliveries`, `jobs`, `jobs_dead_letter`, `traces`, `rolling_summaries` | WS-FND | Low |
 | `backend/src/db/migrations/011_ingestion_tables.sql` | Create | `ingestion_batches`, `ingestion_errors` | WS-FND (CAT reviews) | Low |
-| `backend/src/db/TABLES.md` | Create | Mapping of Doc 2 §3 logical names → physical names on `main` | WS-FND | Low |
+| `backend/src/db/TABLES.md` | Create | Mapping of Doc 2 §3 logical names → physical names in the source baseline | WS-FND | Low |
 | `backend/test/db/migrate.test.js`, `schema-baseline.test.js` | Create | Tests | WS-FND | Low |
 
 ## 5. Interfaces and contracts
 - `migrate(rawDb) -> {applied: string[]}`; idempotent; throws `MIGRATION_CHECKSUM_MISMATCH`.
 - Migration number ranges (`workstream-assignments.md` §4): `0xx` FND, `1xx` CAT, `2xx` SEN, `3xx` PLT, `4xx` AGT, `5xx` JON. Merged files are immutable.
-- **Table-name decision D-PLAN-2 (recommendation, team lead may veto):** keep the physical names on `main` (`transactions_v1`, `goals_v1`, `caps_v1`, `alerts_v1`, `proposals_v1`, `snapshots_v1`, `outbox_events`, `user_state_versions`, `categorization_history`, `user_profiles_v1`, `accounts_v1`, `declared_bills_v1`). Doc 2 §3 names are logical; `TABLES.md` maps them. Renaming is churn with no prototype benefit.
+- **Table-name decision D-PLAN-2 (recommendation, team lead may veto):** keep the physical names of the source baseline (`transactions_v1`, `goals_v1`, `caps_v1`, `alerts_v1`, `proposals_v1`, `snapshots_v1`, `outbox_events`, `user_state_versions`, `categorization_history`, `user_profiles_v1`, `accounts_v1`, `declared_bills_v1`). Doc 2 §3 names are logical; `TABLES.md` maps them. Renaming is churn with no prototype benefit.
 - New-table DDL (columns from Doc 2 §3.5; every user table has `user_id TEXT NOT NULL`, `tenant_id TEXT NOT NULL DEFAULT 'demo'`):
   - `tool_results(tool_result_id PK, user_id, request_id, caller, function, snapshot_id, params_json, result_json, status, created_at)`; index `(user_id, request_id)`.
   - `intent_tokens(token PK, user_id, action, params_hash, origin, expires_at, used_at)`.

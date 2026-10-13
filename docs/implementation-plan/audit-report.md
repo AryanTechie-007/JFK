@@ -1,5 +1,7 @@
 # Implementation Plan Audit Report
 
+> **Historical record (2026-10-11).** This audit was performed against the source baseline in the previous project repository. Its findings about plan content (numbering, dependencies, ownership, commands) remain valid. Its repository-specific statements (commits, branches, push access) are **historical only** and are superseded by [`../repository-migration-notes.md`](../repository-migration-notes.md). Do not act on them.
+
 | Field | Value |
 | --- | --- |
 | Audited package | `docs/implementation-plan/` (commit `546a226`, branch `docs/requirements-freeze-specs`, rebased on `main` @ `fc0981d`) |
@@ -29,7 +31,7 @@
 | Item | Effect on the audit |
 | --- | --- |
 | `npm install` blocked in this environment | Could not start the HTTP server, run the Vite build or the Electron app. HTTP behaviour statements remain code-reading based (as baseline §1 states) |
-| Push to `AryanTechie-007/JFK` (403) | Corrections exist on the local branch and in the delivered patch/zip, not on GitHub |
+| Push to the previous repository (403) | Corrections existed only in the delivered documentation package; that package is now the initial content of the new repository |
 | Remote branch `sentinel_web` (diverged) | Not inspected; frozen by workflow rule, not used by any plan |
 | Qwen endpoint (U-2) | Live-model criteria (P-AC-17 live, 18, 19) cannot be planned beyond the fake provider |
 | Approval of `docs/prototype-design` | Treated as assumption A-ARCH, as before |

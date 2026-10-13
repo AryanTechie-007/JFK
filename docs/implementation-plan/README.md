@@ -3,11 +3,13 @@
 | Attribute | Value |
 | --- | --- |
 | Status | **Planning only.** No application code is changed by this package. Implementation starts only when the team lead says so. |
-| Repository state planned against | `AryanTechie-007/JFK` `main` @ `54f9f6f` (2026-10-11); re-verified against `fc0981d` (lockfile-only change) during the audit |
+| Project repository | `https://github.com/Kathir-M-03/finmate-ai` (private). All branches, PRs and merges happen here — see [`../development-workflow.md`](../development-workflow.md) |
+| Code state planned against | The **source baseline**: application code at commit `54f9f6f` of the previous project repository (re-verified against `fc0981d`, lockfile-only change). **This code is not in the new repository** — see team decision TD-01 ([`../team-decisions.md`](../team-decisions.md)) and [`../repository-migration-notes.md`](../repository-migration-notes.md). The previous repository is out of scope and must not be used for this project's work |
 | Team | **Four developers** (Dev A–Dev D) — see `workstream-assignments.md` §2 |
 | Audit | `audit-report.md` — verdict **PASS WITH CORRECTIONS**; corrections applied |
-| Authoritative inputs | 1. `docs/prototype-design/` (prototype architecture, diagrams — see assumption A-ARCH) · 2. `docs/specifications/` (frozen component specs + `system-contracts.md`) · 3. repository code, tests, config · 4. established conventions · 5. labelled recommendations |
+| Authoritative inputs | 1. `docs/prototype-design/` (prototype architecture, diagrams — see assumption A-ARCH; Doc 7 `07-ui-screens-and-interactions.md` added 2026-10-13, awaiting approval TD-05) · 2. `docs/specifications/` (frozen component specs + `system-contracts.md`) · 3. repository code, tests, config · 4. established conventions · 5. labelled recommendations |
 | Plans | 7 workstreams, 21 plans, each workstream numbered locally from Plan 1 |
+| Start condition | **All 21 plans are Blocked until TD-01 (source baseline) is resolved.** Pre-implementation decisions are listed in [`../team-decisions.md`](../team-decisions.md) §2 |
 
 ## How the numbering works
 - **Every workstream has its own sequence starting at Plan 1.** "Plan 2" in WS-CAT and "Plan 2" in WS-UI are different plans.
@@ -43,12 +45,13 @@
 
 ## How to execute a plan with a coding subagent (model- and provider-neutral)
 > Summary only. The full procedure, context-selection rules and prompts are in `execution-manual.md` and `prompt-templates.md`.
+0. Confirm the plan's **Repository context** banner conditions are met (TD-01 resolved; source-baseline files the plan modifies exist on `main`).
 1. Check the plan's **Dependencies** section: every "implementation" dependency must be merged on `main`; "interface" dependencies only need the named contract.
 2. Create the branch `ws-<id>/p<n>-<short-title>` from the latest `main` (e.g. `ws-cat/p2-canonical-ingestion`).
 3. Give the subagent, as its full context: this README, `baseline.md`, the plan file, the spec sections the plan cites, and the files listed in its *Files and ownership* table. The plan is written to be executable without any prior conversation.
 4. The subagent works **only** inside the files its plan owns. Changes to a file owned by another workstream go through that owner (see `workstream-assignments.md` §4).
 5. The subagent runs the plan's test commands and fills in the **Completion handoff** (template below) in the PR description.
-6. Open a PR; the owner reviews; CI (added by `WS-FND-P1`) must be green; merge with squash.
+6. Open a PR; the owner reviews; CI (added by `WS-FND-P1`) must be green; merge with squash. Step-by-step Git and GitHub instructions for all four developers: [`../development-workflow.md`](../development-workflow.md).
 
 Development-time model choice (the coding model a developer's subagent uses) is free. **FinMate's runtime model choice** is fixed by D-008: Qwen 32B-class via an OpenAI-compatible API for the prototype (exact endpoint pending U-2), Gemini Enterprise for production. Plans never depend on a specific coding tool's features.
 

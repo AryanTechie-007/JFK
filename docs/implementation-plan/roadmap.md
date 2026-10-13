@@ -16,7 +16,8 @@ Schedule uses relative working days **D1–D9** for **four developers** (Dev A�
 ## 2. Milestones
 | Milestone | Content | Target |
 | --- | --- | --- |
-| M0 — Contracts agreed | Specs + design + this package on `main`; harness, CI, route split; contract PRs opened (HTTP view schemas, Chat schemas) | End D1 |
+| M−1 — Repository ready *(added 2026-10-13)* | Pre-implementation decisions recorded (`../team-decisions.md` §2); TD-01 resolved and, if imported, the source baseline merged and re-verified | Before D1 |
+| M0 — Contracts agreed | Specs + design + this package on `main` (true since repository initialisation); harness, CI, route split; contract PRs opened (HTTP view schemas, Chat schemas) | End D1 |
 | M1 — Skeleton integrated | Migrations, dispatcher, tool-result store, LLM adapter (fake), CI green; five-workspace shell renders its views from `/api/v1` | End D3 |
 | M2 — Deterministic core proven | Categorizer + Sentinel conformance, consent-safe actions, event-driven alerts | End D4 |
 | M3 — AI layer integrated | Runner + Nova + John on fake LLM; proposals → confirm → propagation; corrections in chat | End D7 |
@@ -126,7 +127,7 @@ flowchart LR
 ## 6. Integration gates
 | Gate | Entry criteria | Verified by | Owner |
 | --- | --- | --- | --- |
-| G1 Contract agreement (end D1) | `docs/specifications` + `docs/prototype-design` + this package on `main`; harness + CI live; route files split with ownership in CODEOWNERS; HTTP view-schema and Chat-schema contract PRs open; decisions C-1, C-5, D-PLAN-2, U-4 answered or defaulted; U-2 owner named | Checklist in `acceptance-checklist.md` §2 | WS-FND |
+| G1 Contract agreement (end D1) | `docs/specifications` + `docs/prototype-design` + this package on `main` (satisfied at initialisation); source baseline present per TD-01; harness + CI live; route files split with ownership in CODEOWNERS; HTTP view-schema and Chat-schema contract PRs open; decisions C-1, C-5, D-PLAN-2, U-4 answered or defaulted; U-2 owner named | Checklist in `acceptance-checklist.md` §2 | WS-FND |
 | G2 Skeleton integration (end D3) | `npm --prefix backend test` green in CI on temp DBs; migrations reproduce today's schema; dispatcher delivers a test event; `llm.complete` works with `fake` under test; Electron boots and the five nav items + Settings render their workspace views from `/api/v1` (Backend B may still run until WS-FND-P5) | CI run + manual Electron smoke | WS-FND |
 | G3 Core deterministic loop (end D4) | Ingest (existing `/ingest/batch`) → categorization → `categorization.updated` → Monitor alert (no LLM) → Nova view; proposal → confirm → executed; T2 cannot execute without confirm token | Integration tests in CAT, SEN, PLT plans | WS-PLT (coordinates) |
 | G4 Cross-component behaviour (end D7) | Chat with fake LLM: single specialist, parallel specialists, arbitration, rule-detected T1 with Undo, typed "yes" refused; correction propagates to next answer | `backend/test/integration/chat-*.test.js` | WS-JON |

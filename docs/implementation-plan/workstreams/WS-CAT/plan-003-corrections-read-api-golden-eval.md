@@ -2,6 +2,8 @@
 
 > **Local plan number: Plan 3 of 3 in WS-CAT** · Unique ID: **`WS-CAT-P3`** · Branch: `ws-cat/p3-corrections-read-api`
 
+> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/finmate-ai` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). **That code is not in the repository yet.** This plan cannot start until team decision **TD-01** (how the source baseline enters the repository) is resolved and, if the code is imported, the import PR is merged and verified (see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`.
+
 ## 1. Plan identity
 | Field | Value |
 | --- | --- |
@@ -24,7 +26,7 @@
 ## 3. Scope
 **In:** executors and their undo; dry-run counts for merchant scope; read API + routes; versioned reads (CAT-AC-08); review items from specialist hints; golden evaluation script (CAT-AC-19 report).
 **Out:** link/duplicate/own-account actions and `DELETE_CATEGORY_RULE` (deferred, Doc 0 §3.2 / Doc 4 §8.1); taxonomy migration.
-**Scope note (audit A-18):** `SET_TRANSACTION_TYPE` and `CREATE_CATEGORY_RULE` are deferred in Doc 0 §3.2 but **already implemented on `main`** (as `SET_TRANSACTION_MOVEMENT_TYPE` / `CREATE_CATEGORY_RULE` in `action-service.js`). This plan only *moves* that existing behaviour into categorizer executors so nothing working is lost; it adds no new deferred action. Their UI controls stay as they are today.
+**Scope note (audit A-18):** `SET_TRANSACTION_TYPE` and `CREATE_CATEGORY_RULE` are deferred in Doc 0 §3.2 but **already implemented in the source baseline** (as `SET_TRANSACTION_MOVEMENT_TYPE` / `CREATE_CATEGORY_RULE` in `action-service.js`). This plan only *moves* that existing behaviour into categorizer executors so nothing working is lost; it adds no new deferred action. Their UI controls stay as they are in the source baseline. If TD-01 is decided as a greenfield rebuild, there is no existing behaviour to move and these actions stay deferred (Q-UI-09).
 
 ## 4. Files and ownership
 | File | Action | Purpose | Ownership | Shared-file risk |

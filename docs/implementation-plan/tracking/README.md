@@ -1,6 +1,6 @@
 # Execution Tracking — Conventions
 
-Lightweight and in-repo: no project-management tool is required. Three kinds of file:
+Lightweight and in-repo: no project-management tool is required. GitHub Issues may be used for assignment and discussion (one issue per plan, see [`../../development-workflow.md`](../../development-workflow.md) §4); `STATUS.md` stays the record of status and evidence (team decision TD-11). Three kinds of file:
 
 | File | Purpose | Updated by | When |
 | --- | --- | --- | --- |

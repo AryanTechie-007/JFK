@@ -3,7 +3,7 @@
 > Revised for exactly **four developers** (Dev A–Dev D). The seven workstreams and their 21 locally numbered plans are unchanged. Each developer owns whole workstreams, so no plan is split across developers and no local numbering changes.
 
 ## 1. Why seven workstreams
-The split follows ownership boundaries that already exist on `main` (`backend/src/{shared,platform,engines,agents,routes}`, `src/`) and the dependency structure of the remaining work (baseline §4), not one-workstream-per-component:
+The split follows ownership boundaries that already exist in the source baseline (`backend/src/{shared,platform,engines,agents,routes}`, `src/`) and the dependency structure of the remaining work (baseline §4), not one-workstream-per-component:
 - **Shared plumbing** (schema, events, tool-result store, LLM adapter, test/CI, legacy removal, demo data, E2E) is one cross-cutting workstream so no component team edits another's infrastructure.
 - **Atlas, Nova and Iris share one runner and one LLM contract**, so they are one workstream; splitting them would triplicate the runner work.
 - **The Action Service, Profile and Budget Monitor** all mutate or police plan state and share the consent/token logic, so they form one workstream.
@@ -111,8 +111,8 @@ Contingency rules (decided at the daily stand-up, recorded in `tracking/STATUS.m
 | `.oxlintrc.json`, CI workflow | A, D | Dev A (CI), Dev D (lint rules for `src/`) | Lint rule changes reviewed by Dev A |
 
 ## 7. Branching, review and integration workflow
-The repository has no CI and uses long-lived module branches (`atlas`, `iris`, `john`, `nova`, `sentinel`, `tally` at `54f9f6f`; `sentinel_web` diverged). The smallest workflow that prevents integration failure:
-1. `main` is protected: PR + 1 owner review + green CI; squash merge; no direct pushes. The module branches above are frozen; new work never targets them.
+The project repository is `https://github.com/Kathir-M-03/finmate-ai`. It starts with documentation only, no CI and a single `main` branch (the long-lived module branches of the previous repository were **not** carried over and must not be recreated). The smallest workflow that prevents integration failure is below; the beginner-friendly, step-by-step version with commands is [`../development-workflow.md`](../development-workflow.md):
+1. `main` is protected: PR + 1 owner review + green CI; squash merge; no direct pushes. (Enforced by GitHub only if the account's plan supports branch protection on private repositories — TD-04; otherwise by team agreement.)
 2. One short-lived branch per plan: `ws-<id>/p<n>-<slug>` (e.g. `ws-cat/p2-canonical-ingestion`); rebase on `main` at least daily; ≤ 600 changed lines per PR (split a plan into several PRs if larger, plan ID in every PR title).
 3. **Contract PRs first** (separate, small, approved by every consumer listed in §6) before implementation PRs that depend on them.
 4. CI (from `WS-FND-P1`): `npm ci` (root with `ELECTRON_SKIP_BINARY_DOWNLOAD=1`, backend), `npm --prefix backend test`, `npm run build`, `npx oxlint`. Live-LLM tests excluded (manual workflow).

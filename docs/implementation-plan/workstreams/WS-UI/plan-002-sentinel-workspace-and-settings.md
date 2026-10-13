@@ -2,6 +2,8 @@
 
 > **Local plan number: Plan 2 of 3 in WS-UI** · Unique ID: **`WS-UI-P2`** · Branch: `ws-ui/p2-sentinel-settings`
 
+> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/finmate-ai` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). **That code is not in the repository yet.** This plan cannot start until team decision **TD-01** (how the source baseline enters the repository) is resolved and, if the code is imported, the import PR is merged and verified (see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`. Screen-level UI design: [`07-ui-screens-and-interactions.md`](../../../prototype-design/07-ui-screens-and-interactions.md) (generated, awaiting approval TD-05).
+
 ## 1. Plan identity
 | Field | Value |
 | --- | --- |
@@ -84,6 +86,7 @@
 
 ## 12. Assumptions and unresolved questions
 - [A] Category-rule editing UI deferred (rules list read-only).
+- [U] Q-UI-04 (how onboarding completion is detected), Q-UI-05 (`POST /onboarding` has no backend owner in any plan — build sequential proposals unless assigned), Q-UI-11 (memory facts section vs Doc 0 §3.2 deferral) — `docs/team-decisions.md`.
 
 ## 13. Completion handoff
 README template; screenshots; walkthrough notes. Next eligible: WS-FND-P5, WS-FND-P6.

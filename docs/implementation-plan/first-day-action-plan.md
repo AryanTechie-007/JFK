@@ -1,9 +1,12 @@
 # First-Day Action Plan (D1)
 
+## 0. Before D1 (added 2026-10-13)
+D1 cannot start until the **pre-implementation decisions** in [`../team-decisions.md`](../team-decisions.md) §2 are recorded — above all **TD-01** (source baseline). If the source baseline is imported, the import PR must be merged and verified first (see [`../repository-migration-notes.md`](../repository-migration-notes.md) §5).
+
 ## 1. What the team does first (first hour, together)
 1. Map real names and GitHub handles to **Dev A–Dev D** (`workstream-assignments.md` §2) and confirm the defaults C-1, C-5, D-PLAN-2, U-4. Name who will answer **U-2** (Qwen endpoint) by D3 and **U-1** (demo date).
-2. Dev A merges `docs/prototype-design` and `docs/implementation-plan` to `main` (WS-FND-P1 step 1) — or applies the delivered patch.
-3. Everyone clones `main`, runs `npm ci` (root) and `npm --prefix backend ci`, copies `backend/.env.example` to `backend/.env`, sets `JWT_SECRET`, and confirms `node --version` ≥ 22.5.
+2. ~~Dev A merges the design and plan docs to `main`~~ — already done: the new repository was initialised with all documentation on `main`. Dev A instead confirms the source-baseline check in WS-FND-P1 step 1.
+3. Everyone clones `https://github.com/Kathir-M-03/finmate-ai` (`git clone https://github.com/Kathir-M-03/finmate-ai.git`; see [`../development-workflow.md`](../development-workflow.md) §3), runs `npm ci` (root) and `npm --prefix backend ci`, copies `backend/.env.example` to `backend/.env`, sets `JWT_SECRET`, and confirms `node --version` ≥ 22.5.
 
 ## 2. What all four developers read (≈ 1 hour each)
 - `README.md`, `baseline.md`, `workstream-assignments.md`, `execution-manual.md` §1–§4, `prompt-templates.md`.

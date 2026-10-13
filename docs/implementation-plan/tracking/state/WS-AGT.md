@@ -22,6 +22,7 @@ See the rows naming WS-AGT in `cross-workstream-dependencies.md`. Record here th
 - (none merged yet)
 
 ## 3. Decisions and assumptions in force
+- **TD-01 (2026-10-13): source baseline not yet in the repository — every plan in this sequence is Blocked until it is resolved** (`../../../team-decisions.md`).
 - Defaults from `baseline.md` §5–§6 (C-1, C-5, D-PLAN-2, U-4) unless the decision log in `tracking/STATUS.md` says otherwise.
 
 ## 4. Handoff log (append Template E summaries, newest last)

@@ -1,13 +1,15 @@
-# Repository Baseline (verified 2026-10-11, `main` @ 54f9f6f; re-checked against `main` @ fc0981d)
+# Source Baseline (verified 2026-10-11 at commit 54f9f6f of the previous project repository; re-checked against fc0981d)
 
-> **Re-check (audit, 2026-10-11):** the only upstream change since `54f9f6f` is `fc0981d` "Add files via upload", which edits `package-lock.json` only (package name, Electron pinned to 41.10.7 to match `package.json` `^41.2.0`). No plan is affected; it makes `npm ci` consistent for CI. Remote module branches `atlas`, `iris`, `john`, `nova`, `sentinel`, `tally` still point at `54f9f6f`; `sentinel_web` has diverged — all are frozen (workstream-assignments §7).
+> **Read this first (2026-10-13).** This file describes the **source baseline**: the application code the 21 plans were written against. That code lived in the previous project repository, which is **out of scope** for this project and must not be accessed for implementation. The new project repository `https://github.com/Kathir-M-03/finmate-ai` currently contains documentation only. Whether and how this code enters the new repository is team decision **TD-01** ([`../team-decisions.md`](../team-decisions.md)). Every "[V] verified" statement below was verified against the previous repository on 2026-10-11; after an import it must be **re-verified** against the imported commit (see [`../repository-migration-notes.md`](../repository-migration-notes.md) §5). Wherever this file says "on `main`", read "in the source baseline".
+
+> **Re-check (audit, 2026-10-11):** the only upstream change since `54f9f6f` is `fc0981d` "Add files via upload", which edits `package-lock.json` only (package name, Electron pinned to 41.10.7 to match `package.json` `^41.2.0`). No plan is affected; it makes `npm ci` consistent for CI. Remote module branches `atlas`, `iris`, `john`, `nova`, `sentinel`, `tally` still point at `54f9f6f`; `sentinel_web` had diverged. *(Historical: none of these branches exist in the new repository and they must not be recreated — `workstream-assignments.md` §7.)*
 
 Labels: **[V]** verified by reading code or running it · **[S]** stated in specs/design · **[A]** assumption · **[U]** unresolved.
 
 ## 1. Materials inspected
 - Code: `backend/` (entire `src/`), `src/` (React views, services, legacy Backend B), `electron/main.js`, `launch.bat`, `package.json` (root, backend), `tests/verifyApp.js`, `backend/test-v1-specs.js`, `.gitignore`, `.env.example`, `README.md`, `branch-manifest.json`.
 - Specs: `docs/specifications/*.md` (on `main`, identical to the frozen set).
-- Architecture: `docs/prototype-design/*.md` (on branch `docs/requirements-freeze-specs`, **not yet on `main`**).
+- Architecture: `docs/prototype-design/*.md` (at planning time on an unmerged docs branch; **now on `main` of the new repository** since its first commit).
 - Executed: `node backend/test-v1-specs.js` → all 7 sections pass [V]. Legacy module tests under `src/` pass against Backend B's in-memory emulator (previous inspection) [V].
 - **Limitation:** `npm install` is blocked by this planning environment's network policy, so the HTTP server and the React build could not be started here. Statements about HTTP behaviour come from reading the route code, not from running it.
 
@@ -58,10 +60,11 @@ Labels: **[V]** verified by reading code or running it · **[S]** stated in spec
 | --- | --- | --- | --- | --- |
 | C-1 | `main` implements deterministic agents; specs + D-008 require LLM agents | Without LLMs the prototype does not validate the AI architecture | Add the LLM layer; keep the existing deterministic composition as the runner's plan step and as the spec-mandated deterministic fallback (John §B.12) | Team lead to confirm (default: follow specs) |
 | C-2 | Repository now ships desktop-only (Electron); prototype design defaulted to browser (U-3) | Demo surface | Plans target Electron with the Vite-built UI; U-3 resolved by the repository's latest commit | Resolved [V] |
-| C-3 | README describes 4 developers and long-lived module branches; this planning targets 6 developers and short-lived plan branches (U-4) | Workflow | Short-lived plan branches recommended (`workstream-assignments.md` §5) | Team lead |
+| C-3 | The source baseline's README describes 4 developers and long-lived module branches; this planning targets short-lived plan branches (U-4) | Workflow | Short-lived plan branches (`workstream-assignments.md` §7; [`../development-workflow.md`](../development-workflow.md)). The old module branches do not exist in the new repository | Team lead (TD-09) |
 | C-5 | Action names on `main` differ from the SC §13.2 registry (`CORRECT_TRANSACTION_CATEGORY`, `CONFIRM_PROVISIONAL_CATEGORY`, `CONFIRM_TRANSACTION_CATEGORY` vs `RECATEGORIZE_TRANSACTION`/`CONFIRM_CATEGORY`; `SET_TRANSACTION_MOVEMENT_TYPE` vs `SET_TRANSACTION_TYPE`; `CREATE_MANUAL_TRANSACTION` vs `ADD_MANUAL_TRANSACTION`; `UPDATE_USER_PROFILE`/`UPDATE_USER_PREFERENCES` vs `UPDATE_PROFILE`/`UPDATE_PREFERENCE`; `CREATE_DECLARED_BILL` vs `ADD_DECLARED_BILL`; `SET_CATEGORY_WATCH` vs `CREATE_ALERT`; extra `UNDO_ACTION`, `DELETE_MEMORY_FACT`, `LINK_*`, `MARK_*`) | Proposals from specialists (SC names) and UI calls (current names) disagree; validators keyed by name | SC names are canonical; `WS-PLT-P1` adds a temporary alias table (old → SC name, logged), `WS-UI-P1` switches to SC names, `WS-FND-P5` deletes the aliases | Team lead (default: SC names) |
 | C-6 | Physical table names on `main` (`transactions_v1`, `goals_v1`, `caps_v1`, `outbox_events`, …) differ from Doc 2 §3 logical names (`raw_transactions`/`txn_classification`, `goals`, `caps`, `event_outbox`, …) | Plans could create duplicate tables | **D-PLAN-2:** keep physical names; `backend/src/db/TABLES.md` maps them (WS-FND-P2) | Team lead (default: keep) |
-| C-4 | `docs/prototype-design` is "Proposed", not yet merged/approved | All plans rely on its ADRs | `WS-FND-P1` merges it; plans proceed on assumption A-ARCH | Team lead |
+| C-4 | `docs/prototype-design` is "Proposed", not yet approved | All plans rely on its ADRs | Merged: on `main` of the new repository since initialisation. Approval still pending (A-ARCH / TD-05) | Team lead |
+| C-7 | **(added 2026-10-13)** The source baseline is not present in the new repository | Every plan modifies or extends source-baseline files; none can start | Team decision TD-01: import the source baseline (with the code owner's agreement) or re-plan for a greenfield build. Recorded in [`../repository-migration-notes.md`](../repository-migration-notes.md) §5 | Team lead |
 
 ## 6. Assumptions and unresolved questions
 | ID | Item | Consequence | Owner |
@@ -99,4 +102,4 @@ Source: `backend/src/routes/v1/index.js`. `WS-FND-P1` step 7 freezes this list i
 | `backend/src/index.js` exports `app` and only listens when `require.main === module` | File tail |
 | Both `package-lock.json` (root) and `backend/package-lock.json` exist, so `npm ci` is usable in CI | Repository listing |
 | Root `npm test` runs legacy `tests/verifyApp.js`; backend has no test script yet | `package.json` files |
-| Developer machines include Windows (PowerShell); use `git grep` rather than `grep` in gates | Linked desktop is Windows; `launch.bat` in repo |
+| Developer machines include Windows (PowerShell); use `git grep` rather than `grep` in gates | Planning machine was Windows; `launch.bat` in the source baseline |

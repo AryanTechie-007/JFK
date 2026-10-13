@@ -12,7 +12,8 @@
 
 ## 2. Gate checklists
 ### G1 Contract agreement (end D1)
-- [ ] `docs/specifications/`, `docs/prototype-design/`, `docs/implementation-plan/` on `main`.
+- [x] `docs/specifications/`, `docs/prototype-design/`, `docs/implementation-plan/` on `main` (repository initialisation, 2026-10-13).
+- [ ] Source baseline present on `main` per TD-01 (or plans re-planned for greenfield).
 - [ ] `routes/v1/index.js` split; `.github/CODEOWNERS` merged.
 - [ ] HTTP view schema drafts open as a PR by WS-SEN.
 - [ ] Harness + CI live; Chat-schema contract PR open (WS-JON-P1 step 1).

@@ -2,6 +2,8 @@
 
 > **Local plan number: Plan 1 of 3 in WS-UI** · Unique ID: **`WS-UI-P1`** · Branch: `ws-ui/p1-workspace-shell`
 
+> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/finmate-ai` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). **That code is not in the repository yet.** This plan cannot start until team decision **TD-01** (how the source baseline enters the repository) is resolved and, if the code is imported, the import PR is merged and verified (see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`. Screen-level UI design: [`07-ui-screens-and-interactions.md`](../../../prototype-design/07-ui-screens-and-interactions.md) (generated, awaiting approval TD-05).
+
 ## 1. Plan identity
 | Field | Value |
 | --- | --- |
@@ -51,7 +53,7 @@
 4. Atlas: replace `goalService` calls with v1 workspace + proposals; Nova: rebalance via `/workspaces/nova/rebalance` (returns proposal) → card; cap edits → proposals.
 5. Remove mocks; Header/Badge read health and notification count. In the moved John view, delete the `askGeminiJohn` fallback and the `geminiService` import so it calls only `/api/v1/chat` (non-streaming) until WS-UI-P3; `conversationService.js` stays until WS-UI-P3 rebuilds the John view.
 6. Navigation: John, Sentinel, Nova, Atlas, Iris; Settings via avatar; temporarily route old Home/Analyser/Subscriptions views under Sentinel tab sections until P2 rebuilds them; remove Financial Health page.
-7. Mark deferred controls with `DisabledControl` — the Doc 0 §3.2 list minus actions that already work on `main` (`RESTORE_GOAL` stays enabled); category-rule editing and `UPDATE_DECLARED_BILL` are disabled. `REMOVE_CAP` is enabled once WS-PLT-P1 registers it.
+7. Mark deferred controls with `DisabledControl` — the Doc 0 §3.2 list minus actions that already work in the source baseline (`RESTORE_GOAL` stays enabled; conditional on TD-01 — see Doc 7 §8 and Q-UI-09); category-rule editing and `UPDATE_DECLARED_BILL` are disabled. `REMOVE_CAP` is enabled once WS-PLT-P1 registers it.
 8. Lint rule; build; manual run in Electron.
 
 ## 7. Edge cases
@@ -87,7 +89,8 @@
 | View move breaks CSS imports | Move CSS with views; visual check |
 
 ## 12. Assumptions and unresolved questions
-- [A] Deferred controls list = Doc 4 §8.1 "all other registry actions".
+- [A] Deferred controls list = Doc 4 §8.1 "all other registry actions"; the screen-level list is Doc 7 §8.
+- [U] Q-UI-02 (nav order: SC §18 vs step 6 of this plan), Q-UI-06 (money input parsing vs the `_minor` lint rule), Q-UI-10 (Iris slider ranges) — `docs/team-decisions.md`.
 
 ## 13. Completion handoff
 README template; screenshots of five workspaces; list of deleted UI files. Next eligible: **WS-UI-P2, WS-UI-P3**; partial input to WS-FND-P5.

@@ -36,7 +36,7 @@ Rule of thumb: **paste what defines the task and how it is judged; reference wha
 ### 1.4 Context map per workstream (what each primer references)
 SC = `docs/specifications/system-contracts.md`; Doc N = `docs/prototype-design/0N-*.md`.
 
-| Workstream | Specification sections | Design sections | Existing code to inspect first |
+| Workstream | Specification sections | Design sections | Existing code to inspect first (source-baseline files — available only after TD-01) |
 | --- | --- | --- | --- |
 | WS-FND | SC §3, §4, §7, §10.2–10.3, §14, §15, §16, §17.8 | Doc 1 §2, §8 (ADR-01, 02, 04, 05, 06, 13); Doc 2 §3, §5.1, §5.5, §6; Doc 5; Doc 6 §1–§5 | `backend/src/{index,db}.js`, `routes/v1/index.js`, `platform/{gateway,snapshot}.js`, `backend/test-v1-specs.js`, `electron/main.js`, root + backend `package.json` |
 | WS-CAT | `item-categorizer-spec.md` (all; esp. §B, §C, §K); SC §5.3, §6, §8, §13.2 (categorizer rows), §14, §17.7 | Doc 2 §3.3, §5.2–5.3; Doc 3 F1, F2, F8; Doc 4 §7 | `engines/categorizer/**`, `shared/finance/**`, `routes/v1/{categorizer,ingest}.js`, `platform/action-service.js` (categorization cases) |
@@ -44,7 +44,7 @@ SC = `docs/specifications/system-contracts.md`; Doc N = `docs/prototype-design/0
 | WS-PLT | SC §5.1–5.10, §12, §13, §14, §16.7; `nova-budget-guardian-spec.md` §B.4 | Doc 2 §3.4, §5.5, §6; Doc 3 F6, F7, F9; Doc 4 §8; Doc 5 S-4–S-6, S-15 | `platform/{action-service,profile,budget-monitor}.js`, `shared/contracts/{action-registry,constraint-messages}.js` |
 | WS-AGT | SC §9, §10, §11, §16.4–16.5; `atlas-*`, `nova-*`, `iris-*` specs (§B–§K) | Doc 1 ADR-06, ADR-07; Doc 4 §2–§5; Doc 5 S-9, S-10 | `agents/{atlas,nova,iris}/index.js`, `platform/gateway.js`, `shared/contracts/{grounding,validator}.js` |
 | WS-JON | `john-orchestrator-spec.md` (all); SC §9, §11, §13.1–13.4, §15, §16.4–16.6 | Doc 3 F4, F5, F6, F8, F10, F11; Doc 4 §1; Doc 5 S-4, S-11 | `agents/john/index.js`, `routes/v1/chat.js` (after split), `shared/contracts/grounding.js` |
-| WS-UI | SC §18; workspace sections: Atlas §B.4, Nova §B.5, Iris §B.4, Sentinel §B.6.18; John §C.1–C.2 (Plan 3) | Doc 1 §6, ADR-11; Doc 2 §6; Doc 3 F3, F6, F10; Doc 6 §5 | `src/App.jsx`, `src/components/**`, view files listed in WS-UI-P1 §3, `src/services/workspaceService.js` |
+| WS-UI | SC §18; workspace sections: Atlas §B.4, Nova §B.5, Iris §B.4, Sentinel §B.6.18; John §C.1–C.2 (Plan 3) | Doc 1 §6, ADR-11; Doc 2 §6; Doc 3 F3, F6, F10; Doc 6 §5; **Doc 7 (screens, added 2026-10-13)** | `src/App.jsx`, `src/components/**`, view files listed in WS-UI-P1 §3, `src/services/workspaceService.js` |
 
 ### 1.5 Repo-aware agent vs chat-only model
 - **Repo-aware agent** (can read files and run commands): give paths and section numbers; require it to read them and to run the plan's tests itself. Paste only the plan, the sequence overview and validation context.
@@ -109,7 +109,7 @@ Run on every diff before the PR (and give to the reviewer model in Template C):
 | A test fails and the cause is inside this plan's files | Ask the implementing session to fix it (Template D) **once**; if the second attempt fails, open a fresh debug session with the failing output |
 | A test fails in another workstream's area, or after a merge | Fresh debug session (Template D) owned by the developer whose PR caused it; the other owner is consulted |
 | Two developers' code disagrees at an interface | Integration session (Template F) run by the consumer, with both contracts pasted; result goes to both owners |
-| Model starts redesigning, adding features or editing unrelated files | Stop; revert the session's changes (`git restore`/`git reset --hard <last good>` on the plan branch); restart with Template B emphasising scope |
+| Model starts redesigning, adding features or editing unrelated files | Stop; revert the session's changes (`git restore`, or `git reset --hard <last good>` **only on your own local plan branch and only for commits you have not pushed**; for pushed commits use `git revert` — see `../development-workflow.md` §9); restart with Template B emphasising scope |
 
 **Context carry-over kit** (enough for any model to resume): (1) plan file; (2) `tracking/state/<WS>.md`; (3) `git log --oneline main..HEAD` and `git diff --stat main...HEAD`; (4) the last test output (failing tests verbatim); (5) the latest handoff. Never rely on "as we discussed earlier".
 
@@ -122,7 +122,8 @@ Run on every diff before the PR (and give to the reviewer model in Template C):
 | --- | --- | --- |
 | Architecture and scope | `docs/prototype-design` + specs as frozen (A-ARCH, C-1 default: LLM layer per spec) | D1 start |
 | Developer mapping | Names → Dev A–D (`workstream-assignments.md` §2); CODEOWNERS handles | WS-FND-P1 CODEOWNERS PR (D1) |
-| Repository and branches | Short-lived plan branches, protected `main`, squash merges (U-4 default) | D1 start |
+| Repository and branches | `https://github.com/Kathir-M-03/finmate-ai`; short-lived plan branches, protected `main`, squash merges (U-4 default); procedure in [`../development-workflow.md`](../development-workflow.md) | D1 start |
+| Source baseline | TD-01 resolved; imported code merged and re-verified (or plans re-planned) | Before D1 |
 | Action names | SC §13.2 canonical (C-5 default) | WS-PLT-P1 contract PR (D2) |
 | Table names | Keep physical names (D-PLAN-2 default) | WS-FND-P2 (D2) |
 | Coding conventions | CommonJS backend, `node:test`, money rules (§3), no new deps without WS-FND approval | D1 start |

@@ -2,12 +2,14 @@
 
 > **Local plan number: Plan 3 of 6 in WS-FND** · Unique ID: **`WS-FND-P3`** · Branch: `ws-fnd/p3-platform-plumbing`
 
+> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/finmate-ai` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). **That code is not in the repository yet.** This plan cannot start until team decision **TD-01** (how the source baseline enters the repository) is resolved and, if the code is imported, the import PR is merged and verified (see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`.
+
 ## 1. Plan identity
 | Field | Value |
 | --- | --- |
 | Workstream / local number / ID | WS-FND / **Plan 3** / `WS-FND-P3` |
 | Owner / subagent | Dev A — Integration Lead / WS-FND subagent |
-| Objective | Build the shared plumbing every component needs and `main` lacks: outbox event append + dispatcher with retries and dead letter (G-3), persistent tool results with ownership checks (G-4), snapshot freshness check, trace spans, and the **runtime LLM adapter** (G-1) with an OpenAI-compatible provider (Qwen prototype) and a test-only fake |
+| Objective | Build the shared plumbing every component needs and the source baseline lacks: outbox event append + dispatcher with retries and dead letter (G-3), persistent tool results with ownership checks (G-4), snapshot freshness check, trace spans, and the **runtime LLM adapter** (G-1) with an OpenAI-compatible provider (Qwen prototype) and a test-only fake |
 | Expected outcome | `events.append/subscribe`, dispatcher loop, `gateway.getResult/verifyResultOwnership`, `snapshot.assertCurrent`, `trace.span`, `llm.complete` exported with JSDoc and tests; `/api/v1/health` reports DB, breaker and dead letters |
 | Size | ~1–1.5 days; 4 PRs (events, gateway store + snapshot, traces + health, LLM adapter) |
 

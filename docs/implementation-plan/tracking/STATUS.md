@@ -4,10 +4,12 @@ Update this file in the same PR that changes a plan's state (or via a small `tra
 
 Local plan numbers restart at Plan 1 in every workstream; always refer to plans by **ID**.
 
+> **2026-10-13:** every plan is additionally blocked by **TD-01** (source baseline not yet in the repository). When TD-01 is resolved and the import is merged, Dev A sets WS-FND-P1 to *Ready* and removes this note. Team decisions are recorded in [`../../team-decisions.md`](../../team-decisions.md).
+
 ## 1. Plans
 | Plan ID | Local | Title | Developer | Target (roadmap §4) | Status | Waiting on (implementation deps) | PR | Evidence (tests · acceptance · review) | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| WS-FND-P1 | Plan 1 | Baseline, Guardrails and Route Split | Dev A | D1 | Ready | — | — | — | — |
+| WS-FND-P1 | Plan 1 | Baseline, Guardrails and Route Split | Dev A | D1 | Blocked | TD-01 (source baseline) | — | — | — |
 | WS-FND-P2 | Plan 2 | Migrations Framework and Schema Gaps | Dev A | D2 | Blocked | WS-FND-P1 | — | — | — |
 | WS-FND-P3 | Plan 3 | Event Dispatcher, Tool-Result Store, Traces and LLM Adapter | Dev A | D3 | Blocked | WS-FND-P2 | — | — | — |
 | WS-FND-P4 | Plan 4 | Demo Dataset and Seed | Dev A | D4 | Blocked | WS-FND-P2 | — | — | — |
@@ -25,7 +27,7 @@ Local plan numbers restart at Plan 1 in every workstream; always refer to plans 
 | WS-AGT-P3 | Plan 3 | Live-Model Evaluation (Qwen prototype endpoint) | Dev C | D9 (U-2) | Blocked | WS-AGT-P2 | — | — | Decision U-2 required |
 | WS-JON-P1 | Plan 1 | LLM Router Fallback, Grounded Synthesis, Streaming and Consent | Dev C | D4 am | Blocked | WS-FND-P3 | — | — | step 1 (Chat contract PR) Ready D1 |
 | WS-JON-P2 | Plan 2 | Proposals, Rule-Detected Instructions, Corrections and Arbitration in Chat | Dev C | D7 am | Blocked | WS-CAT-P3, WS-JON-P1, WS-PLT-P1 | — | — | — |
-| WS-UI-P1 | Plan 1 | Five-Workspace Shell, Single API Client and Shared Components | Dev D | D2 | Blocked | — | — | — | — |
+| WS-UI-P1 | Plan 1 | Five-Workspace Shell, Single API Client and Shared Components | Dev D | D2 | Blocked | TD-01 (source baseline) | — | — | — |
 | WS-UI-P2 | Plan 2 | Sentinel Workspace and Settings | Dev D | D7 am | Blocked | WS-CAT-P2, WS-CAT-P3, WS-PLT-P2, WS-SEN-P2, WS-UI-P1 | — | — | — |
 | WS-UI-P3 | Plan 3 | Chat UX (Streaming, Cards, Chips, Undo), Alert Explain and Desktop Verification | Dev D | D8 am | Blocked | WS-JON-P2, WS-PLT-P1, WS-UI-P1 | — | — | — |
 
@@ -57,3 +59,5 @@ Local plan numbers restart at Plan 1 in every workstream; always refer to plans 
 | — | U-1 | Demo date / hackathon length | audit | Team lead | Open — drives tier cut |
 | — | U-2 | Qwen endpoint (URL, model IDs, JSON mode, limits) | audit | Team lead | Open — needed by D3 |
 | — | U-4 | Branching model (short-lived plan branches) | audit | Team lead | Default applies |
+| 2026-10-13 | TD-01 | Source baseline: import into the new repository or greenfield re-plan | repository migration | Team lead | **Open — blocks all plans** (`../../team-decisions.md`) |
+| 2026-10-13 | TD-02…TD-25 | Other pre-implementation and task-level decisions | repository migration | Team lead | Open — see `../../team-decisions.md` |
