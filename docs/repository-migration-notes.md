@@ -200,20 +200,41 @@ No specification was regenerated: all seven were present and internally referenc
 ## 7. Commits in the prepared repository
 | Commit | Content |
 | --- | --- |
-| 1 | `docs/` exactly as received in `finmate-docs-all.zip` (baseline for diffing every change below) |
-| 2 | Generated Doc 7 (UI screens) and prototype-design overview notes |
-| 3 | Implementation plans and planning package updated for the new repository |
-| 4 | Root README, docs index, development workflow, team decisions, migration notes, `.gitignore` |
+| 1 `cb60980` | `docs/` exactly as received in `finmate-docs-all.zip` (baseline for diffing every change below) |
+| 2 `beaa50f` | Generated Doc 7 (UI screens) and prototype-design overview notes |
+| 3 `7574143` | Implementation plans and planning package updated for the new repository |
+| 4 `a905032` | Root README, docs index, development workflow, team decisions, migration notes, `.gitignore` |
+| 5 | Final audit results (§8), conflict K-11, execution-manual cross-reference fix |
 
-`git diff <commit 1> HEAD -- docs/` shows every change made to the received documents.
+`git diff cb60980 HEAD -- docs/` shows every change made to the received documents. (Hashes are stable when the prepared history is pushed unchanged.)
 
 ---
 
 ## 8. Final reference audit (2026-10-13)
-The results of the final search are recorded in §8.1 below after it is run.
+Method: case-insensitive search of every file in the repository for `JFK`, `AryanTechie`, any `github.com/<owner>/<repo>` URL, the old docs branch name, old module-branch names, and statements about "on `main`" that describe the old code state. Every match was reviewed by hand.
 
 ### 8.1 Results
-*(filled in by the audit step — see below)*
+| Search | Matches remaining | Where | Verdict |
+| --- | --- | --- | --- |
+| `JFK`, `AryanTechie` | 1 file | This file only (§0 header, §4.1 "before" examples) | **Historical.** Labelled; nowhere an instruction |
+| GitHub URLs | Only `Kathir-M-03/finmate-ai` | README, workflow guide, plans' banners, planning files | **Correct target.** No other repository URL anywhere |
+| Old docs branch `docs/requirements-freeze-specs` | 4 mentions | `audit-report.md` (2, under the historical banner), `prototype-design/00-overview.md` R-11 (marked *satisfied*), this file | **Historical**, each marked |
+| Old module branches (`sentinel_web`, `atlas`, …) | `baseline.md` re-check note (marked historical: must not be recreated), `audit-report.md` (historical), `workstream-assignments.md` §7 (states they were not carried over) | | **Historical / prohibitive**, not active |
+| Commit IDs `54f9f6f`, `fc0981d`, `485ed0f`, `546a226` | `baseline.md`, plans README, `audit-report.md`, Doc 0, this file, `team-decisions.md` | | **Provenance of the source baseline.** Needed for TD-02 (which commit to import, if any) |
+| "on `main`" describing existing code | Remaining occurrences are covered by the banner in every plan and in `baseline.md` ("read 'in the source baseline'"); the explicit cases in plans were rewritten (§4.2) | | **Reinterpreted**, not an instruction to use the old repository |
+| Instructions to clone, pull from, push to or open PRs against the old repository | **0** | — | — |
+
+**Conclusion:** no active implementation plan or development instruction directs a developer or AI coding assistant to the previous repository. All active instructions target `https://github.com/Kathir-M-03/finmate-ai`. The remaining dependency on the old code base is the explicit, documented **TD-01** gate, not a silent assumption.
+
+### 8.2 Other validation performed (2026-10-13)
+| Check | Result |
+| --- | --- |
+| Relative Markdown links and `#anchors` (all files) | 193 links checked, **0 broken** (GitHub slug rules) |
+| Backtick paths to `.md` files that don't exist | All are files that plans **create** during implementation or source-baseline files (e.g. `backend/src/db/TABLES.md`, `reports/acceptance-run.md`, agent prompt files) — expected; none refer to missing documentation |
+| Plan structure | All 21 plans keep sections 1–13 and have the repository-context banner |
+| Plan numbering and IDs | Unchanged: 7 sequences (6/3/2/2/3/2/3), 21 unique IDs |
+| Secrets / local files | No keys, tokens, passwords, `.env`, `*.db`, `*.pem` or `*.key` files in the repository; `.gitignore` covers them |
+| Tracked files | 61: 55 documentation files under `docs/` (54 received + Doc 7) + 4 new docs guides + root `README.md` + `.gitignore` |
 
 ---
 

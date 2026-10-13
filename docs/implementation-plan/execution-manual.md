@@ -109,7 +109,7 @@ Run on every diff before the PR (and give to the reviewer model in Template C):
 | A test fails and the cause is inside this plan's files | Ask the implementing session to fix it (Template D) **once**; if the second attempt fails, open a fresh debug session with the failing output |
 | A test fails in another workstream's area, or after a merge | Fresh debug session (Template D) owned by the developer whose PR caused it; the other owner is consulted |
 | Two developers' code disagrees at an interface | Integration session (Template F) run by the consumer, with both contracts pasted; result goes to both owners |
-| Model starts redesigning, adding features or editing unrelated files | Stop; revert the session's changes (`git restore`, or `git reset --hard <last good>` **only on your own local plan branch and only for commits you have not pushed**; for pushed commits use `git revert` — see `../development-workflow.md` §9); restart with Template B emphasising scope |
+| Model starts redesigning, adding features or editing unrelated files | Stop; revert the session's changes (`git restore`, or `git reset --hard <last good>` **only on your own local plan branch and only for commits you have not pushed**; for pushed commits use `git revert` — see `../development-workflow.md` §10.7); restart with Template B emphasising scope |
 
 **Context carry-over kit** (enough for any model to resume): (1) plan file; (2) `tracking/state/<WS>.md`; (3) `git log --oneline main..HEAD` and `git diff --stat main...HEAD`; (4) the last test output (failing tests verbatim); (5) the latest handoff. Never rely on "as we discussed earlier".
 
