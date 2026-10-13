@@ -1,0 +1,64 @@
+# FinMate AI — repository-wide ignores
+# Stack (planned): Node.js + Express backend, React/Vite frontend, Electron shell, SQLite.
+# If an imported source baseline brings its own .gitignore, MERGE it into this file (keep all entries).
+
+# Dependencies
+node_modules/
+backend/node_modules/
+
+# Environment and secrets — never commit (Doc 5 S-1). Keep the documented templates.
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+*.pem
+*.key
+
+# SQLite databases (local dev, demo resets, test temp files)
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# Build output (Vite / Electron packaging) — rebuilt, not committed (WS-FND-P1/P5)
+dist/
+dist-electron/
+release/
+out/
+
+# Test artefacts
+backend/test/.tmp/
+coverage/
+.nyc_output/
+test-results/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Caches
+.cache/
+.vite/
+.eslintcache
+*.tsbuildinfo
+
+# Local context packs for chat-only models (execution-manual §1.5)
+context-files.txt
+
+# Editors and operating systems
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
