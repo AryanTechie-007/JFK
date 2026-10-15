@@ -89,9 +89,9 @@ Labels: **[V]** verified by reading code or running it · **[S]** stated in spec
 | D-PLAN-12 | Qwen unavailable | **Decided:** temporarily use another OpenAI-compatible provider (configuration only: `LLM_BASE_URL`, `LLM_MODEL_*`, `LLM_API_KEY`); results labelled with the model actually used | WS-AGT-P3, WS-FND-P6, WS-UI-P3 |
 | D-PLAN-10 | Sentinel backtest limit | **Provisional:** monthly spend forecast within ±15 % on the held-out month; confirmed or adjusted on D4 | WS-SEN-P2 |
 | D-PLAN-13 | Defaults not objected to | Golden categorization target per Doc 6 P-AC-03 (≥ 90 % of labelled rows, 0 transfers/card payments as spend); on D8, delete Backend B, legacy tables and the committed `dist/` after backing up developer databases | WS-CAT-P3, WS-FND-P5 |
-| D-PLAN-1 | Team | **Decided:** four developers (Dev A–D); names stay placeholders until D1 | `workstream-assignments.md` §2 |
+| D-PLAN-1 | Team | **Decided:** four developers — Dev A Abhilash (@Falterred), Dev B Kathir (@Kathir-M-03), Dev C Anish (@DEstroy746), Dev D Aryan (@AryanTechie-007); names recorded 2026-10-15 | `workstream-assignments.md` §2.0 |
 
-**Still open:** developer names and GitHub handles (D1, for CODEOWNERS); the source-baseline import commit (D-PLAN-3, before D1); which stand-in provider and who holds its key (before D8); whether branch protection is available on the new repository (if not, "PR + green CI before merge" is enforced by team agreement).
+**Still open:** the source-baseline import commit (D-PLAN-3, before D1); which stand-in provider and who holds its key (before D8); whether branch protection is available on the new repository (if not, "PR + green CI before merge" is enforced by team agreement).
 
 ## Appendix A — `/api/v1` route inventory on `main` (25 method/path pairs, verified)
 Source: `backend/src/routes/v1/index.js`. `WS-FND-P1` step 7 freezes this list in `backend/test/routes-inventory.test.js`; later plans update it in the same PR that adds/removes a route.

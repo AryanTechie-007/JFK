@@ -17,7 +17,7 @@
 - [ ] `routes/v1/index.js` split; `.github/CODEOWNERS` merged.
 - [ ] HTTP view schema drafts open as a PR by WS-SEN.
 - [ ] WS-FND-P1 merged (harness + CI live, route split, CODEOWNERS); WS-JON-P1 Draft PR open with its Chat-schema contract commit under review.
-- [ ] Decisions recorded (`baseline.md` §6, 2026-10-13); developer names and GitHub handles mapped to Dev A–D in CODEOWNERS.
+- [ ] Decisions recorded (`baseline.md` §6, 2026-10-13); developer handles (`workstream-assignments.md` §2.0) used in CODEOWNERS.
 
 ### G2 Skeleton integration (end D3)
 - [ ] CI runs `node --test` on temp databases (no test touches `backend/finmate.db`).

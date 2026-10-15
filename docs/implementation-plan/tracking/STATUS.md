@@ -68,5 +68,5 @@ Local plan numbers restart at Plan 1 in every workstream; always refer to plans 
 | 2026-10-13 | D-PLAN-12 | If Qwen unavailable, temporarily use another OpenAI-compatible provider | Planning | Team lead | Decided — provider + key holder to choose before D8 |
 | 2026-10-13 | D-PLAN-10 | Sentinel backtest limit ±15 % (provisional) | Planning | Team lead | Confirm on D4 |
 | 2026-10-13 | D-PLAN-13 | Golden target per Doc 6 P-AC-03; D8 deletion of Backend B, legacy tables, `dist/` | Planning | Team lead | Default, not objected to |
-| — | D-PLAN-1 | Developer names and GitHub handles for Dev A–D | Planning | Team lead | Open — D1 |
+| 2026-10-15 | D-PLAN-1 | Dev A Abhilash (@Falterred), Dev B Kathir (@Kathir-M-03), Dev C Anish (@DEstroy746), Dev D Aryan (@AryanTechie-007) | Planning | Team lead | Decided |
 | — | — | Branch protection available on the new repository? | Planning | Team lead | Open — check Settings → Branches |

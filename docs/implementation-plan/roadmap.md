@@ -16,7 +16,7 @@ Schedule uses relative working days **D1–D9** for **four developers** (Dev A�
 ## 2. Milestones
 | Milestone | Content | Target |
 | --- | --- | --- |
-| M−1 — Repository ready *(added 2026-10-13)* | Source baseline `fc0981d` imported into the new repository (D-PLAN-3); developer names mapped | Before D1 |
+| M−1 — Repository ready *(added 2026-10-13)* | Source baseline `fc0981d` imported into the new repository (D-PLAN-3); developer names mapped (done 2026-10-15) | Before D1 |
 | M0 — Contracts agreed | Specs + design + this package in the repository; harness, CI, route split (WS-FND-P1); WS-JON-P1 Draft PR with its Chat-schema contract commit under review | End D1 |
 | M1 — Skeleton integrated | Migrations, dispatcher, tool-result store, LLM adapter (fake), CI green; five-workspace shell renders its views from `/api/v1` | End D3 |
 | M2 — Deterministic core proven | Categorizer + Sentinel conformance, consent-safe actions, event-driven alerts | End D4 |

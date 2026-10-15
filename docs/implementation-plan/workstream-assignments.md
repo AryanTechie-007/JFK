@@ -14,6 +14,16 @@ A workstream = one **independent local plan sequence** (Plan 1 … Plan N) execu
 
 ## 2. Four-developer allocation
 
+### 2.0 Team (D-PLAN-1, names recorded 2026-10-15)
+| Role | Name | GitHub handle | Coding-model resources (as stated by the team) |
+| --- | --- | --- | --- |
+| **Dev A — Integration Lead** (WS-FND) | Abhilash | @Falterred | DeepSeek |
+| **Dev B — Data & Write-Path Engineer** (WS-CAT, WS-PLT) | Kathir | @Kathir-M-03 | Claude Pro |
+| **Dev C — AI Engineer** (WS-JON, WS-AGT) | Anish | @DEstroy746 | 1 Gemini account |
+| **Dev D — Workspaces & Analytics Engineer** (WS-SEN, WS-UI) | Aryan | @AryanTechie-007 | 3 Gemini accounts |
+
+All four are collaborators on the repository. Use these handles in `.github/CODEOWNERS` (WS-FND-P1 step 8). Coding-model choice stays free per developer (§2.2); see `execution-manual.md` §1.5 for how a developer using a chat-only model works, and §1.2 for using a *different* model for independent review (Template C).
+
 ### 2.1 Developer assignment matrix
 | Developer | Assigned workstreams / subagent sequences | Plans owned (execution order) | Responsibilities | Files or modules owned | Depends on | Integration duties |
 | --- | --- | --- | --- | --- | --- | --- |

@@ -4,7 +4,7 @@ Fed to every new coding session for this workstream (Template A `[STATE FILE]`).
 
 | Field | Value |
 | --- | --- |
-| Developer | Dev C |
+| Developer | Dev C — Anish (@DEstroy746) |
 | Branch prefix | `ws-agt/p<n>-<slug>` |
 | Current plan | WS-AGT-P1 (not started) |
 

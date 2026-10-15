@@ -137,7 +137,7 @@ Seven workstreams contain 21 plans, owned by four developers. The full roadmap, 
 
 | Milestone | Content | Target |
 | --- | --- | --- |
-| M−1 Repository ready | Source baseline `fc0981d` imported (D-PLAN-3); developer names mapped | Before D1 |
+| M−1 Repository ready | Source baseline `fc0981d` imported (D-PLAN-3); developer names mapped (done) | Before D1 |
 | M0 Contracts agreed | Test harness, CI, route split (WS-FND-P1); WS-JON-P1 Draft PR with its contract commit | End D1 |
 | M1 Skeleton integrated | Migrations, event dispatcher, tool-result store, LLM adapter (fake), five workspaces render | End D3 |
 | M2 Deterministic core proven | Categorizer and Sentinel conformance, consent-safe actions, event-driven alerts | End D4 |
@@ -152,7 +152,7 @@ Seven workstreams contain 21 plans, owned by four developers. The full roadmap, 
 | Dev C — AI Engineer | WS-JON (John), WS-AGT (specialist runner, Atlas/Nova/Iris, live evaluation) |
 | Dev D — Workspaces & Analytics | WS-SEN (Sentinel), WS-UI (React workspaces, chat UX, desktop) |
 
-Which person fills each role is still open ([TD-03](docs/team-decisions.md#td-03--developer-mapping-and-repository-access-d-plan-1)).
+The team (recorded 2026-10-15): **Dev A** Abhilash (@Falterred) · **Dev B** Kathir (@Kathir-M-03) · **Dev C** Anish (@DEstroy746) · **Dev D** Aryan (@AryanTechie-007).
 
 ## Current status and known limitations
 

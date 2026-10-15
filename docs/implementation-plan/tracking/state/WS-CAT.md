@@ -4,7 +4,7 @@ Fed to every new coding session for this workstream (Template A `[STATE FILE]`).
 
 | Field | Value |
 | --- | --- |
-| Developer | Dev B |
+| Developer | Dev B — Kathir (@Kathir-M-03) |
 | Branch prefix | `ws-cat/p<n>-<slug>` |
 | Current plan | WS-CAT-P1 (not started) |
 

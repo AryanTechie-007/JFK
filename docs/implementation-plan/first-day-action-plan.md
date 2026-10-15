@@ -6,7 +6,7 @@ Decisions are already taken (`baseline.md` §6, 2026-10-13). Every plan is **one
 The repository is `https://github.com/Kathir-M-03/FINNMIN-JFK-John` (D-PLAN-3). It holds the documentation only; the team lead commits the **source-baseline import** (`fc0981d`) before D1, following [`../repository-migration-notes.md`](../repository-migration-notes.md) §5.3. Git/GitHub procedure for all four developers: [`../development-workflow.md`](../development-workflow.md).
 
 ## 1. What the team does first (first hour, together)
-1. Map real names and GitHub handles to **Dev A–Dev D** (`workstream-assignments.md` §2) — the only decision still open for D1. Confirm who will share the Qwen key on D3 (D-PLAN-11).
+1. ~~Map real names and GitHub handles~~ — done 2026-10-15 (`workstream-assignments.md` §2.0: Abhilash, Kathir, Anish, Aryan). Confirm who will share the Qwen key on D3 (D-PLAN-11).
 2. In the new repository (D-PLAN-3): check that `docs/specifications`, `docs/prototype-design` and `docs/implementation-plan` are present. If not, they become the first commit of WS-FND-P1. Check whether branch protection is available (Settings → Branches); if not, agree to enforce "PR + green CI before merge" by convention.
 3. Everyone clones the repository (`git clone https://github.com/Kathir-M-03/FINNMIN-JFK-John.git`), runs `npm ci` (root) and `npm --prefix backend ci`, copies `backend/.env.example` to `backend/.env`, sets `JWT_SECRET`, and confirms `node --version` ≥ 22.5.
 

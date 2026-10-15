@@ -8,7 +8,7 @@
 | How to use | For each `Pending` item, fill in **Decision**, **Decided by** and **Date**, set **Status** to `Approved` or `Deferred`, and add the decision to `baseline.md` §6 and STATUS §4 in the same PR (title `decisions: TD-nn …`) |
 | Status values | `Pending` · `Approved` (with the team decision ID) · `Deferred` |
 
-**Readiness verdict (2026-10-15): almost ready.** The team has taken all architectural and process decisions. Development can begin on D1 once three things exist: (1) the **source-baseline import** (`fc0981d`, D-PLAN-3) committed to `main`; (2) the **developer names and GitHub handles** (D-PLAN-1 / TD-03); (3) the **branch-protection** check (TD-04). Everything else open is task-level or non-blocking.
+**Readiness verdict (2026-10-15): almost ready.** The team has taken all architectural and process decisions. Development can begin on D1 once two things exist: (1) the **source-baseline import** (`fc0981d`, D-PLAN-3) committed to `main`; (2) the **branch-protection** check (TD-04). Developer names and handles were recorded on 2026-10-15 (TD-03). Everything else open is task-level or non-blocking.
 
 ---
 
@@ -18,7 +18,7 @@
 | --- | --- | --- | --- | --- |
 | TD-01 | How does the source-baseline code enter the new repository? | Implementation blocker | **Approved** — import; **execution pending** | D-PLAN-3 |
 | TD-02 | Import procedure (commit, exclusions, who) | Implementation blocker | **Partly approved** — commit `fc0981d`; procedure in migration notes §5.3 | D-PLAN-3, D-PLAN-13 |
-| TD-03 | Who is Dev A, B, C, D (names, GitHub handles)? | Pre-implementation | **Pending** — due D1 | D-PLAN-1 (open) |
+| TD-03 | Who is Dev A, B, C, D (names, GitHub handles)? | Pre-implementation | **Approved** 2026-10-15 | D-PLAN-1 |
 | TD-04 | How is `main` protected on a private repository? | Pre-implementation | **Pending** — check Settings → Branches | open in `baseline.md` §6 |
 | TD-05 | Approve the prototype design | Pre-implementation | **Approved** for Docs 0–6; **Pending** for Doc 7 | A-ARCH |
 | TD-06 | LLM layer per specification (C-1) | Pre-implementation | **Approved** | C-1 |
@@ -63,8 +63,8 @@ New team decisions that had no TD item: **D-PLAN-6** (LLM consent off until the 
 | Question | Which person is Dev A (WS-FND), Dev B (WS-CAT + WS-PLT), Dev C (WS-JON + WS-AGT), Dev D (WS-SEN + WS-UI)? GitHub handles? All three non-owners invited with **Write** access? |
 | Why | CODEOWNERS in WS-FND-P1 (D1) needs the handles; reviews are requested by ownership |
 | Recommendation | Strongest frontend developer as Dev D (least slack); most Git/CI-experienced as Dev A |
-| Status | Pending — due D1 |
-| Decision | Dev A: ___ (@___) · Dev B: ___ (@___) · Dev C: ___ (@___) · Dev D: ___ (@___) · Team lead: ___ · Date: ___ |
+| Status | **Approved** 2026-10-15 — all four accepted the repository invitation (collaborators) |
+| Decision | Dev A: Abhilash (@Falterred) — DeepSeek · Dev B: Kathir (@Kathir-M-03) — Claude Pro · Dev C: Anish (@DEstroy746) — 1 Gemini account · Dev D: Aryan (@AryanTechie-007) — 3 Gemini accounts · Team lead: ___ · Date: 2026-10-15 |
 
 ### TD-04 — Protecting `main`
 | Field | Content |
@@ -137,7 +137,7 @@ Doc 0 §3.2 defers John's memory facts; WS-UI-P2 lists a list/delete section; th
 | — | D-PLAN-6 | LLM consent off until the user opts in; demo user seeded on |
 | — | D-PLAN-7 | Producer publishes a contract-matching stub once half a day late |
 | — | D-PLAN-8 | Independent review mandatory only for sensitive plans |
-| — | D-PLAN-1 | Four developers (Dev A–D); names still open (TD-03) |
+| TD-03 | D-PLAN-1 | Four developers: Abhilash (A), Kathir (B), Anish (C), Aryan (D) |
 
 Other settled topics (do not reopen): frozen specifications and D-001…D-025; plan numbering and IDs; migration number ranges; money as integer paise; single write path through the Action Service; documentation layout (`docs/implementation-plan/` kept as named).
 
@@ -145,7 +145,7 @@ Other settled topics (do not reopen): frozen specifications and D-001…D-025; p
 
 ## 6. Recommended order
 1. **Source-baseline import** (TD-01/02 execution) — before D1.
-2. **TD-03** names and access, **TD-04** branch protection, **TD-10** CI minutes, **TD-11** tracking, **TD-05** Doc 7 — at the D1 kick-off (first hour).
+2. **TD-04** branch protection, **TD-10** CI minutes, **TD-11** tracking, **TD-05** Doc 7 — at the D1 kick-off (first hour).
 3. **TD-15** during WS-JON-P1's contract commit review (D1); **TD-19** before WS-UI-P1 forms (D1–D2).
 4. **TD-16, TD-17, TD-20, TD-21** before WS-UI-P2/P3 and WS-FND-P5 (by D5).
 5. Stand-in provider and key holder (D-PLAN-12) before D8; backtest confirmation on D4.
@@ -160,7 +160,7 @@ Other settled topics (do not reopen): frozen specifications and D-001…D-025; p
 | Implementation plans | Yes | 36 documents updated with the 2026-10-13 decisions; repository references reconciled |
 | Process decisions | Yes | PR model, tiers, consent, stubs, review policy, Qwen handling all decided |
 | Source code in repository | **No** | Import of `fc0981d` pending (TD-01 execution) |
-| Team and access | **No** | TD-03, TD-04 |
+| Team and access | Partly | Names, handles and access done (TD-03); branch protection open (TD-04) |
 | External | Partly | Qwen details on D3; stand-in provider to choose before D8 |
 
-**Conclusion:** the four developers can begin on D1 once the source-baseline import is merged and TD-03/TD-04 are settled; the remaining open items have recommendations and are not on the D1 critical path.
+**Conclusion:** the four developers can begin on D1 once the source-baseline import is merged and TD-04 is settled; the remaining open items have recommendations and are not on the D1 critical path.

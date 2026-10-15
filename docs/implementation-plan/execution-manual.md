@@ -47,6 +47,8 @@ SC = `docs/specifications/system-contracts.md`; Doc N = `docs/prototype-design/0
 | WS-UI | SC §18; workspace sections: Atlas §B.4, Nova §B.5, Iris §B.4, Sentinel §B.6.18; John §C.1–C.2 (Plan 3) | Doc 1 §6, ADR-11; Doc 2 §6; Doc 3 F3, F6, F10; Doc 6 §5; **Doc 7 (screens, added 2026-10-13)** | `src/App.jsx`, `src/components/**`, view files listed in WS-UI-P1 §3, `src/services/workspaceService.js` |
 
 ### 1.5 Repo-aware agent vs chat-only model
+> **This team (2026-10-15):** DeepSeek (Dev A), Claude Pro (Dev B) and Gemini (Dev C, Dev D). Each developer checks whether their tool can read the repository and run commands (repo-aware) or only chats (chat-only) and follows the matching rules below. Because the team has three different model families, a Template C review can always use a model other than the one that wrote the code.
+
 - **Repo-aware agent** (can read files and run commands): give paths and section numbers; require it to read them and to run the plan's tests itself. Paste only the plan, the sequence overview and validation context.
 - **Chat-only model** (cannot see the repository): build a *context pack* per plan and paste it. From the repo root (Git Bash or PowerShell):
   ```
@@ -131,11 +133,12 @@ Run on every diff before the PR (and give to the reviewer model in Template C):
 | Independent review | Mandatory for sensitive plans only | D-PLAN-8 |
 | Qwen | Key and model arrive on D3; key in each local `backend/.env` + GitHub Actions secret, never committed; stand-in OpenAI-compatible provider if Qwen is unavailable | U-2, D-PLAN-11, D-PLAN-12 |
 | Sentinel backtest | Provisional ±15 % monthly spend forecast error, confirmed on D4 | D-PLAN-10 |
+| Team | Dev A Abhilash (@Falterred, DeepSeek) · Dev B Kathir (@Kathir-M-03, Claude Pro) · Dev C Anish (@DEstroy746, 1 Gemini account) · Dev D Aryan (@AryanTechie-007, 3 Gemini accounts) | D-PLAN-1 |
 | Coding conventions | CommonJS backend, `node:test`, money rules (§3), no new dependencies without WS-FND approval | — |
 | Environment | Node ≥ 22.5 (CI uses 22.x); `backend/.env` from `.env.example`; `LLM_PROVIDER=fake` only in tests | — |
 | Test/build commands | `npm --prefix backend test`, `npm run build`, `npx oxlint` (available once WS-FND-P1 merges, end of D1) | — |
 | Shared-file ownership, tracking, integration | `workstream-assignments.md` §4–§7; `tracking/`; merge windows midday/evening + Dev A's evening build | — |
-| **Still open** | Developer names + GitHub handles (D1); source-baseline import commit (before D1); stand-in provider and its key holder (before D8); branch-protection availability | — |
+| **Still open** | Source-baseline import commit (before D1); stand-in provider and its key holder (before D8); branch-protection availability | — |
 
 ### 5.2 Stages (mapped to `roadmap.md` §4)
 | Stage | Days | Starts | Runs in parallel | Blocked until | Deliverable / verification |

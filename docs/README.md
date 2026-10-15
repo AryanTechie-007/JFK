@@ -94,4 +94,4 @@ Authority order when documents disagree: **specifications** (frozen) → **proto
 
 ## 5. Unresolved questions and dependencies
 - **Source-baseline import (D-PLAN-3, decided 2026-10-13) not yet committed.** All 21 plans are Blocked until the code from `fc0981d` is imported into this repository.
-- Still open before D1: developer names and handles (TD-03), branch protection (TD-04), CI minutes (TD-10), tracking (TD-11), Doc 7 approval (TD-05). Task-level: TD-15…TD-17, TD-19…TD-21; the stand-in LLM provider before D8. See [`team-decisions.md`](team-decisions.md).
+- Still open before D1: branch protection (TD-04), CI minutes (TD-10), tracking (TD-11), Doc 7 approval (TD-05). Task-level: TD-15…TD-17, TD-19…TD-21; the stand-in LLM provider before D8. See [`team-decisions.md`](team-decisions.md).

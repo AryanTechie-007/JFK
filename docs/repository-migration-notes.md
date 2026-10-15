@@ -292,3 +292,17 @@ A three-way merge with the original package as the common base: the 36 team-upda
 | `AryanTechie-007/JFK` | This file (history) and **D-PLAN-3** in `baseline.md` (§ banner and §6 row) and `workstream-assignments.md` §7: an **active team decision** naming the old repository as the one-time import source (`fc0981d`). No clone/pull/push/PR instruction for daily work |
 | Other repository URLs | Only `https://github.com/Kathir-M-03/FINNMIN-JFK-John` |
 | Links | All relative links and anchors resolve |
+
+---
+
+## 11. Update of 2026-10-15 — team members recorded
+`main` on GitHub was replaced with commit `b0c55b2` by the repository owner (force push, 2026-10-15). One other remote branch, `ws-sen/p2-http-schemas`, was created by a team member and was **kept** on purpose; its owner rebases it on `main` before continuing.
+
+This commit records D-PLAN-1 / TD-03 in `workstream-assignments.md` §2.0, `baseline.md` §6, `STATUS.md` §4, the seven state files, the execution manual, the first-day plan, the checklist, the roadmap, `team-decisions.md`, the root README and the docs index:
+
+| Role | Name | GitHub | Coding-model resources |
+| --- | --- | --- | --- |
+| Dev A — Integration Lead (WS-FND) | Abhilash | @Falterred | DeepSeek |
+| Dev B — WS-CAT + WS-PLT | Kathir | @Kathir-M-03 | Claude Pro |
+| Dev C — WS-JON + WS-AGT | Anish | @DEstroy746 | 1 Gemini account |
+| Dev D — WS-SEN + WS-UI | Aryan | @AryanTechie-007 | 3 Gemini accounts |

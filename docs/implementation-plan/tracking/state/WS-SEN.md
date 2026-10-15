@@ -4,7 +4,7 @@ Fed to every new coding session for this workstream (Template A `[STATE FILE]`).
 
 | Field | Value |
 | --- | --- |
-| Developer | Dev D |
+| Developer | Dev D — Aryan (@AryanTechie-007) |
 | Branch prefix | `ws-sen/p<n>-<slug>` |
 | Current plan | WS-SEN-P1 (not started) |
 

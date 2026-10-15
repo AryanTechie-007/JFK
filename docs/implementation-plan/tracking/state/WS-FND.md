@@ -4,7 +4,7 @@ Fed to every new coding session for this workstream (Template A `[STATE FILE]`).
 
 | Field | Value |
 | --- | --- |
-| Developer | Dev A |
+| Developer | Dev A — Abhilash (@Falterred) |
 | Branch prefix | `ws-fnd/p<n>-<slug>` |
 | Current plan | WS-FND-P1 (not started) |
 
