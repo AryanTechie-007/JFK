@@ -9,7 +9,7 @@
 | Owner / subagent | Dev A — Integration Lead / WS-FND subagent |
 | Objective | Make the prototype one server and one database (ADR-01, P-AC-01): delete Backend B, legacy REST routes, the Gemini coach route, legacy tables and sync code, and the temporary action-name aliases; Electron boots only port 4000 |
 | Expected outcome | No code path writes or reads legacy tables; `electron/main.js` starts one server; grep tests prove no `:4001`, no `x-user-id`, no `geminiService`, no `src/data/mock*` |
-| Size | ~1 day; done in 3 PRs (frontend leftovers check, backend deletions + migration, Electron/launch) |
+| Size | ~1 day; one PR with three commits (frontend-leftovers check, backend deletions + migration, Electron/launch), merged with a merge commit |
 
 ## 2. Dependencies
 | Type | Source | Needed | Early start |
@@ -91,7 +91,7 @@
 ## 11. Risks and recovery
 | Risk | Recovery |
 | --- | --- |
-| Hidden dependency on a legacy route discovered late | Revert the deletion PR (kept separate from the migration PR); owner fixes; retry |
+| Hidden dependency on a legacy route discovered late | Revert only the deletion commit (kept separate from the migration commit); owner fixes; retry |
 | Electron packaging relies on committed `dist/` | Keep `npm run app` = `vite build && electron .`; document |
 
 ## 12. Assumptions and unresolved questions

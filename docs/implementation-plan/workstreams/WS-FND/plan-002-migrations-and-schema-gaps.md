@@ -11,7 +11,7 @@
 | Owner / subagent | Dev A — Integration Lead / WS-FND subagent |
 | Objective | Replace the inline `CREATE TABLE IF NOT EXISTS` block in `backend/src/db.js` with versioned SQL migrations, reproduce today's schema exactly, and add the tables the prototype design needs but `main` lacks (gap G-13) |
 | Expected outcome | `db.js` opens the DB, sets pragmas and runs `migrate()`; `000_baseline.sql` = today's schema; `010_*.sql` adds `tool_results`, `intent_tokens`, `event_deliveries`, `jobs`, `jobs_dead_letter`, `traces`, `ingestion_batches`, `ingestion_errors`, `rolling_summaries` |
-| Size | ~0.5 day; 2 PRs (framework + baseline, new tables) |
+| Size | ~0.5 day; one PR with two commits (framework + baseline, new tables) |
 
 ## 2. Dependencies
 | Type | Source | Needed | Early start |

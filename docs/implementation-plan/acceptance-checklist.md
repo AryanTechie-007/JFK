@@ -6,17 +6,17 @@
 - [ ] No existing test deleted, skipped or weakened (diff of `*.test.js` reviewed).
 - [ ] Only files owned by the workstream changed, or the other owner approved.
 - [ ] No hardcoded financial values, fabricated `tool_result_id`s, or mock data introduced.
-- [ ] Contract changes merged as separate PRs before implementation.
+- [ ] One PR for the whole plan (D-PLAN-4), merged with a merge commit; contract files it produces were its first commit and approved by the consumers.
 - [ ] Completion handoff (README template) filled in and `tracking/STATUS.md` row set to *Complete* with the evidence listed in `tracking/README.md` §3.
 - [ ] Independent review (Template C in `prompt-templates.md`) recorded for plans touching money, consent, security or a shared contract.
 
 ## 2. Gate checklists
 ### G1 Contract agreement (end D1)
-- [ ] `docs/specifications/`, `docs/prototype-design/`, `docs/implementation-plan/` on `main`.
+- [ ] `docs/specifications/`, `docs/prototype-design/`, `docs/implementation-plan/` on `main` of the new repository.
 - [ ] `routes/v1/index.js` split; `.github/CODEOWNERS` merged.
 - [ ] HTTP view schema drafts open as a PR by WS-SEN.
-- [ ] Harness + CI live; Chat-schema contract PR open (WS-JON-P1 step 1).
-- [ ] Decisions C-1, C-5, D-PLAN-2, U-4 answered or default applied; developer names mapped to Dev A–D in CODEOWNERS; U-2 owner named.
+- [ ] WS-FND-P1 merged (harness + CI live, route split, CODEOWNERS); WS-JON-P1 Draft PR open with its Chat-schema contract commit under review.
+- [ ] Decisions recorded (`baseline.md` §6, 2026-10-13); developer names and GitHub handles mapped to Dev A–D in CODEOWNERS.
 
 ### G2 Skeleton integration (end D3)
 - [ ] CI runs `node --test` on temp databases (no test touches `backend/finmate.db`).
@@ -31,6 +31,9 @@
 - [ ] A T2 action cannot execute without a confirm call; tokens never appear in proposal-creation responses.
 - [ ] A categorization change produces an alert change through the dispatcher (no GET-time scanning).
 
+### Tier checkpoint (end D5, D-PLAN-9)
+- [ ] G3 closed on time or ≤ 1 day late → Tier 3 kept; otherwise Tier 3 items in `roadmap.md` §5 cut and the decision recorded in `tracking/STATUS.md`.
+
 ### G4 Cross-component behaviour (end D7)
 - [ ] Fake-LLM chat tests: single specialist, parallel, arbitration, dependency edge, T1 rule-detected with Undo, typed "yes" refused, consent off → no LLM call.
 - [ ] Correction → next chat answer uses new `categorization_version`.
@@ -44,7 +47,7 @@
 - [ ] Security suite S-1…S-16 (prototype design Doc 5) green.
 - [ ] Failure injection: LLM down, Sentinel throws, DB write failure, stale snapshot, duplicate submit, expired proposal.
 - [ ] Restart persistence test green.
-- [ ] Live suite run with the real model (or documented as blocked by U-2).
+- [ ] Live suite run with Qwen (details from D3) — or with the agreed stand-in OpenAI-compatible provider (D-PLAN-12), labelled with the model actually used.
 
 ## 3. Workstream-level acceptance
 | Workstream | Accepted when |
@@ -80,5 +83,7 @@
 | P-AC-18 | Live: ≥ 90 % schema-valid specialist responses; 100 % visible numbers grounded | `test:live` | [ ] |
 | P-AC-19 | Chat p95 ≤ 12 s single-specialist, ≤ 20 s cap | Live timing | [ ] |
 | P-AC-20 | Every deferred control disabled and labelled; no erroring controls | UI checklist | [ ] |
+
+Live criteria (P-AC-17 live part, P-AC-18, P-AC-19) may be evidenced with the stand-in provider if Qwen is unavailable (D-PLAN-12); the report names the model used. If Tier 3 was cut, demo step 9 is out of scope and is not evidenced.
 
 Sign-off: team lead ____________________ date ________

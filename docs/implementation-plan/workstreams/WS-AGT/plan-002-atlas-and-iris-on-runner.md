@@ -9,7 +9,7 @@
 | Owner / subagent | Dev C — AI Engineer / WS-AGT subagent |
 | Objective | Configure Atlas and Iris on the shared runner with prompts, domain schemas, fake fixtures and deterministic fallbacks built from their current compositions |
 | Expected outcome | Atlas task types `GOAL_PROGRESS`, `EVALUATE_FUND_ADDITION`, `CREATE_GOAL`, `GOAL_PLAN_REVIEW`, `SIP_PROJECTION`, `HANDLE_PEER_FINDING`; Iris task types `MONTHLY_PLAN`, `WHAT_IF_PURCHASE`, `BILL_OUTLOOK`, `OVERSPEND_DIAGNOSIS`, `PLAN_REVIEW` (prototype rows of Doc 4 §3/§5) — each with LLM path + fallback |
-| Size | ~1 day (Atlas first, then Iris, in the same WS-AGT session sequence; two PRs allowed, both titled `WS-AGT-P2`) |
+| Size | ~1 day; one PR (schema commit, then Atlas commits, then Iris commits) |
 
 ## 2. Dependencies
 | Type | Source | Needed | Early start |
@@ -21,6 +21,7 @@
 
 ## 3. Scope
 **In:** configs, plans, compose (fallback), postprocess checks (Atlas: feasibility consistency, goal IDs exist; Iris: simulation totals consistent, proposals limited to registry proposers), prompts, domain schemas `AtlasDomain@1`, `IrisDomain@1`, PeerHint@1 emission (Iris → Atlas pressure/capacity hints, SC §9.6), fixtures.
+**Tier cut (D-PLAN-9):** if the end-of-D5 checkpoint cuts Tier 3, build only Iris `WHAT_IF_PURCHASE` and Atlas `GOAL_PROGRESS`, `EVALUATE_FUND_ADDITION`, `CREATE_GOAL`; the other task types keep today's deterministic behaviour (fallback path).
 **Out:** Atlas edit/pause/release/delete via chat (LINK to form, Doc 4 §1 routing); John routing (WS-JON).
 
 ## 4. Files and ownership
@@ -40,7 +41,7 @@
 ## 6. Implementation steps
 1. Atlas (PR 1): split current composition into plan/compose; config per task type with budgets from SC §9.3; prompt; fixtures; tests (LLM + fallback per type).
 2. Iris (PR 2): same; `WHAT_IF_PURCHASE` plan uses `sentinel_run_spending_simulation` + `sentinel_flag_cashflow_risk` conditionally (date ≤ 30 days); emits PeerHint when goal pressure detected.
-3. Shared: domain schemas contract PR; injection/minimisation tests extended to both agents.
+3. Shared: domain schemas as the first commit; injection/minimisation tests extended to both agents.
 4. Joint: phone what-if fixture set used by WS-JON and WS-FND-P6 (P-AC-11).
 
 ## 7. Edge cases
@@ -54,7 +55,7 @@
 
 ## 8. Constraints
 - Same as WS-AGT-P1 (no provider code, no writes, minimisation).
-- Atlas and Iris changes stay in their own folders; shared schema changes go through one contract PR before either implementation PR.
+- Atlas and Iris changes stay in their own folders; shared schema changes are the first commit of the PR.
 
 ## 9. Test plan
 | Test | Command |
@@ -79,4 +80,4 @@
 - [A] Task-type subset per Doc 4 §3/§5 is the prototype scope.
 
 ## 13. Completion handoff
-README template (one handoff covering both PRs, referencing `WS-AGT-P2`). Next eligible: **WS-AGT-P3**, WS-FND-P6.
+README template (one handoff for the whole plan). Next eligible: **WS-AGT-P3**, WS-FND-P6.

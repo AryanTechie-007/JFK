@@ -33,7 +33,7 @@
 | `backend/src/platform/ingestion/validate.js` | Create | Row checks: required fields, ISO date ≤ today+1, amount > 0 integer paise, direction, currency INR, known account ref | WS-CAT | Low |
 | `backend/src/platform/ingestion/mapping-profiles/demo-bank-v1.json` | Create | Mapping for the demo CSV (shared with WS-FND-P4) | WS-CAT | Low |
 | `backend/src/platform/ingestion/adapters/iso20022.js` | Create (stub) | Interface `toCanonical(xml) -> CanonicalBatch@1`; throws `NOT_IMPLEMENTED` | WS-CAT | Low |
-| `backend/src/shared/contracts/schemas/CanonicalBatch@1.json`, `MappingProfile@1.json` | Create | Contract (separate PR) | WS-CAT (FND reviews) | Medium |
+| `backend/src/shared/contracts/schemas/CanonicalBatch@1.json`, `MappingProfile@1.json` | Create | Contract (first commit of this PR) | WS-CAT (FND reviews) | Medium |
 | `backend/src/shared/money.js` | Modify (if missing) | `parseRupeesToMinor(str)` exact string parsing | WS-FND owns → PR reviewed by FND | Medium |
 | `backend/src/routes/v1/ingest.js` | Modify | Route through gateway; add `POST /demo/ingest` guarded by `DEMO_CONTROLS` | WS-CAT | Low |
 | `backend/test/ingestion/*.test.js`, `backend/test/fixtures/ingestion/*` | Create | Tests | WS-CAT | Low |
@@ -51,7 +51,7 @@ ingestion.getBatch(batchId, session) -> IngestionBatch & {errors:[{row_index, co
 - Row error codes: `MISSING_FIELD`, `INVALID_DATE`, `INVALID_AMOUNT`, `UNKNOWN_ACCOUNT`, `UNSUPPORTED_CURRENCY`, `DUPLICATE_ROW`.
 
 ## 6. Implementation steps
-1. Contract PR: `CanonicalBatch@1` (SC §17.7) and `MappingProfile@1` JSON Schemas + examples; WS-FND-P4 data validated against them.
+1. Contract commit (first in this PR): `CanonicalBatch@1` (SC §17.7) and `MappingProfile@1` JSON Schemas + examples. WS-FND-P4 builds its seed files directly against SC §17.7 earlier; validate those files against the schemas here and report any mismatch to Dev A.
 2. `money.parseRupeesToMinor` (if absent): strings like `"1,23,456.70"`, `"-250"`, `"0.1"`; reject >2 decimals.
 3. CSV parser + mapping; canonical conversion.
 4. Validation; record `ingestion_batches` row (`UNIQUE(user_id, idempotency_key)` → second call returns `DUPLICATE` with the original batch ID) and `ingestion_errors`.
@@ -93,7 +93,7 @@ ingestion.getBatch(batchId, session) -> IngestionBatch & {errors:[{row_index, co
 | Risk | Recovery |
 | --- | --- |
 | Mapping too narrow for future bank formats | Profiles are data; add new JSON profiles without code |
-| Profile signatures change | Contract fixed in WS-PLT-P2 §5; change requires contract PR |
+| Profile signatures change | Contract fixed in WS-PLT-P2 §5; any change is a contract commit approved by the consumer |
 
 ## 12. Assumptions and unresolved questions
 - [A] Prototype ingests own synthetic data only (user decision); camt.053/054 parser is production scope.

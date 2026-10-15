@@ -15,7 +15,7 @@
 | Type | Source | Needed | Early start |
 | --- | --- | --- | --- |
 | interface | WS-FND-P1 | Route paths unchanged by split | Yes (D1) |
-| interface | WS-SEN-P2 | HTTP view schemas for `/workspaces/*` | Yes — code against current shapes, reconcile with schema PR |
+| interface | WS-SEN-P2 | HTTP view schemas for `/workspaces/*` | Yes — build against the current response shapes and Doc 2 §6; WS-SEN-P2 (same developer, D4–D5) publishes the schemas and WS-UI-P2 adopts them |
 | interface | WS-PLT-P1 | `/proposals`, `/proposals/:id/confirm`, `/proposals/:id/decline`, `/actions` contracts and canonical names | Yes — contract in Doc 2 §6 |
 
 **Parallel with:** WS-FND-P2/P3, WS-CAT-P1, WS-SEN-P1.

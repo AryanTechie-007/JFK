@@ -98,7 +98,7 @@ profile.listAccounts(userId); profile.balances(userId, conn) -> [{account_id, ba
 | Recompute cost on large ingests | Recompute only affected pairs; coalesce per event batch |
 
 ## 12. Assumptions and unresolved questions
-- [A] Consent default false for new users; demo seed sets true (Doc 6 §5).
+- [D] D-PLAN-6: LLM consent is off until the user opts in; the demo seed sets it on (Doc 6 §5).
 - [A] In-app notifications only for the prototype.
 
 ## 13. Completion handoff

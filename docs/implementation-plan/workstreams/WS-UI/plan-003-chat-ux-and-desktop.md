@@ -48,7 +48,7 @@
 4. Workspace chat panels.
 5. Alert Explain wiring.
 6. Delete transitional client file and Gemini fallback remnants; grep gate.
-7. Desktop verification: `npm run reset-demo && npm run app`; walk Doc 6 §5 steps 4, 6, 8, 10 with the fake provider (`LLM_PROVIDER=fake` is test-only, so for manual runs use the real endpoint if U-2 is answered; otherwise verify degraded mode and deterministic fallbacks — record which).
+7. Desktop verification: `npm run reset-demo && npm run app`; walk Doc 6 §5 steps 4, 6, 8, 10. `LLM_PROVIDER=fake` is test-only, so manual runs use Qwen from D3 (or the stand-in provider, D-PLAN-12); before D3, verify degraded mode and the deterministic fallbacks. Record which model was used.
 
 ## 7. Edge cases
 | Case | Handling |
@@ -82,7 +82,7 @@
 | JON-P2 late | Cards/chips render from fixture stream; integrate when merged |
 
 ## 12. Assumptions and unresolved questions
-- [U] U-2 affects only whether the manual desktop run uses a live model.
+- [D] D-PLAN-12: manual desktop runs use Qwen from D3, or the stand-in provider.
 
 ## 13. Completion handoff
 README template; recording/screenshots of chat flows. Next eligible: **WS-FND-P5**, WS-FND-P6.

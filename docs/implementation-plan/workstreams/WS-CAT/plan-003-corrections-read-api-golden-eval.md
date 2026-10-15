@@ -56,7 +56,7 @@ listReviewItems(session) -> ReviewItem[];  addReviewItem({txnId, reason:'SPECIAL
 - `TransactionView` includes `category_id`, `movement_type`, `status (AUTO|NEEDS_REVIEW|CONFIRMED|USER_SET)`, `confidence_band`, `merchant_display`, `amount_minor`, `posted_at`, `row_version`.
 
 ## 6. Implementation steps
-1. Agree executor contract with WS-PLT (contract PR in `docs/` if anything differs from §5).
+1. Agree the executor contract with WS-PLT (same developer). If anything differs from §5, record the change as the first commit of this PR.
 2. Extract logic from the action-service case bodies into `executors.js`, adapting to `(params, ctx, tx)`; add inverse capture.
 3. Implement merchant-scope dry-run and `include_confirmed` handling (CAT-AC-06/07).
 4. Implement `UNDO_CLASSIFICATION_CHANGE` (within 24 h, rows unchanged since — else `REJECTED_STALE`).

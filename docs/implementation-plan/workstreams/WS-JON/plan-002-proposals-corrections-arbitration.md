@@ -23,6 +23,7 @@
 
 ## 3. Scope
 **In:** proposal binding (params exactly as validated; `validation_tool_result_id` required); CARD block with `proposal_id`, `params_hash`, rendered grounded summary, warnings, `requires_ack`; deterministic instruction detector for T1 (`DISMISS_ALERT`, `UPDATE_PREFERENCE`, `RECATEGORIZE_TRANSACTION` scope TRANSACTION, `CONFIRM_CATEGORY`) → `issueIntentToken` + `executeT1` → `UNDO` block; router-only T1 → `CHIP`; T2 instructions (`UPDATE_PROFILE`, merchant-scope recategorize, `CREATE_CATEGORY_RULE`) → card; typed confirmations ("yes", "do it") never execute — reply points to the card; transaction search for corrections (C.6 groundable source); `addReviewItem` for specialist hints; conflict rule arbitration flag (John §B.7) and dependency-edge scheduling (PeerHint → `ATLAS HANDLE_PEER_FINDING`, max one hop).
+**Tier cut (D-PLAN-9):** if the end-of-D5 checkpoint cuts Tier 3, skip the dependency edge (PeerHint → ATLAS `HANDLE_PEER_FINDING`); arbitration stays (Tier 2).
 **Out:** UI rendering (WS-UI-P3); `RESTORE_GOAL` via chat (deferred).
 
 ## 4. Files and ownership

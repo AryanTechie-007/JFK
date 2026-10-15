@@ -2,6 +2,8 @@
 
 > **Re-check (audit, 2026-10-11):** the only upstream change since `54f9f6f` is `fc0981d` "Add files via upload", which edits `package-lock.json` only (package name, Electron pinned to 41.10.7 to match `package.json` `^41.2.0`). No plan is affected; it makes `npm ci` consistent for CI. Remote module branches `atlas`, `iris`, `john`, `nova`, `sentinel`, `tally` still point at `54f9f6f`; `sentinel_web` has diverged — all are frozen (workstream-assignments §7).
 
+> **Decisions taken 2026-10-13:** all blocking decisions are recorded in §6. The team builds in a new repository owned by the team lead (D-PLAN-3); the code facts below were verified on `AryanTechie-007/JFK` `main` @ `fc0981d`, from which that repository starts.
+
 Labels: **[V]** verified by reading code or running it · **[S]** stated in specs/design · **[A]** assumption · **[U]** unresolved.
 
 ## 1. Materials inspected
@@ -54,24 +56,39 @@ Labels: **[V]** verified by reading code or running it · **[S]** stated in spec
 | G-13 | Missing tables: `tool_results`, `intent_tokens`, `event_deliveries`, `jobs`, `jobs_dead_letter`, `traces`, `ingestion_batches`, `ingestion_errors`, `rolling_summaries` | Doc 2 §3 | WS-FND-P2 |
 
 ## 5. Conflicts requiring awareness or decision
-| ID | Conflict | Impact | Resolution in plans | Decision owner |
+| ID | Conflict | Impact | Resolution in plans | Decision |
 | --- | --- | --- | --- | --- |
-| C-1 | `main` implements deterministic agents; specs + D-008 require LLM agents | Without LLMs the prototype does not validate the AI architecture | Add the LLM layer; keep the existing deterministic composition as the runner's plan step and as the spec-mandated deterministic fallback (John §B.12) | Team lead to confirm (default: follow specs) |
+| C-1 | `main` implements deterministic agents; specs + D-008 require LLM agents | Without LLMs the prototype does not validate the AI architecture | Add the LLM layer; keep the existing deterministic composition as the runner's plan step and as the spec-mandated deterministic fallback (John §B.12) | **Decided 2026-10-13:** LLM agents per specs, deterministic fallback |
 | C-2 | Repository now ships desktop-only (Electron); prototype design defaulted to browser (U-3) | Demo surface | Plans target Electron with the Vite-built UI; U-3 resolved by the repository's latest commit | Resolved [V] |
-| C-3 | README describes 4 developers and long-lived module branches; this planning targets 6 developers and short-lived plan branches (U-4) | Workflow | Short-lived plan branches recommended (`workstream-assignments.md` §5) | Team lead |
-| C-5 | Action names on `main` differ from the SC §13.2 registry (`CORRECT_TRANSACTION_CATEGORY`, `CONFIRM_PROVISIONAL_CATEGORY`, `CONFIRM_TRANSACTION_CATEGORY` vs `RECATEGORIZE_TRANSACTION`/`CONFIRM_CATEGORY`; `SET_TRANSACTION_MOVEMENT_TYPE` vs `SET_TRANSACTION_TYPE`; `CREATE_MANUAL_TRANSACTION` vs `ADD_MANUAL_TRANSACTION`; `UPDATE_USER_PROFILE`/`UPDATE_USER_PREFERENCES` vs `UPDATE_PROFILE`/`UPDATE_PREFERENCE`; `CREATE_DECLARED_BILL` vs `ADD_DECLARED_BILL`; `SET_CATEGORY_WATCH` vs `CREATE_ALERT`; extra `UNDO_ACTION`, `DELETE_MEMORY_FACT`, `LINK_*`, `MARK_*`) | Proposals from specialists (SC names) and UI calls (current names) disagree; validators keyed by name | SC names are canonical; `WS-PLT-P1` adds a temporary alias table (old → SC name, logged), `WS-UI-P1` switches to SC names, `WS-FND-P5` deletes the aliases | Team lead (default: SC names) |
-| C-6 | Physical table names on `main` (`transactions_v1`, `goals_v1`, `caps_v1`, `outbox_events`, …) differ from Doc 2 §3 logical names (`raw_transactions`/`txn_classification`, `goals`, `caps`, `event_outbox`, …) | Plans could create duplicate tables | **D-PLAN-2:** keep physical names; `backend/src/db/TABLES.md` maps them (WS-FND-P2) | Team lead (default: keep) |
-| C-4 | `docs/prototype-design` is "Proposed", not yet merged/approved | All plans rely on its ADRs | `WS-FND-P1` merges it; plans proceed on assumption A-ARCH | Team lead |
+| C-3 | README describes 4 developers and long-lived module branches; this planning targets 6 developers and short-lived plan branches (U-4) | Workflow | Short-lived plan branches recommended (`workstream-assignments.md` §5) | **Decided:** four developers, short-lived plan branches (U-4) |
+| C-5 | Action names on `main` differ from the SC §13.2 registry (`CORRECT_TRANSACTION_CATEGORY`, `CONFIRM_PROVISIONAL_CATEGORY`, `CONFIRM_TRANSACTION_CATEGORY` vs `RECATEGORIZE_TRANSACTION`/`CONFIRM_CATEGORY`; `SET_TRANSACTION_MOVEMENT_TYPE` vs `SET_TRANSACTION_TYPE`; `CREATE_MANUAL_TRANSACTION` vs `ADD_MANUAL_TRANSACTION`; `UPDATE_USER_PROFILE`/`UPDATE_USER_PREFERENCES` vs `UPDATE_PROFILE`/`UPDATE_PREFERENCE`; `CREATE_DECLARED_BILL` vs `ADD_DECLARED_BILL`; `SET_CATEGORY_WATCH` vs `CREATE_ALERT`; extra `UNDO_ACTION`, `DELETE_MEMORY_FACT`, `LINK_*`, `MARK_*`) | Proposals from specialists (SC names) and UI calls (current names) disagree; validators keyed by name | SC names are canonical; `WS-PLT-P1` adds a temporary alias table (old → SC name, logged), `WS-UI-P1` switches to SC names, `WS-FND-P5` deletes the aliases | **Decided:** SC names + temporary aliases |
+| C-6 | Physical table names on `main` (`transactions_v1`, `goals_v1`, `caps_v1`, `outbox_events`, …) differ from Doc 2 §3 logical names (`raw_transactions`/`txn_classification`, `goals`, `caps`, `event_outbox`, …) | Plans could create duplicate tables | **D-PLAN-2:** keep physical names; `backend/src/db/TABLES.md` maps them (WS-FND-P2) | **Decided:** keep physical names (D-PLAN-2) |
+| C-4 | `docs/prototype-design` is "Proposed", not yet merged/approved | All plans rely on its ADRs | `WS-FND-P1` merges it; plans proceed on assumption A-ARCH | **Decided:** design approved (A-ARCH) |
 
-## 6. Assumptions and unresolved questions
-| ID | Item | Consequence | Owner |
+## 6. Decisions, assumptions and open questions (decided 2026-10-13)
+| ID | Item | Decision | Consequence in the plans |
 | --- | --- | --- | --- |
-| A-ARCH | `docs/prototype-design` is the approved architecture once merged | If parts are rejected, the affected plans are re-planned | Team lead |
-| U-1 | Hackathon duration / demo date | Schedule in `roadmap.md` uses relative days D1–D6 | Team lead |
-| U-2 | Qwen endpoint (base URL, model ID, JSON-schema/JSON-mode support, rate limits) | **Blocks** `WS-AGT-P3` and the live parts of `WS-FND-P6`; all other plans use the fake provider | Team lead / whoever holds the API account |
-| U-4 | Branching model | See C-3 | Team lead |
-| D-PLAN-2 | Keep physical table names (see C-6) | Avoids rename churn | Team lead |
-| D-PLAN-1 | **Resolved:** exactly four developers; allocation in `workstream-assignments.md` §2 (Dev A WS-FND; Dev B WS-CAT + WS-PLT; Dev C WS-JON + WS-AGT; Dev D WS-SEN + WS-UI) | Schedule D1–D9 | Team lead (confirm names) |
+| A-ARCH | Build target | **Decided:** `docs/prototype-design` approved | Plans proceed as written |
+| C-1 | LLM layer | **Decided:** real LLM agents (John, Atlas, Nova, Iris) with today's deterministic code as the fallback | WS-AGT, WS-JON |
+| U-1 | Time available | **Decided:** 9 or more working days | D1–D9 schedule (`roadmap.md` §4) |
+| D-PLAN-9 | Scope target | **Decided:** aim for Tier 3, fall back to Tier 2. Checkpoint at the end of D5: if G3 closed more than 1 day late, cut the Tier 3 items listed in `roadmap.md` §5. Tier 1 is not a planned fallback; if Tier 2 is at risk, escalate to the team lead | `roadmap.md` §5; tier notes in WS-AGT-P2, WS-JON-P2, WS-UI-P2, WS-FND-P6 |
+| U-4 | Branching | **Decided:** short-lived plan branches, protected `main`, PR + review + green CI | `workstream-assignments.md` §7 |
+| D-PLAN-3 | Repository | **Decided:** a new repository owned by the team lead, starting from `AryanTechie-007/JFK` `main` @ `fc0981d`. Name/link still to be recorded | Old module branches are not carried over; check branch-protection availability (§7 of the assignments) |
+| D-PLAN-4 | PR granularity | **Decided:** one plan = one branch = one PR; no plan is split. Contract files a plan produces go in its first commit; the PR is opened as a Draft so consumers approve that commit; the PR merges whole with a merge commit (not squash) | README, assignments §7, execution manual §2 |
+| C-5 | Action names | **Decided:** SC §13.2 names + temporary aliases (removed in WS-FND-P5) | WS-PLT-P1, WS-UI-P1, WS-FND-P5 |
+| D-PLAN-2 | Table names | **Decided:** keep the physical names | `backend/src/db/TABLES.md` (WS-FND-P2) |
+| D-PLAN-5 | Deferred actions | **Decided:** keep those already working on `main` (`RESTORE_GOAL`, watch → `CREATE_ALERT`, movement type → `SET_TRANSACTION_TYPE`, `CREATE_CATEGORY_RULE`); build no new deferred actions | WS-CAT-P3, WS-PLT-P1/P2, WS-UI-P1 |
+| D-PLAN-6 | LLM consent default | **Decided:** off until the user opts in; demo user seeded with consent on | WS-PLT-P2, WS-JON-P1, WS-FND-P4 |
+| D-PLAN-7 | Late dependency | **Decided:** the producer publishes a contract-matching stub once **half a day** late | `cross-workstream-dependencies.md` §4 |
+| D-PLAN-8 | Independent review | **Decided:** mandatory only for sensitive plans (money, consent/tokens, security, shared contracts, data model) | `tracking/README.md` §3 |
+| U-2 | Qwen endpoint | **Partly decided:** key and model arrive on **D3**; until then everything is built and tested with the fake provider | WS-FND-P3 (live smoke), WS-AGT-P3, WS-FND-P6 |
+| D-PLAN-11 | API key handling | **Decided:** each developer's local `backend/.env` + a GitHub Actions secret for the manual live workflow; shared privately by one person; never committed | WS-FND-P3, WS-FND-P6, WS-AGT-P3 |
+| D-PLAN-12 | Qwen unavailable | **Decided:** temporarily use another OpenAI-compatible provider (configuration only: `LLM_BASE_URL`, `LLM_MODEL_*`, `LLM_API_KEY`); results labelled with the model actually used | WS-AGT-P3, WS-FND-P6, WS-UI-P3 |
+| D-PLAN-10 | Sentinel backtest limit | **Provisional:** monthly spend forecast within ±15 % on the held-out month; confirmed or adjusted on D4 | WS-SEN-P2 |
+| D-PLAN-13 | Defaults not objected to | Golden categorization target per Doc 6 P-AC-03 (≥ 90 % of labelled rows, 0 transfers/card payments as spend); on D8, delete Backend B, legacy tables and the committed `dist/` after backing up developer databases | WS-CAT-P3, WS-FND-P5 |
+| D-PLAN-1 | Team | **Decided:** four developers (Dev A–D); names stay placeholders until D1 | `workstream-assignments.md` §2 |
+
+**Still open:** developer names and GitHub handles (D1, for CODEOWNERS); the new repository's name/link; which stand-in provider and who holds its key (before D8); whether branch protection is available on the new repository (if not, "PR + green CI before merge" is enforced by team agreement).
 
 ## Appendix A — `/api/v1` route inventory on `main` (25 method/path pairs, verified)
 Source: `backend/src/routes/v1/index.js`. `WS-FND-P1` step 7 freezes this list in `backend/test/routes-inventory.test.js`; later plans update it in the same PR that adds/removes a route.

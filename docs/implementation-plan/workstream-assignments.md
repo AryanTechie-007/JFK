@@ -20,14 +20,14 @@ A workstream = one **independent local plan sequence** (Plan 1 … Plan N) execu
 | **Dev A — Integration Lead** | WS-FND (1 sequence) | WS-FND-P1 → P2 → P3 → P4 → P5 → P6 | Test harness, CI, CODEOWNERS, route split, migrations, events/jobs, tool-result store, traces, LLM adapter, demo dataset + seed, legacy retirement, single-server desktop, E2E/security/acceptance | WS-FND row of §4 (entry point, `db.js`, migrations `0xx`, manifests, `platform/{events,llm}`, `gateway.js`, `snapshot.js`, test helpers, seed, CI, Electron) | Nobody to start; P5 needs WS-UI-P1/P2/P3, WS-JON-P1, WS-CAT-P2, WS-PLT-P1 | Keeps `main` green; runs the daily integration build; reviews every shared-file PR (§5); owns gates G1, G2, G5, G6; independent reviewer (Template C) for other developers during D5–D7; tracks `tracking/STATUS.md` |
 | **Dev B — Data & Write-Path Engineer** | WS-CAT, WS-PLT (2 sequences) | WS-CAT-P1 → WS-PLT-P1 → WS-PLT-P2 → WS-CAT-P2 → WS-CAT-P3 | Categorizer conformance, canonical ingestion, correction executors, consent-safe Action Service, plan store, tokens, event-driven Budget Monitor, Profile | WS-CAT and WS-PLT rows of §4 | WS-FND-P1/P2/P3 (P3 as interface first), WS-SEN-P1 (interface), WS-FND-P4 (golden labels) | Owns the single-writer rule and the executor contract; coordinates gate G3; reviews WS-FND-P4 golden labels; co-authors WS-FND-P5 sync removal |
 | **Dev C — AI Engineer** | WS-JON, WS-AGT (2 sequences) | WS-JON-P1 → WS-AGT-P1 → WS-JON-P2 → WS-AGT-P2 → WS-AGT-P3 | John router/synthesis/grounding/streaming/consent/proposals; specialist runner; Nova/Atlas/Iris on the LLM adapter; live-model evaluation | WS-JON and WS-AGT rows of §4 | WS-FND-P3 (interface first), WS-PLT-P1, WS-CAT-P3, WS-SEN-P1 (interface); decision U-2 for WS-AGT-P3 | Owns `ChatResponse@1` and specialist contracts; coordinates gate G4; chases U-2; maintains fake-LLM fixture conventions |
-| **Dev D — Workspaces & Analytics Engineer** | WS-SEN, WS-UI (2 sequences) | WS-UI-P1 (+ WS-SEN-P2 step 1 on D1) → WS-SEN-P1 → WS-SEN-P2 → WS-UI-P2 → WS-UI-P3 | Sentinel golden tests and rule parity; workspace view routes and HTTP schemas; five-workspace React app; chat UX; desktop verification | WS-SEN and WS-UI rows of §4 | WS-FND-P1, WS-PLT-P1/P2, WS-CAT-P2/P3, WS-JON-P1/P2 | Owns the HTTP view-schema contract; approves `shared/finance/*` changes; produces UI evidence for G5 and P-AC-20 |
+| **Dev D — Workspaces & Analytics Engineer** | WS-SEN, WS-UI (2 sequences) | WS-UI-P1 → WS-SEN-P1 → WS-SEN-P2 → WS-UI-P2 → WS-UI-P3 | Sentinel golden tests and rule parity; workspace view routes and HTTP schemas; five-workspace React app; chat UX; desktop verification | WS-SEN and WS-UI rows of §4 | WS-FND-P1, WS-PLT-P1/P2, WS-CAT-P2/P3, WS-JON-P1/P2 | Owns the HTTP view-schema contract; approves `shared/finance/*` changes; produces UI evidence for G5 and P-AC-20 |
 
 A developer stays accountable for everything their coding subagents produce: they run the tests themselves, read the diff, and sign the handoff (see `execution-manual.md` §3).
 
 ### 2.2 Subagent model
 - **One subagent sequence per workstream.** A coding session for WS-CAT never edits WS-PLT plans, even though Dev B owns both. Each sequence has its own execution-state file `tracking/state/<WS>.md`.
 - **One active implementation session per developer at a time**, following the execution order above. A second, separate session may run concurrently only as a **reviewer** (Template C) or **debugger** (Template D). Developer review time, not model speed, is the bottleneck; two implementation sessions in parallel double unreviewed diffs.
-- Exception: a *contract-first step* of a later plan (WS-SEN-P2 step 1, WS-PLT-P1 step 1, WS-CAT-P2 step 1, WS-JON-P1 step 1) may be done ahead of the sequence order because it only drafts a schema/interface PR for others to build against.
+- **One plan = one branch = one PR (D-PLAN-4).** No plan is split. When others need a plan's contract early (WS-JON-P1 on D1, WS-PLT-P1 on D2, envelope schemas in WS-FND-P3), the contract files are the plan's **first commit** and the PR is opened as a **Draft** so consumers approve that commit; the PR merges whole later. Other consumers build against the frozen spec sections (e.g. SC §17.7 for the bank-batch format, Doc 2 §6 for HTTP).
 - Models and providers are free per developer. Nothing in the plans depends on a specific coding tool.
 
 ### 2.3 Workload and contingency
@@ -35,13 +35,14 @@ A developer stays accountable for everything their coding subagents produce: the
 | --- | --- | --- | --- |
 | Dev A | ≈ 6 days (P1 1, P2 0.5, P3 1.5, P4 1, P5 1, P6 1) | D1–D4, D7–D9 | D5–D7 used for integration, reviews, WS-FND-P6 scaffolding |
 | Dev B | ≈ 5.5 days | D1–D6 | D7–D9 bug fixes, WS-FND-P5 co-authoring |
-| Dev C | ≈ 6 days (AGT-P3 0.5–1 and blocked by U-2) | D1–D8 | ≈ 1 day if U-2 is never answered |
+| Dev C | ≈ 6 days (AGT-P3 0.5–1 day, after the Qwen details arrive on D3) | D1–D9 | ≈ 0.5 day |
 | Dev D | ≈ 6.5 days | D1–D8 morning | ≈ 0.5 day — **binding constraint** |
 
 Contingency rules (decided at the daily stand-up, recorded in `tracking/STATUS.md`):
 1. If WS-UI-P1 is not merged by end of D2, **transfer the whole WS-SEN sequence to Dev A** before WS-SEN-P1 starts (Dev A has D5–D7 slack; WS-SEN is not on Dev A's own critical path). A sequence moves as a unit; numbering does not change.
-2. If WS-AGT-P2 slips past D8, Tier 3 rules (roadmap §5) apply; John keeps using the deterministic Atlas/Iris fallbacks.
+2. **Tier checkpoint at the end of D5** (D-PLAN-9): if gate G3 closed more than 1 day late, cut the Tier 3 items in `roadmap.md` §5 immediately. If WS-AGT-P2 still slips past D8, John keeps using the deterministic Atlas/Iris fallbacks.
 3. A developer who finishes early takes **review** work first, then bug-fix tickets; they do not start another developer's plan.
+4. A producer more than **half a day** late on a dependency publishes a contract-matching stub (D-PLAN-7, `cross-workstream-dependencies.md` §4).
 
 ### 2.4 Why this split
 - **Dev B internalises the riskiest shared file.** `platform/action-service.js` is edited by WS-PLT-P1 and WS-CAT-P3; the profile interface consumed by WS-CAT-P2 is defined by WS-PLT-P2. One owner removes the merge race.
@@ -97,12 +98,12 @@ Contingency rules (decided at the daily stand-up, recorded in `tracking/STATUS.m
 ## 6. Shared-ownership risk register
 | Shared file / interface | Developers who need it | Primary owner | Protocol |
 | --- | --- | --- | --- |
-| Envelope schemas (`Event@1`, `Proposal@1`, `ActionRequest/Result@1`, `SentinelResult@1`, `TaskPacket@1`, `SpecialistResponse@1`) | All | Dev A (WS-FND-P3) | Copied from SC verbatim; contract PR merged before consumers rely on it; consumers approve |
-| Action registry + canonical names + aliases | B, C, D | Dev B (WS-PLT-P1 step 1) | Contract PR on D2; UI and John switch to SC names; aliases removed in WS-FND-P5 |
+| Envelope schemas (`Event@1`, `Proposal@1`, `ActionRequest/Result@1`, `SentinelResult@1`, `TaskPacket@1`, `SpecialistResponse@1`) | All | Dev A (WS-FND-P3) | Copied from SC verbatim; schema commit approved in WS-FND-P3's Draft PR before consumers rely on it; consumers approve |
+| Action registry + canonical names + aliases | B, C, D | Dev B (WS-PLT-P1) | Contract commit first in WS-PLT-P1's Draft PR on D2; Dev C and Dev D approve; UI and John switch to SC names; aliases removed in WS-FND-P5 |
 | `ActionCtx` / `registerExecutor` | B (both sequences) | Dev B | Defined in WS-PLT-P1 §5; WS-CAT-P3 implements |
-| `ChatRequest@1` / `ChatResponse@1` (SSE blocks) | C, D | Dev C (WS-JON-P1 step 1) | Contract PR on D1; Dev D approves |
-| HTTP view schemas `/workspaces/*` | B (Nova route edits), D | Dev D (WS-SEN-P2 step 1) | Draft PR on D1; Dev B approves for Nova route |
-| `CanonicalBatch@1` / `MappingProfile@1` | A (seed), B | Dev B (WS-CAT-P2 step 1) | Contract PR by D3 so WS-FND-P4 (D4) validates against it |
+| `ChatRequest@1` / `ChatResponse@1` (SSE blocks) | C, D | Dev C (WS-JON-P1) | Contract commit first in WS-JON-P1's Draft PR on D1; Dev D approves |
+| HTTP view schemas `/workspaces/*` | B (Nova route edits), D | Dev D (WS-SEN-P2) | WS-UI-P1 is built against current responses + Doc 2 §6; WS-SEN-P2 (D4–D5) publishes the schemas (Dev B approves the Nova one); WS-UI-P2 adopts them |
+| `CanonicalBatch@1` / `MappingProfile@1` | A (seed), B | Dev B (WS-CAT-P2) | WS-FND-P4 (D4) builds the seed files against SC §17.7; WS-CAT-P2 (D5) adds the schemas and validates those files, reporting mismatches to Dev A |
 | Profile `upsertAccounts`/`recordBalances` | B | Dev B | Signatures fixed in WS-PLT-P2 §5 |
 | `llm.complete`, fake fixture format | A, C | Dev A (WS-FND-P3) | Format documented in `backend/test/fixtures/llm/README.md`; Dev C approves |
 | `grounding.js` | C (runner + John) | Dev C | Same developer; no cross-dev edits |
@@ -110,12 +111,13 @@ Contingency rules (decided at the daily stand-up, recorded in `tracking/STATUS.m
 | Test harness + route inventory | All | Dev A | Helpers frozen after WS-FND-P1 except additive changes reviewed by Dev A |
 | `.oxlintrc.json`, CI workflow | A, D | Dev A (CI), Dev D (lint rules for `src/`) | Lint rule changes reviewed by Dev A |
 
-## 7. Branching, review and integration workflow
-The repository has no CI and uses long-lived module branches (`atlas`, `iris`, `john`, `nova`, `sentinel`, `tally` at `54f9f6f`; `sentinel_web` diverged). The smallest workflow that prevents integration failure:
-1. `main` is protected: PR + 1 owner review + green CI; squash merge; no direct pushes. The module branches above are frozen; new work never targets them.
-2. One short-lived branch per plan: `ws-<id>/p<n>-<slug>` (e.g. `ws-cat/p2-canonical-ingestion`); rebase on `main` at least daily; ≤ 600 changed lines per PR (split a plan into several PRs if larger, plan ID in every PR title).
-3. **Contract PRs first** (separate, small, approved by every consumer listed in §6) before implementation PRs that depend on them.
-4. CI (from `WS-FND-P1`): `npm ci` (root with `ELECTRON_SKIP_BINARY_DOWNLOAD=1`, backend), `npm --prefix backend test`, `npm run build`, `npx oxlint`. Live-LLM tests excluded (manual workflow).
+## 7. Branching, review and integration workflow (decided 2026-10-13)
+**Repository (D-PLAN-3):** the team builds in a new repository owned by the team lead, starting from `AryanTechie-007/JFK` `main` @ `fc0981d`. The old repository's long-lived module branches (`atlas`, `iris`, `john`, `nova`, `sentinel`, `tally`, `sentinel_web`) are not carried over. **Check branch protection:** on a free GitHub account it has generally required a public repository or a paid plan for private ones (Settings → Branches). If it is not available, rules 1–3 are enforced by team agreement and Dev A's review.
+
+1. `main` is protected: PR + owner review + green CI; no direct pushes.
+2. **One plan = one branch = one PR (D-PLAN-4).** Branch `ws-<id>/p<n>-<slug>` (e.g. `ws-cat/p2-canonical-ingestion`); rebase on `main` at least daily; commits in plan-step order, titled `WS-<ID>-P<n>: <what>`. Large PRs are reviewed **commit by commit**, with `git diff --color-moved=dimmed-zebra main...HEAD` so moved code is greyed out. Merge with a **merge commit (not squash)** so a single bad commit can be reverted alone.
+3. **Contracts first, inside the plan's PR:** contract files are the first commit; open the PR as a Draft and get every consumer listed in §6 to approve that commit before the rest is reviewed.
+4. CI (from `WS-FND-P1`): `npm ci` (root with `ELECTRON_SKIP_BINARY_DOWNLOAD=1`, backend), `npm --prefix backend test`, `npm run build`, `npx oxlint`. Live-LLM tests excluded; a manual workflow runs them with the API key stored as a GitHub Actions secret (D-PLAN-11).
 5. **Merge windows twice a day** (midday and end of day). Dev A runs the integration build after the evening window: `npm run reset-demo` (once WS-FND-P4 exists) + full test suite + skeleton smoke (`/api/v1/health`, login, workspace GETs) — later the E2E journey.
-6. Incompatible change detected → the PR that broke `main` is reverted the same day; the two owners agree the contract fix (Template F) before re-merging.
-7. A late workstream does not block unrelated work: dependants proceed against the agreed interfaces in `cross-workstream-dependencies.md`; only "implementation" dependencies wait.
+6. Incompatible change detected → the merge that broke `main` is reverted the same day (or only the offending commit); the two owners agree the contract fix (Template F) before re-merging.
+7. A late workstream does not block unrelated work: dependants proceed against the agreed interfaces in `cross-workstream-dependencies.md`; only "implementation" dependencies wait. A producer more than half a day late publishes a contract-matching stub (D-PLAN-7).

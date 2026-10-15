@@ -37,7 +37,7 @@
 | `backend/test/fixtures/sentinel/sip-reference.csv` | Create | 20 SIP cases computed in a spreadsheet (SEN-AC-20) | WS-SEN | Low |
 
 ## 5. Interfaces and contracts
-- Unchanged public API: `callSentinel(functionName, params, ctx)`, `SENTINEL_FUNCTIONS`, `loadSnapshotState`, `rules.*` (WS-PLT-P1 and WS-AGT-P1 depend on these shapes; any change = contract PR).
+- Unchanged public API: `callSentinel(functionName, params, ctx)`, `SENTINEL_FUNCTIONS`, `loadSnapshotState`, `rules.*` (WS-PLT-P1 and WS-AGT-P1 depend on these shapes; any change = a contract commit approved by them).
 - Envelope `SentinelResult@1`: `{tool_result_id, function, model_version, snapshot_id, status:'OK'|'PARTIAL'|'INSUFFICIENT_DATA'|'ERROR', confidence, data_quality: DataQuality@1, data, warnings[], computed_at}` validated with `contracts.validate('SentinelResult@1')` before return.
 - Rule output: `{verdict:'PASS'|'WARN'|'REJECT', rule_codes[], warnings[]}` (Sentinel §E) — frozen for WS-PLT-P1.
 
@@ -57,7 +57,7 @@ Listed per function in the test files; cross-cutting: empty ledger → `INSUFFIC
 
 ## 8. Constraints
 - No LLM import (SEN-AC-04). No writes. Integer paise and `decimal.js`/basis points only.
-- Do not change rule output shapes without a contract PR approved by WS-PLT and WS-AGT.
+- Do not change rule output shapes without a contract change approved by WS-PLT and WS-AGT (first commit of the PR that needs it).
 
 ## 9. Test plan
 | Test | Command |

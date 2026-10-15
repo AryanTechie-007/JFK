@@ -56,7 +56,7 @@ SC = `docs/specifications/system-contracts.md`; Doc N = `docs/prototype-design/0
 
 ### 1.6 Keeping the model inside its scope
 - The plan's §4 table is the **allow-list of files**. Template B repeats it and forbids any other file; reviewers reject diffs outside it (`git diff --stat` against the list).
-- Files owned by another workstream may be changed only where the plan's §4 row says "coordinated"/"approves", and then only in a separate PR tagged for that owner.
+- Files owned by another workstream may be changed only where the plan's §4 row says "coordinated"/"approves", and then only inside this plan's PR with that owner as a required reviewer (CODEOWNERS).
 - CODEOWNERS makes GitHub request the right reviewer automatically.
 
 ---
@@ -74,7 +74,7 @@ SC = `docs/specifications/system-contracts.md`; Doc N = `docs/prototype-design/0
 | 7 | Run tests and validation | Developer (not only the model) | Plan §9 commands + `npm --prefix backend test` + `npm run build` + `npx oxlint` (+ grep gates) | All green locally; counts recorded |
 | 8 | Inspect the diff | Developer, then reviewer session (Template C) | `git diff --stat main...HEAD`, then the full diff; checklist §3 | No unrelated change, no invented API, no contract violation |
 | 9 | Check acceptance against behaviour | Developer | Walk plan §10 line by line with evidence (test name, command output, screenshot) | Every criterion has evidence or a recorded, approved exception |
-| 10 | Commit / PR | Developer | Small commits; PR title `WS-<ID>-P<n>: <title>`; contract PRs separate; CI green; owner review | PR merged by squash |
+| 10 | Commit / PR | Developer | **One PR for the whole plan** (D-PLAN-4); commits in plan-step order titled `WS-<ID>-P<n>: …`; contract files (if any) in the first commit, PR opened as Draft for consumer approval; CI green; owner review commit by commit (`git diff --color-moved=dimmed-zebra main...HEAD`) | PR merged whole with a merge commit (not squash) |
 | 11 | Handoff | Model drafts (Template E), developer verifies | Paste into PR description and `tracking/state/<WS>.md` | Handoff matches reality |
 | 12 | Update status, unblock | Developer | STATUS row → **Complete**; mark newly **Ready** plans (plan §13 "Next eligible"); post in team channel | Downstream owners notified |
 
@@ -94,7 +94,7 @@ Run on every diff before the PR (and give to the reviewer model in Template C):
 6. **Grounding:** no numbers in LLM-visible or user-visible text that are not bound to a tool result; no fabricated `tool_result_id`.
 7. **No mock data / no hardcoded financial results** in product code; synthetic data only through ingestion and labelled.
 8. **Tests:** no deleted, skipped or weakened assertions; new tests fail without the change (spot-check one by reverting).
-9. **Contracts:** schema files unchanged unless this is the contract PR; consumers approved.
+9. **Contracts:** schema files unchanged unless this plan produces them (first commit, approved by the consumers).
 10. **Secrets:** no keys in code, fixtures, logs or `dist/`.
 
 ---
@@ -117,29 +117,31 @@ Run on every diff before the PR (and give to the reviewer model in Template C):
 
 ## 5. Parallel execution for four developers
 
-### 5.1 Agree before substantial implementation (D1 morning, ≤ 1 hour)
-| Item | Decision / default | Must be final before |
+### 5.1 Decisions in force (decided 2026-10-13 — full record in `baseline.md` §6)
+| Item | Decision | ID |
 | --- | --- | --- |
-| Architecture and scope | `docs/prototype-design` + specs as frozen (A-ARCH, C-1 default: LLM layer per spec) | D1 start |
-| Developer mapping | Names → Dev A–D (`workstream-assignments.md` §2); CODEOWNERS handles | WS-FND-P1 CODEOWNERS PR (D1) |
-| Repository and branches | Short-lived plan branches, protected `main`, squash merges (U-4 default) | D1 start |
-| Action names | SC §13.2 canonical (C-5 default) | WS-PLT-P1 contract PR (D2) |
-| Table names | Keep physical names (D-PLAN-2 default) | WS-FND-P2 (D2) |
-| Coding conventions | CommonJS backend, `node:test`, money rules (§3), no new deps without WS-FND approval | D1 start |
-| Environment | Node ≥ 22.5 (CI uses 22.x); `backend/.env` from `.env.example`; `LLM_PROVIDER=fake` only in tests | D1 start |
-| Test/build commands | `npm --prefix backend test`, `npm run build`, `npx oxlint` | After WS-FND-P1 harness PR (D1 midday) |
-| Shared-file ownership | `workstream-assignments.md` §4–§6 | D1 start |
-| Status tracking | `tracking/STATUS.md` + state files | D1 start |
-| Integration procedure | Merge windows midday/evening; Dev A's evening integration build | D1 start |
-| Can be decided later | U-1 (demo date → tier cut), U-2 (Qwen endpoint, needed by D3 for D8 live run), backtest thresholds (WS-SEN-P2, D4), golden thresholds (from Doc 6) | As stated |
-
-Nobody waits for a re-review of the whole architecture: the contracts are already frozen in the specs; only the four contract PRs in §5.2 stage 2 need agreement.
+| Architecture and scope | Design approved; real LLM agents with deterministic fallback; aim for Tier 3, fall back to Tier 2 (checkpoint end of D5) | A-ARCH, C-1, D-PLAN-9 |
+| Time | 9 or more working days (D1–D9) | U-1 |
+| Repository and branches | New repository owned by the team lead; short-lived plan branches; protected `main` | D-PLAN-3, U-4 |
+| PR granularity | One plan = one branch = one PR; contract commit first in a Draft PR; merge commit, not squash | D-PLAN-4 |
+| Action names / table names | SC names + temporary aliases / keep physical table names | C-5, D-PLAN-2 |
+| Deferred actions | Keep those already working on `main`; build no new ones | D-PLAN-5 |
+| LLM consent | Off until the user opts in; demo user seeded on | D-PLAN-6 |
+| Late dependencies | Contract-matching stub after half a day | D-PLAN-7 |
+| Independent review | Mandatory for sensitive plans only | D-PLAN-8 |
+| Qwen | Key and model arrive on D3; key in each local `backend/.env` + GitHub Actions secret, never committed; stand-in OpenAI-compatible provider if Qwen is unavailable | U-2, D-PLAN-11, D-PLAN-12 |
+| Sentinel backtest | Provisional ±15 % monthly spend forecast error, confirmed on D4 | D-PLAN-10 |
+| Coding conventions | CommonJS backend, `node:test`, money rules (§3), no new dependencies without WS-FND approval | — |
+| Environment | Node ≥ 22.5 (CI uses 22.x); `backend/.env` from `.env.example`; `LLM_PROVIDER=fake` only in tests | — |
+| Test/build commands | `npm --prefix backend test`, `npm run build`, `npx oxlint` (available once WS-FND-P1 merges, end of D1) | — |
+| Shared-file ownership, tracking, integration | `workstream-assignments.md` §4–§7; `tracking/`; merge windows midday/evening + Dev A's evening build | — |
+| **Still open** | Developer names + GitHub handles (D1); repository name/link; stand-in provider and its key holder (before D8); branch-protection availability | — |
 
 ### 5.2 Stages (mapped to `roadmap.md` §4)
 | Stage | Days | Starts | Runs in parallel | Blocked until | Deliverable / verification |
 | --- | --- | --- | --- | --- | --- |
-| 1. Repository and environment | D1 am | Dev A WS-FND-P1 | Dev C routing-rules study; Dev D schema drafting | — | Harness + CI PR merged; everyone runs `npm --prefix backend test` locally |
-| 2. Contract stabilisation | D1–D2 | Contract PRs: WS-SEN-P2 step 1 (Dev D), WS-JON-P1 step 1 (Dev C), WS-PLT-P1 step 1 + WS-CAT-P2 step 1 (Dev B), envelope schemas in WS-FND-P3 (Dev A) | All four | Consumers' approval | Contract PRs merged; G1 |
+| 1. Repository and environment | D1 | Dev A WS-FND-P1 (one PR) | Dev C WS-JON-P1 (contract commit, Draft PR); Dev D WS-UI-P1; Dev B test design on Dev A's branch | — | WS-FND-P1 merged in the evening window; everyone runs `npm --prefix backend test` locally |
+| 2. Contract stabilisation | D1–D3 | Contract commits reviewed in Draft PRs: WS-JON-P1 (Dev C, D1), WS-PLT-P1 (Dev B, D2), envelope schemas in WS-FND-P3 (Dev A, D2–D3); other consumers build against the frozen spec sections | All four | Consumers' approval | Contract commits approved; G1 |
 | 3. Skeleton integration | D2–D3 | WS-FND-P2, WS-FND-P3, WS-UI-P1 | WS-CAT-P1, WS-PLT-P1, WS-JON-P1 (local fake) | FND-P3 for adapter/dispatcher use | G2: CI green, migrations, dispatcher, fake LLM, five workspaces render |
 | 4. Deterministic core | D3–D4 | WS-SEN-P1, WS-PLT-P1/P2, WS-FND-P4 | WS-JON-P1 completes | — | G3: ingest → categorize → event → alert; T2 needs confirm |
 | 5. Component implementation | D4–D7 | WS-AGT-P1, WS-SEN-P2, WS-CAT-P2, WS-CAT-P3, WS-UI-P2, WS-JON-P2 | All | Per matrix | Plans merged one by one; nightly integration build |
@@ -153,20 +155,20 @@ Nobody waits for a re-review of the whole architecture: the contracts are alread
 Use `cross-workstream-dependencies.md` (46 rows: producer, consumer, artifact, type, early start, fallback, earliest safe start). Only rows typed *implementation* or *integration* block; *interface* rows are satisfied by a merged contract. Ordering preferences are not dependencies (e.g. WS-CAT-P2 and WS-CAT-P3 both need only WS-CAT-P1).
 
 ### 5.4 Git and integration workflow
-`workstream-assignments.md` §7 is authoritative. In short: protected `main`; one branch per plan; contract PRs first; PR ≤ 600 lines; CI must be green; two merge windows a day; Dev A's nightly integration build (`npm run reset-demo` once it exists, full suite, skeleton smoke, later the E2E journey); a breaking PR is reverted the same day and fixed via Template F. Rebase daily: `git fetch origin && git rebase origin/main`.
+`workstream-assignments.md` §7 is authoritative. In short: new repository owned by the team lead; protected `main`; one plan = one branch = one PR, contract commit first in a Draft PR, reviewed commit by commit, merged with a merge commit; CI must be green; two merge windows a day; Dev A's nightly integration build (`npm run reset-demo` once it exists, full suite, skeleton smoke, later the E2E journey); a breaking PR is reverted the same day and fixed via Template F. Rebase daily: `git fetch origin && git rebase origin/main`.
 
 ### 5.5 Integration gates (evidence)
 | Gate | Evidence required (attach to `tracking/STATUS.md` gate log) |
 | --- | --- |
-| G1 (end D1) | Links: docs on `main`, harness/CI PR, route-split PR, CODEOWNERS; open contract PRs; decision log entries |
+| G1 (end D1) | Links: docs in the repository, WS-FND-P1 PR (harness, CI, route split, CODEOWNERS), WS-JON-P1 Draft PR with its contract commit; decision log entries |
 | G2 (end D3) | CI run green on `main`; `schema-baseline.test.js` pass; dispatcher + adapter tests pass; screenshot of five workspaces + Settings in Electron |
 | G3 (end D4) | Integration test names and output: ingest → `categorization.updated` → alert; `no-auto-execute.test.js`; Sentinel golden summary (17 functions) |
 | G4 (end D7) | `backend/test/integration/chat-*.test.js` output; correction-propagation test; consent-off zero-call test |
 | G5 (end D8) | `demo-journey.test.js` (fake) output; `legacy-gone.test.js`; `git grep` gates empty; Electron single-server check |
-| G6 (D9) | Security S-1…S-16, failure injection, restart test outputs; live suite or "blocked by U-2" |
+| G6 (D9) | Security S-1…S-16, failure injection, restart test outputs; live suite with Qwen or the labelled stand-in provider |
 | G7 (D9) | `acceptance-checklist.md` §4 filled with evidence; team-lead sign-off |
 
-Integration starts on D1 (shared harness, contract PRs) and happens every evening — never only at the end.
+Integration starts on D1 (shared harness, contract commits in Draft PRs) and happens every evening — never only at the end.
 
 ---
 
@@ -177,11 +179,11 @@ Integration starts on D1 (shared harness, contract PRs) and happens every evenin
 | Model invents APIs or files | Reject the change; point the model to the contract/spec section; if the thing is genuinely needed, stop and escalate (it is a contract change) |
 | Model changes unrelated code | Revert those hunks (`git restore -p <file>` or `git checkout main -- <file>`); restate the allow-list (plan §4); if repeated, new session |
 | Tests fail after implementation | Template D: reproduce, read the failure, find root cause before any edit, minimal fix, rerun the whole suite. Never edit a test to match the code unless the test contradicts the spec — then escalate |
-| A shared contract must change | Stop implementation; open a contract PR describing the change, the spec reference and all consumers; owner + consumers approve; then implement. Spec-level changes go to the team lead |
+| A shared contract must change | Stop implementation; make the change the first commit of the plan's PR (opened as Draft), describing the change, the spec reference and all consumers; owner + consumers approve that commit; then implement. Spec-level changes go to the team lead |
 | Another developer is delayed | Use fixtures/contract stubs per matrix; reorder to your other Ready sequence; Dev A rebalances at stand-up (contingency rules) |
-| Two models produced incompatible implementations | Template F with both sides; the contract file (or spec) decides; the side that deviates fixes; if the contract is ambiguous, owner clarifies in a contract PR |
+| Two models produced incompatible implementations | Template F with both sides; the contract file (or spec) decides; the side that deviates fixes; if the contract is ambiguous, owner clarifies in a contract commit approved by both sides |
 | Model reaches context limit | Template E (partial handoff) → new session with A + B + handoff + carry-over kit |
-| Task larger than expected | Split into several PRs under the same plan ID, in plan-step order; if it exceeds the plan's size by > 50 %, tell Dev A to re-plan the schedule — never pull scope from a later plan to "even out" |
+| Task larger than expected | Keep one PR (D-PLAN-4): add commits in plan-step order and review commit by commit; if it exceeds the plan's size by > 50 %, tell Dev A to re-plan the schedule — never split the plan and never pull scope from a later plan |
 | Architecture lacks detail | Check spec → Doc 2 → existing code, in that order; if still unclear, record an assumption in the PR and ask the owner; anything touching money, consent, security or data model is escalated, not assumed |
 | Model reports completion without evidence | Not complete. Run the commands yourself; require test names and outputs in the handoff |
 | Merge introduces regressions | Revert the PR on `main` the same day; author reproduces on the branch; Template D; re-merge after green |

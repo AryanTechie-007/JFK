@@ -49,7 +49,7 @@ john.onVersionEvent(Event@1)                                           // catego
 - Rendering: numbers only via placeholders `{{trs_x:/data/path|inr}}` bound to tool results of **this request** (`gateway.verifyResultOwnership`).
 
 ## 6. Implementation steps
-1. Contract PR: ChatRequest/ChatResponse/RouterOutput schemas (WS-UI approves).
+1. Contract commit first: ChatRequest/ChatResponse/RouterOutput schemas. Open this PR as a Draft on D1 and get Dev D's (WS-UI) approval of that commit before continuing.
 2. Routing: convert current regex routes into `routing-rules.json`; write ≥ 100 labelled phrasings test; rules confident → no LLM call.
 3. LLM router fallback with schema validation; unknown → clarifying QUESTION.
 4. Packet builder (TaskPacket@1) with minimisation; dispatch in parallel with AbortController deadlines.

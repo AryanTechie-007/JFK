@@ -25,6 +25,7 @@
 
 ## 3. Scope
 **In:** Sentinel workspace sections; transaction list with filters and paging; inline correction (category picker filtered by movement type) → T1 `RECATEGORIZE_TRANSACTION` scope TRANSACTION with `UndoBar`, "apply to all from this merchant" → proposal card with dry-run counts; Needs-review actions (`CONFIRM_CATEGORY`, `DISMISS_REVIEW_ITEM`); bills panel (declared bills CRUD as T1); demo loader (visible only when backend reports `demo_controls: true` in `/health`, labelled "Demo: bank feed simulator", synthetic); Settings: profile (`UPDATE_PROFILE` card), preferences (`UPDATE_PREFERENCE` T1), consent toggle, memory facts list/delete (John store route), rules list (read-only; editing deferred); onboarding flow mapped to the same actions; bell feed from `/notifications`.
+**Tier cut (D-PLAN-9):** if the end-of-D5 checkpoint cuts Tier 3, skip the forecast/risk-radar section beyond the upcoming-bills list, and the demo loader control (the `reset-demo` script loads the data); transactions, corrections, review list, bills panel and Settings stay.
 **Out:** chat panels and John view (P3).
 
 ## 4. Files and ownership

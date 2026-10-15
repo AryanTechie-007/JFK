@@ -54,7 +54,7 @@ actionService.registerExecutor(action, {applyChange(params, ctx, tx), dryRun?(pa
 HTTP (Doc 2 §6): `POST /proposals {action, params}` (T2/T3 forms); `POST /proposals/:id/confirm {params_hash, ack?}` → `ActionResult@1`; `POST /proposals/:id/decline`; `POST /actions {action, params, idempotency_key}` (T1 taps; server issues intent token for the authenticated tap); `POST /actions/:id/undo`; `GET /actions/history`.
 
 ## 6. Implementation steps
-1. Contract PR: registry (canonical names), alias table, `ActionCtx`, executor contract, HTTP shapes. Get WS-CAT, WS-JON, WS-UI approval.
+1. Contract commit first: registry (canonical names), alias table, `ActionCtx`, executor contract, HTTP shapes. Open this PR as a Draft on D2 and get Dev C (WS-JON) and Dev D (WS-UI) approval of that commit before continuing (WS-CAT is the same developer).
 2. `tokens.js` with HMAC-free random tokens stored hashed (`sha256`) in `confirmation_tokens`/`intent_tokens`; TTL 5 min / 2 min; single use.
 3. Refactor `registerProposal` → `createProposal`: validate params schema, compute `params_hash` (canonical JSON), `base_versions`, run validator at creation, supersede previous proposals for the same target, **no token returned**.
 4. `confirmAndExecute`: SC §13.6 steps 1–11; executor lookup; one transaction; `events.append(tx, userId, 'plan.changed', …)` (or executor's event); re-read verification; `reconcile_action` job via `jobs.enqueueJob`.
