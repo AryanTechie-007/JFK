@@ -2,7 +2,7 @@
 
 > **Local plan number: Plan 1 of 2 in WS-JON** · Unique ID: **`WS-JON-P1`** · Branch: `ws-jon/p1-router-synthesis-streaming`
 
-> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/FINNMIN-JFK-John` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). **That code is not in the repository yet.** This plan cannot start until team decision **TD-01** (how the source baseline enters the repository) is resolved and, if the code is imported, the import PR is merged and verified (see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`.
+> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/FINNMIN-JFK-John` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). Per team decision **D-PLAN-3** (2026-10-13) the repository starts from that code at commit `fc0981d`; **until the source-baseline import commit is on `main` this plan cannot start** (one-time import by the team lead — see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). One plan = one branch = one PR (D-PLAN-4). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`.
 
 ## 1. Plan identity
 | Field | Value |
@@ -51,7 +51,7 @@ john.onVersionEvent(Event@1)                                           // catego
 - Rendering: numbers only via placeholders `{{trs_x:/data/path|inr}}` bound to tool results of **this request** (`gateway.verifyResultOwnership`).
 
 ## 6. Implementation steps
-1. Contract PR: ChatRequest/ChatResponse/RouterOutput schemas (WS-UI approves).
+1. Contract commit first: ChatRequest/ChatResponse/RouterOutput schemas. Open this PR as a Draft on D1 and get Dev D's (WS-UI) approval of that commit before continuing.
 2. Routing: convert current regex routes into `routing-rules.json`; write ≥ 100 labelled phrasings test; rules confident → no LLM call.
 3. LLM router fallback with schema validation; unknown → clarifying QUESTION.
 4. Packet builder (TaskPacket@1) with minimisation; dispatch in parallel with AbortController deadlines.

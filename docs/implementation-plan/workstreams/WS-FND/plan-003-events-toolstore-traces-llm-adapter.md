@@ -2,7 +2,7 @@
 
 > **Local plan number: Plan 3 of 6 in WS-FND** · Unique ID: **`WS-FND-P3`** · Branch: `ws-fnd/p3-platform-plumbing`
 
-> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/FINNMIN-JFK-John` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). **That code is not in the repository yet.** This plan cannot start until team decision **TD-01** (how the source baseline enters the repository) is resolved and, if the code is imported, the import PR is merged and verified (see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`.
+> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/FINNMIN-JFK-John` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). Per team decision **D-PLAN-3** (2026-10-13) the repository starts from that code at commit `fc0981d`; **until the source-baseline import commit is on `main` this plan cannot start** (one-time import by the team lead — see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). One plan = one branch = one PR (D-PLAN-4). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`.
 
 ## 1. Plan identity
 | Field | Value |
@@ -11,14 +11,14 @@
 | Owner / subagent | Dev A — Integration Lead / WS-FND subagent |
 | Objective | Build the shared plumbing every component needs and the source baseline lacks: outbox event append + dispatcher with retries and dead letter (G-3), persistent tool results with ownership checks (G-4), snapshot freshness check, trace spans, and the **runtime LLM adapter** (G-1) with an OpenAI-compatible provider (Qwen prototype) and a test-only fake |
 | Expected outcome | `events.append/subscribe`, dispatcher loop, `gateway.getResult/verifyResultOwnership`, `snapshot.assertCurrent`, `trace.span`, `llm.complete` exported with JSDoc and tests; `/api/v1/health` reports DB, breaker and dead letters |
-| Size | ~1–1.5 days; 4 PRs (events, gateway store + snapshot, traces + health, LLM adapter) |
+| Size | ~1–1.5 days; one PR with four commits (envelope schemas + events, gateway store + snapshot, traces + health, LLM adapter). Open it as a Draft once the schema commit exists so consumers can review the envelope schemas early |
 
 ## 2. Dependencies
 | Type | Source | Needed | Early start |
 | --- | --- | --- | --- |
 | implementation | WS-FND-P2 | `event_deliveries`, `jobs`, `jobs_dead_letter`, `tool_results`, `traces` tables | No |
 | decision | C-1 | LLM layer follows specs | Default applied |
-| decision | U-2 | Real Qwen endpoint | **Not needed** — adapter is built and tested with the fake provider; live smoke is optional |
+| decision | U-2 | Real Qwen endpoint | **Not needed** — adapter built and tested with the fake provider; Qwen details arrive on D3 (live smoke then) |
 
 **Parallel with:** WS-FND-P4, WS-CAT-P1, WS-SEN-P1. Interface consumers (WS-CAT-P1, WS-SEN-P1, WS-PLT-P1/P2, WS-AGT-P1, WS-JON-P1) code against §5 signatures before merge.
 **Unblocks:** WS-PLT-P2, WS-AGT-P1, WS-JON-P1 (implementation); WS-FND-P5.
@@ -35,7 +35,7 @@
 | `backend/src/platform/gateway.js` | Modify | Persist each `SentinelResult@1` in `tool_results`; `getResult`, `verifyResultOwnership`; keep `GatewaySession` API | WS-FND | Medium — used by agents; API additive |
 | `backend/src/platform/snapshot.js` | Modify | Add `assertCurrent(snapshot, conn)` throwing `DATA_STALE` | WS-FND | Medium — additive |
 | `backend/src/shared/trace.js` | Create | `span(ctx, component, name, fn)` writing `traces` rows; `newTraceId()` | WS-FND | Low |
-| `backend/src/shared/contracts/schemas/**` + `schemas/index.js` | Create | Ajv instance; `validate(schemaName, value)`; SC schemas TaskPacket@1, SpecialistResponse@1, SentinelResult@1, DataQuality@1, Proposal@1, ActionRequest@1, ActionResult@1, Event@1, ErrorBody@1 | WS-FND (contract PRs reviewed by consumers) | Medium |
+| `backend/src/shared/contracts/schemas/**` + `schemas/index.js` | Create | Ajv instance; `validate(schemaName, value)`; SC schemas TaskPacket@1, SpecialistResponse@1, SentinelResult@1, DataQuality@1, Proposal@1, ActionRequest@1, ActionResult@1, Event@1, ErrorBody@1 | WS-FND (schema commit reviewed by consumers in the Draft PR) | Medium |
 | `backend/src/platform/llm/index.js` | Create | `complete()`, provider registry, breaker, timeout, usage tracing | WS-FND | Low |
 | `backend/src/platform/llm/providers/openai-compat.js` | Create | `POST {LLM_BASE_URL}/chat/completions` via global `fetch`; `response_format` JSON schema when supported, else JSON-mode + local validation | WS-FND | Low |
 | `backend/src/platform/llm/providers/fake.js` | Create | Fixture-driven, **refuses unless `NODE_ENV==='test'`** | WS-FND | Low |
@@ -83,7 +83,7 @@ llm.complete({modelClass:'ROUTER'|'SPECIALIST'|'SYNTHESIS', system, messages, js
 7. LLM adapter: provider selection by `LLM_PROVIDER`; `openai-compat` builds `{model, messages, temperature, max_tokens, response_format}`; parses `choices[0].message.content`; strips code fences; JSON-parses; validates against `jsonSchema` with Ajv; one local retry on parse failure is **not** done here (runners own repair).
 8. Fake provider: fixtures keyed by `(modelClass, sha256(system+last user message))` or by an explicit `fixtureId` passed in `messages[0].meta` for tests; missing fixture → `LLM_UNAVAILABLE` (so fallbacks are testable).
 9. Health route; start dispatcher/scheduler only under `require.main === module` (and in Electron's boot path).
-10. Optional live smoke (if U-2 known): `node backend/scripts/llm-smoke.js` sends one JSON-schema request; not part of CI.
+10. Live smoke once Qwen details arrive (D3) — or with the stand-in provider (D-PLAN-12): `node backend/scripts/llm-smoke.js` sends one JSON-schema request; not part of CI.
 
 ## 7. Edge cases
 | Case | Handling |
@@ -125,10 +125,10 @@ llm.complete({modelClass:'ROUTER'|'SPECIALIST'|'SYNTHESIS', system, messages, js
 | --- | --- |
 | Qwen endpoint lacks JSON-schema mode | `LLM_JSON_MODE=json` path already built; runners validate locally |
 | Dispatcher polling adds latency to alerts | 250 ms interval; `drainOnce()` callable synchronously after commit in the same process (`setImmediate`) |
-| Ajv schemas diverge from SC | Contract tests on SC examples; schema PRs need consumer approval |
+| Ajv schemas diverge from SC | Contract tests on SC examples; schema commits need consumer approval in the Draft PR |
 
 ## 12. Assumptions and unresolved questions
-- [U] U-2: base URL, model IDs, JSON support and rate limits. Only the optional smoke and WS-AGT-P3 depend on it.
+- [D] U-2 / D-PLAN-11 / D-PLAN-12: Qwen key and model arrive on D3. The key lives only in each developer's local `backend/.env` and in a GitHub Actions secret for the manual live workflow — never committed. If Qwen is unavailable, a stand-in OpenAI-compatible provider is configured through the same env vars (`LLM_BASE_URL`, `LLM_MODEL_*`, `LLM_API_KEY`); no code change.
 - [A] Node 22 global `fetch` is available in Electron 41's Node runtime (it is ≥ 22); verify in WS-FND-P5 desktop check.
 
 ## 13. Completion handoff

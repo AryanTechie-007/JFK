@@ -3,7 +3,7 @@
 | Attribute | Value |
 | --- | --- |
 | File | `docs/prototype-design/07-ui-screens-and-interactions.md` |
-| Status | **Generated 2026-10-13 — awaiting team approval** (team decision TD-05 in `docs/team-decisions.md`). Not part of the original Doc 0–6 package. |
+| Status | **Generated 2026-10-13 — awaiting team approval** (TD-05 in `docs/team-decisions.md`). Not part of the original Doc 0–6 package (which the team approved on 2026-10-13, A-ARCH). Updated 2026-10-15 for team decisions D-PLAN-5, D-PLAN-6 and D-PLAN-9. |
 | Why it exists | Docs 0–6 and the specifications define *what* each workspace shows and *which endpoint and action* backs each control, but no document gives a screen-by-screen design (layout regions, fields, states, transitions). WS-UI-P1/P2/P3 would otherwise have to guess. This document consolidates the existing requirements and fills only the layout/interaction gaps, each gap labelled. |
 | Authoritative behaviour | `docs/specifications/*.md` (frozen) and Docs 0–6. This document never changes an endpoint, action, tier, field or rule defined there. If it disagrees with them, they win and this document is corrected. |
 | Implemented by | `WS-UI-P1` (shell, client, shared components), `WS-UI-P2` (Sentinel workspace, Settings, onboarding, bell), `WS-UI-P3` (John chat, workspace chat panels, alert Explain, desktop verification) |
@@ -197,7 +197,7 @@ Every workspace view response includes `snapshot_id`, `as_of_date` and `DataQual
 | --- | --- |
 | Purpose | Authenticate with the existing email + JWT mechanism [C] SC §20 D-022 |
 | Endpoints | `POST /api/v1/auth/login`, `POST /api/v1/auth/signup`, `GET /api/v1/auth/me` [C] Doc 2 §6 (existing routes moved under v1 in WS-FND-P5; until then the existing paths are used [P] WS-FND-P5) |
-| Fields | Login: email, password. Sign up: name, email, password [I] — **the exact existing request fields are defined by the auth code in the source baseline (TD-01)**, not by any spec |
+| Fields | Login: email, password. Sign up: name, email, password [I] — **the exact existing request fields are defined by the auth code in the source baseline (imported per D-PLAN-3)**, not by any spec |
 | Validation | Email format; password non-empty; server errors shown inline [I] |
 | States | Submitting (button disabled), invalid credentials (generic "Email or password is incorrect" — no account enumeration [I]), service unavailable |
 | Success | Store the token in memory plus the existing app's persistence mechanism [I]; go to Onboarding (first run) or the preserved route / John |
@@ -209,7 +209,7 @@ Every workspace view response includes `snapshot_id`, `as_of_date` and `DataQual
 | Purpose | Collect the optional profile and the mandatory consent decision (D-017) [C] SC §17.6 |
 | Endpoint | `POST /api/v1/onboarding {display_name, declared_income_minor?, fixed_lines[], risk_comfort, protected_category_ids[], llm_processing_consent, first_goal?}` → `{profile, preferences}`; executes `UPDATE_PROFILE` / `UPDATE_PREFERENCE` / `CREATE_GOAL` with `origin: UI_FORM` [C] Doc 2 §6. WS-UI-P2 allows "`POST /onboarding` or sequential proposals" [P] — **[Q] Q-UI-05** which one is built (the endpoint is in Doc 2 §6 but no backend plan lists it in its files table) |
 | Steps [I] | 1 Name → 2 Income (optional) → 3 Fixed expenses (optional) → 4 Risk comfort → 5 Protected categories (optional) → 6 AI processing consent (required) → 7 First goal (optional) → Summary + Finish |
-| Fields | `display_name` (text) · `declared_income_minor` (₹ amount input, ≥ 0; empty = not declared → Sentinel derives observed income) · fixed lines (up to 20; each `label` ≤ 40 chars, leaf `category_id` unique across lines, `amount_minor` ≥ 1; prototype maps the existing rent question to `HOUSING.RENT`) · `risk_comfort` radio CONSERVATIVE / BALANCED (default) / AGGRESSIVE · `protected_category_ids` multi-select of taxonomy parents/leaves (≤ 30; a parent protects all leaves) · `llm_processing_consent` explicit Yes/No (no default) · first goal: name (1–40), target ₹ (≥ 1), monthly add ₹ (≥ 0), deadline (optional date), priority HIGH/MEDIUM/LOW [C] SC §5.4–5.6, §17.6 |
+| Fields | `display_name` (text) · `declared_income_minor` (₹ amount input, ≥ 0; empty = not declared → Sentinel derives observed income) · fixed lines (up to 20; each `label` ≤ 40 chars, leaf `category_id` unique across lines, `amount_minor` ≥ 1; prototype maps the existing rent question to `HOUSING.RENT`) · `risk_comfort` radio CONSERVATIVE / BALANCED (default) / AGGRESSIVE · `protected_category_ids` multi-select of taxonomy parents/leaves (≤ 30; a parent protects all leaves) · `llm_processing_consent` toggle, **Off by default** — the user must opt in (D-PLAN-6; the demo user is seeded with consent on) · first goal: name (1–40), target ₹ (≥ 1), monthly add ₹ (≥ 0), deadline (optional date), priority HIGH/MEDIUM/LOW [C] SC §5.4–5.6, §17.6 |
 | Money input | The user types rupees; the client converts the typed decimal string to integer paise **by string parsing, not floating-point arithmetic** (e.g. "1250.5" → 125050) [I] — confirm this does not breach P-AC-05's "no arithmetic on `_minor`" lint (Q-UI-06) |
 | Consent copy [I] | "Allow FinMate to send your financial summaries to an AI model to answer chat questions? Workspaces work either way. You can change this in Settings." |
 | Consent = No | Chat is disabled everywhere; workspaces still work [C] SC §5.5, §16.6 |
@@ -276,7 +276,7 @@ Every workspace view response includes `snapshot_id`, `as_of_date` and `DataQual
 | Add / Release funds modal | same | `ADD_FUNDS` / `RELEASE_FUNDS` card (T2) | [C] |
 | Pause / Resume; "This month only" monthly-add override | same | `SET_GOAL_STATUS` / `SET_GOAL_MONTH_OVERRIDE` card (T2) | [C] |
 | Delete | — (uses card progress) | `DELETE_GOAL` card (T3, acknowledgment) | [C] |
-| Recently deleted | `GET /api/v1/workspaces/atlas/archived` | `RESTORE_GOAL` card (T2) — enabled only if the action exists in the codebase being built (see Q-UI-09) | [C] Atlas §B.4 · [P] WS-UI-P1 step 7 |
+| Recently deleted | `GET /api/v1/workspaces/atlas/archived` | `RESTORE_GOAL` card (T2) — enabled (D-PLAN-5) | [C] Atlas §B.4 · [P] WS-UI-P1 step 7 |
 | SIP calculator | `POST /api/v1/workspaces/atlas/sip {monthly_amount_minor 10000..100000000, annual_rate_bp 0..3000, months 1..600, annual_step_up_bp 0..5000}` | — (result labelled "Illustrative"; rate is user-supplied) | [C] Sentinel §C.3 `sentinel_project_sip`; D-024 |
 
 **Goal card content [C]** (Goal@1; Sentinel `goal_progress` data): name, priority tier, status chip (Active/Paused/Completed), saved vs target (progress bar from returned values — the bar's width is a display ratio of two returned integers [I]; see Q-UI-06), effective monthly add, projected date and conservative date (headline rule), deadline and on-track flag, required monthly add for deadline when off-track. Card menu: Edit · Add funds · Release funds · Pause/Resume · This month only · Delete.
@@ -300,7 +300,7 @@ Every workspace view response includes `snapshot_id`, `as_of_date` and `DataQual
 | Edit cap modal | `POST /api/v1/workspaces/nova/validate-cap {category_id, new_cap_minor, scope, override_protected?}` then `POST /api/v1/proposals` | `ADJUST_BUDGET_CAP` (T2) or `REMOVE_CAP` (T2) | [C] Nova §B.5; Doc 2 §6 |
 | Cover this overspend | `POST /api/v1/workspaces/nova/rebalance {deficit_category_id}` → `{result, proposal}` | `APPLY_REBALANCE` card (T2, proposer USER) | [C] Nova §B.5; Doc 2 §6 |
 | Log expense modal | `POST /api/v1/actions` | `ADD_MANUAL_TRANSACTION` (T1) + Undo | [C] Nova §B.5; Categorizer §C.2 |
-| Watch | — | `CREATE_ALERT` (T1) — prototype status per Q-UI-09 | [C] SC §13.2 · Doc 0 §3.2 (deferred) |
+| Watch | — | `CREATE_ALERT` (T1) — kept as-is (D-PLAN-5) | [C] SC §13.2 · [P] D-PLAN-5 |
 
 **Caps table columns [C]** (Cap@1; Sentinel utilization): category · effective cap (standing or "this month" override marker) · spent (settled + provisional, provisional shown separately) · remaining · utilization % · tier (Healthy < 80 %, Warning 80–100 %, Exceeded > 100 %, SC §21.1) · protected marker · row actions (Edit, Cover this overspend when Exceeded/Warning [I], Remove).
 
@@ -345,6 +345,8 @@ Every workspace view response includes `snapshot_id`, `as_of_date` and `DataQual
 | Needs review | `GET /api/v1/review-queue` | Items with reason and exactly the T1 actions relevant to it | [C] Categorizer §B.7 |
 | Demo loader | `POST /api/v1/demo/ingest {format, body, mapping_profile_id?}` → `{batch_id, status}` | File picker (JSON / CSV), batch status and row errors; labelled "Demo: bank feed simulator — synthetic data" | [C] Doc 2 §6 · [P] WS-UI-P2 step 5 |
 
+**Tier cut (D-PLAN-9).** If the end-of-D5 checkpoint cuts Tier 3, the forecast/risk-radar section beyond the upcoming-bills list and the demo loader are not built (the `reset-demo` script loads the data); Overview, Spending, Bills, Transactions and Needs review stay. Iris planner verification (S-07, demo step 9) is likewise out of scope after a cut.
+
 **Bill form fields [C]** (DeclaredBill@1): label (≤ 40), category (optional), amount ₹ (≥ 1), next due date, recurrence NONE / MONTHLY / QUARTERLY / YEARLY.
 
 **Transaction row [C/I]**: date · description · merchant · account · amount (direction indicated by sign/label, not colour only) · movement type · category chip with status (CONFIRMED / AUTO / NEEDS_REVIEW / UNCATEGORIZED) · provisional marker for pending rows. Filters [I]: date range, account, category, status, text search.
@@ -356,7 +358,7 @@ Every workspace view response includes `snapshot_id`, `as_of_date` and `DataQual
 4. Version conflict → "This transaction changed; refresh".
 Demo step 5: Spencer's row Dining → Groceries; Undo appears; Nova reflects both categories.
 
-**Needs-review actions [C]** (Categorizer §B.7; Doc 4 §8.1): `CONFIRM_CATEGORY` (T1) and `DISMISS_REVIEW_ITEM` (T1) are built. Reason-specific actions for `POSSIBLE_DUPLICATE` (`RESOLVE_DUPLICATE`), `UNMATCHED_REFUND`/`CARD_COUNTERPART_MISSING` (`CONFIRM_LINK`/`BREAK_LINK`) and type fixes (`SET_TRANSACTION_TYPE`) are deferred → `DisabledControl`, subject to Q-UI-09.
+**Needs-review actions [C]** (Categorizer §B.7; Doc 4 §8.1): `CONFIRM_CATEGORY` (T1) and `DISMISS_REVIEW_ITEM` (T1) are built. Reason-specific actions for `POSSIBLE_DUPLICATE` (`RESOLVE_DUPLICATE`), `UNMATCHED_REFUND`/`CARD_COUNTERPART_MISSING` (`CONFIRM_LINK`/`BREAK_LINK`) and type fixes (`SET_TRANSACTION_TYPE`) are deferred → `DisabledControl`; `SET_TRANSACTION_TYPE` stays enabled because it already works in the source baseline (D-PLAN-5).
 
 ### S-09 Transaction detail drawer
 | Aspect | Design |
@@ -450,9 +452,10 @@ Inline recategorization (S-08) → `categorization.updated` → Monitor recomput
 | Resolve duplicate, confirm/break link | S-08 Needs review | Disabled | [C] Doc 0 §3.2 |
 | Mark own-account counterparty | S-09 | Disabled | [C] Doc 0 §3.2 |
 | Delete manual transaction | S-09 | Disabled (Undo of the add remains) | [C] Doc 0 §3.2; Doc 4 §8.1 |
-| Restore deleted goal (`RESTORE_GOAL`) | S-05 | **Conditional** — enabled when the codebase being built already has it (WS-UI-P1 step 7, audit A-18); otherwise disabled | Q-UI-09 |
-| Watch (`CREATE_ALERT`) | S-06, S-08 | **Conditional** (same rule) | Q-UI-09 |
-| Change movement type (`SET_TRANSACTION_TYPE`) | S-08, S-09 | **Conditional** (same rule; WS-CAT-P3 scope note) | Q-UI-09 |
+| Restore deleted goal (`RESTORE_GOAL`) | S-05 | **Enabled** — already works in the source baseline; kept as-is (D-PLAN-5, audit A-18) | [P] WS-UI-P1 step 7 |
+| Watch (`CREATE_ALERT`) | S-06, S-08 | **Enabled** — kept as-is (D-PLAN-5) | [P] WS-PLT-P1 step 6 |
+| Change movement type (`SET_TRANSACTION_TYPE`) | S-08, S-09 | **Enabled** — kept as-is (D-PLAN-5; WS-CAT-P3 scope note) | [P] WS-CAT-P3 |
+| Category-rule creation (`CREATE_CATEGORY_RULE`) | S-10 | Kept in the backend as-is (D-PLAN-5); the Settings rules list stays read-only in WS-UI-P2 | [P] WS-UI-P2 §12 |
 | `REMOVE_CAP` | S-06 | Enabled once WS-PLT-P1 registers it | [P] WS-UI-P1 step 7 |
 | Statement upload by the end user | — | Not shown at all (no end-user upload in v1, D-009/D-023); only the demo loader exists | [C] SC §20 D-023 |
 
@@ -473,7 +476,7 @@ Inline recategorization (S-08) → `categorization.updated` → Monitor recomput
 | S-11 | `/notifications`, `/alerts` | WS-PLT-P2 | WS-UI-P2, WS-UI-P3 |
 | S-12 | `/chat/messages` | WS-JON-P1 | WS-UI-P3 |
 
-Response shapes for every `/workspaces/*` view are fixed by the HTTP JSON Schemas from **WS-SEN-P2 step 1** (`backend/src/shared/contracts/schemas/http/workspaces-*.json`); the UI validates responses against them in development mode (console warning) [P] WS-UI-P2 §5. Chat block shapes are fixed by the **WS-JON-P1 step 1** contract PR.
+Response shapes for every `/workspaces/*` view are fixed by the HTTP JSON Schemas published by **WS-SEN-P2** (its schema commit, D4–D5; WS-UI-P1 builds against current responses and Doc 2 §6 until then) (`backend/src/shared/contracts/schemas/http/workspaces-*.json`); the UI validates responses against them in development mode (console warning) [P] WS-UI-P2 §5. Chat block shapes are fixed by the **WS-JON-P1 contract commit** (Draft PR, D1).
 
 ---
 
@@ -497,8 +500,8 @@ Response shapes for every `/workspaces/*` view are fixed by the HTTP JSON Schema
 | Q-UI-04 | How the UI knows onboarding is complete (no flag defined) | Preferences record exists with `llm_processing_consent` set | WS-UI-P2 onboarding step |
 | Q-UI-05 | Build `POST /onboarding` (Doc 2 §6) or sequential proposals (WS-UI-P2)? No backend plan currently owns `/onboarding` | Sequential proposals/actions (no new route); or assign `/onboarding` to WS-PLT-P2 | WS-UI-P2 onboarding |
 | Q-UI-06 | Does converting typed rupees to paise (string parsing) and drawing progress-bar widths violate the "no arithmetic on `_minor`" rule (P-AC-05)? | Allowed in `src/lib/format.js` and `src/lib/money-input.js` only, with lint exemptions for those two files | WS-UI-P1 lint rule |
-| Q-UI-07 | `ChatRequest@1` field names: John §C.1 (`message`, `trigger.kind = USER_MESSAGE`) vs WS-UI-P3 §5 (`text`, `kind = MESSAGE`) | John §C.1 (frozen spec); correct WS-UI-P3 §5 in the WS-JON-P1 step-1 contract PR | WS-UI-P3 |
+| Q-UI-07 | `ChatRequest@1` field names: John §C.1 (`message`, `trigger.kind = USER_MESSAGE`) vs WS-UI-P3 §5 (`text`, `kind = MESSAGE`) | John §C.1 (frozen spec); confirm in the WS-JON-P1 contract commit (D1) | WS-UI-P3 |
 | Q-UI-08 | Visual style (colours, typography, theme) | Keep the existing app's styles if the source baseline is imported; otherwise a minimal neutral theme | Nothing |
-| Q-UI-09 | Conditional controls (`RESTORE_GOAL`, `CREATE_ALERT` watch, `SET_TRANSACTION_TYPE`): enabled only if the implementation keeps them from the source baseline | Depends on TD-01 (source baseline); greenfield → disabled per Doc 0 §3.2 | WS-UI-P1 step 7 |
+| Q-UI-09 | ~~Conditional controls~~ — **resolved 2026-10-13 by D-PLAN-5**: controls that already work in the source baseline stay enabled; no new deferred actions are built | — | — |
 | Q-UI-10 | Iris slider ranges and step | Range ±50 % of the category's trailing monthly average as returned in `baseline_simulation`, step ₹100 — requires the server to return that average | WS-UI-P1 Iris view |
 | Q-UI-11 | Memory facts in Settings: Doc 0 §3.2 defers John's memory facts, but WS-UI-P2 lists list/delete and the source baseline has the routes | Show list/delete only if the routes exist; otherwise hide the section | WS-UI-P2 Settings |

@@ -2,7 +2,7 @@
 
 > **Local plan number: Plan 2 of 6 in WS-FND** · Unique ID: **`WS-FND-P2`** · Branch: `ws-fnd/p2-migrations`
 
-> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/FINNMIN-JFK-John` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). **That code is not in the repository yet.** This plan cannot start until team decision **TD-01** (how the source baseline enters the repository) is resolved and, if the code is imported, the import PR is merged and verified (see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`.
+> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/FINNMIN-JFK-John` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). Per team decision **D-PLAN-3** (2026-10-13) the repository starts from that code at commit `fc0981d`; **until the source-baseline import commit is on `main` this plan cannot start** (one-time import by the team lead — see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). One plan = one branch = one PR (D-PLAN-4). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`.
 
 ## 1. Plan identity
 | Field | Value |
@@ -13,7 +13,7 @@
 | Owner / subagent | Dev A — Integration Lead / WS-FND subagent |
 | Objective | Replace the inline `CREATE TABLE IF NOT EXISTS` block in `backend/src/db.js` with versioned SQL migrations, reproduce today's schema exactly, and add the tables the prototype design needs but the source baseline lacks (gap G-13) |
 | Expected outcome | `db.js` opens the DB, sets pragmas and runs `migrate()`; `000_baseline.sql` = today's schema; `010_*.sql` adds `tool_results`, `intent_tokens`, `event_deliveries`, `jobs`, `jobs_dead_letter`, `traces`, `ingestion_batches`, `ingestion_errors`, `rolling_summaries` |
-| Size | ~0.5 day; 2 PRs (framework + baseline, new tables) |
+| Size | ~0.5 day; one PR with two commits (framework + baseline, new tables) |
 
 ## 2. Dependencies
 | Type | Source | Needed | Early start |

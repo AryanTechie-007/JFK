@@ -2,7 +2,7 @@
 
 > **Local plan number: Plan 3 of 3 in WS-UI** · Unique ID: **`WS-UI-P3`** · Branch: `ws-ui/p3-chat-ux-desktop`
 
-> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/FINNMIN-JFK-John` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). **That code is not in the repository yet.** This plan cannot start until team decision **TD-01** (how the source baseline enters the repository) is resolved and, if the code is imported, the import PR is merged and verified (see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`. Screen-level UI design: [`07-ui-screens-and-interactions.md`](../../../prototype-design/07-ui-screens-and-interactions.md) (generated, awaiting approval TD-05).
+> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/FINNMIN-JFK-John` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). Per team decision **D-PLAN-3** (2026-10-13) the repository starts from that code at commit `fc0981d`; **until the source-baseline import commit is on `main` this plan cannot start** (one-time import by the team lead — see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). One plan = one branch = one PR (D-PLAN-4). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`. Screen-level UI design: [`07-ui-screens-and-interactions.md`](../../../prototype-design/07-ui-screens-and-interactions.md) (generated 2026-10-13; awaiting team approval, TD-05).
 
 ## 1. Plan identity
 | Field | Value |
@@ -39,7 +39,7 @@
 | `src/services/workspaceService.js`, `src/services/conversationService.js` | Delete | Transitional re-export; legacy chat client (last importer rebuilt here) | WS-UI | Low |
 
 ## 5. Interfaces and contracts
-- Request: `ChatRequest@1` exactly as defined in John §C.1 — `{thread_id, message, ui_context:{workspace,…}, trigger:{kind:'USER_MESSAGE'|'UI_ACTION'|'ALERT_OPEN', alert_id?, prompt_id?}, answer_to?, client_message_id}`. *(Corrected 2026-10-13: this line previously paraphrased the schema with different field names — `kind:'MESSAGE'`, `text` — which conflicted with the frozen spec; Q-UI-07 asks the team to confirm in the WS-JON-P1 step-1 contract PR.)*
+- Request: `ChatRequest@1` exactly as defined in John §C.1 — `{thread_id, message, ui_context:{workspace,…}, trigger:{kind:'USER_MESSAGE'|'UI_ACTION'|'ALERT_OPEN', alert_id?, prompt_id?}, answer_to?, client_message_id}`. *(Corrected 2026-10-13: this line previously paraphrased the schema with different field names — `kind:'MESSAGE'`, `text` — which conflicted with the frozen spec; Q-UI-07 asks the team to confirm in the WS-JON-P1 contract commit (Draft PR, D1).)*
 - Stream: `block` events then one `done {turn_id, trace_id, degraded}` (John §C.2). Unknown block types rendered as plain text with a console warning (forward compatibility).
 - CARD confirm → `POST /proposals/:id/confirm {params_hash, ack}`; result rendered inline under the card; CHIP → `POST /actions`.
 
@@ -50,7 +50,7 @@
 4. Workspace chat panels.
 5. Alert Explain wiring.
 6. Delete transitional client file and Gemini fallback remnants; grep gate.
-7. Desktop verification: `npm run reset-demo && npm run app`; walk Doc 6 §5 steps 4, 6, 8, 10 with the fake provider (`LLM_PROVIDER=fake` is test-only, so for manual runs use the real endpoint if U-2 is answered; otherwise verify degraded mode and deterministic fallbacks — record which).
+7. Desktop verification: `npm run reset-demo && npm run app`; walk Doc 6 §5 steps 4, 6, 8, 10. `LLM_PROVIDER=fake` is test-only, so manual runs use Qwen from D3 (or the stand-in provider, D-PLAN-12); before D3, verify degraded mode and the deterministic fallbacks. Record which model was used.
 
 ## 7. Edge cases
 | Case | Handling |
@@ -84,8 +84,8 @@
 | JON-P2 late | Cards/chips render from fixture stream; integrate when merged |
 
 ## 12. Assumptions and unresolved questions
-- [U] U-2 affects only whether the manual desktop run uses a live model.
-- [U] Q-UI-01 (Electron-only vs browser build) and Q-UI-07 (ChatRequest field names) — `docs/team-decisions.md`.
+- [D] D-PLAN-12: manual desktop runs use Qwen from D3, or the stand-in provider.
+- [U] Q-UI-01 (Electron-only vs browser build) and Q-UI-07 (ChatRequest field names) — `docs/team-decisions.md` (TD-16, TD-15).
 
 ## 13. Completion handoff
 README template; recording/screenshots of chat flows. Next eligible: **WS-FND-P5**, WS-FND-P6.

@@ -2,7 +2,7 @@
 
 > **Local plan number: Plan 1 of 6 in WS-FND** · Unique ID: **`WS-FND-P1`** · Branch: `ws-fnd/p1-baseline-guardrails`
 
-> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/FINNMIN-JFK-John` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). **That code is not in the repository yet.** This plan cannot start until team decision **TD-01** (how the source baseline enters the repository) is resolved and, if the code is imported, the import PR is merged and verified (see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`.
+> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/FINNMIN-JFK-John` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). Per team decision **D-PLAN-3** (2026-10-13) the repository starts from that code at commit `fc0981d`; **until the source-baseline import commit is on `main` this plan cannot start** (one-time import by the team lead — see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). One plan = one branch = one PR (D-PLAN-4). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`.
 
 ## 1. Plan identity
 | Field | Value |
@@ -14,7 +14,7 @@
 | Suggested subagent | WS-FND subagent (sequence 1) |
 | Objective | Give every other workstream a safe place to work: specs and design on `main` (already true in the new repository — see step 1), a real test runner on temporary databases, CI, CODEOWNERS, and one route file per domain so owners stop colliding in `routes/v1/index.js` |
 | Expected outcome | `npm --prefix backend test` runs `node --test` on temp DBs (existing `test-v1-specs.js` assertions ported, none weakened); `routes/v1/index.js` only wires sub-routers; CI green on every PR |
-| Size | ~1 day; 3 PRs (docs merge, harness + CI, route split) |
+| Size | ~1 day; **one PR** (D-PLAN-4) with six commits in this order: docs (only if not already in the repository), test helpers, legacy test port + scripts, CI + `.gitignore`, route split + inventory test, CODEOWNERS. Merged with a merge commit (not squash) in the D1 evening window. Time-box: if the route split is not green by 16:00, merge first thing on D2 |
 
 ## 2. Dependencies
 | Type | Source | Needed | Early start |
@@ -22,12 +22,12 @@
 | decision | A-ARCH, C-1, U-4, D-PLAN-1 (team lead) | Approval of `docs/prototype-design`, LLM layer per spec, branching model, staffing | Proceed on defaults (baseline §5–6) |
 | — | none (first plan) | — | — |
 
-**Runs in parallel with:** WS-SEN-P2 step 1 (schema drafting), WS-UI-P1 layout work, test design in WS-CAT-P1 / WS-SEN-P1.
+**Runs in parallel with:** WS-JON-P1 (contract commit), WS-UI-P1, test design in WS-CAT-P1 (written against this plan's branch until it merges).
 **Unblocks:** WS-FND-P2, WS-CAT-P1, WS-SEN-P1, WS-SEN-P2, WS-UI-P1 (interface), every plan's CI.
 
 ## 3. Scope
 **In scope**
-1. ~~Merge `docs/prototype-design/` and `docs/implementation-plan/` to `main`~~ — **already satisfied**: the new repository was initialised with `docs/specifications/`, `docs/prototype-design/` and `docs/implementation-plan/` on `main`. Replaced by: verify the source baseline is present (TD-01) before any other step.
+1. Make sure `docs/specifications/`, `docs/prototype-design/` and `docs/implementation-plan/` are in the repository; if not, add them as the first commit of this plan's PR.
 2. Test harness: `node --test`, temp-DB helper, app factory helper, port of `backend/test-v1-specs.js`.
 3. CI workflow and CODEOWNERS.
 4. Split `backend/src/routes/v1/index.js` (697 lines) into domain routers with **byte-for-byte identical behaviour** (same paths, same responses).
@@ -69,15 +69,15 @@
   ```
 
 ## 6. Implementation steps
-1. **Source-baseline check (replaces the former docs merge).** Confirm that team decision TD-01 is recorded in `docs/team-decisions.md` and, if the source baseline is imported, that the import PR is merged and the files listed in `baseline.md` §1 exist (`git ls-files backend/src src electron`). If the code is not present, **stop**: this plan is Blocked. Confirm `docs/specifications/` is unchanged (`git log -- docs/specifications`).
+1. If the docs are missing from the repository, add them as commit 1 (docs only). Confirm `docs/specifications` is identical to the frozen set.
 2. Add `backend/test/helpers/temp-db.js`: `fs.mkdtempSync(os.tmpdir()+'/finmate-')`, set `DB_PATH`, register `process.on('exit')` cleanup.
 3. Add `backend/test/helpers/app.js`: set `JWT_SECRET='test-secret'`, `NODE_ENV='test'`; require `src/index.js` (it exports `app` and only listens when run directly — verify `require.main === module` guard; if absent, add it in this plan as the only `index.js` change). Implement `request(method, path, body, token)` using `http.createServer(app).listen(0)`.
 4. Port `backend/test-v1-specs.js` to `backend/test/legacy-v1-specs.test.js`: one `test()` per original section; copy every `assert` verbatim; replace the real-DB path with `useTempDb()`. Run both old and new; both must pass. Record the assertion count of each in the PR.
 5. Add `"test"` and `"test:live"` scripts to `backend/package.json` exactly as in §4; create `backend/test/live/.gitkeep`. Verify `npm --prefix backend test` discovers files in nested folders and that a dummy `test/live/x.live.js` is **not** run by it.
-6. Route split (separate PR): create the domain files listed in §4; move handlers **without editing their bodies** (cut/paste plus `require` adjustments); move shared helpers into `_shared.js`.
+6. Route split (its own commit in this PR): create the domain files listed in §4; move handlers **without editing their bodies** (cut/paste plus `require` adjustments); move shared helpers into `_shared.js`.
 7. Add `backend/test/routes-inventory.test.js`: walk the Express router stack and assert the set of `METHOD path` pairs equals the 25 pairs recorded before the split (`baseline.md` Appendix A). From then on, **every plan that adds or removes a route updates this expected list in the same PR** (WS-FND reviews), so later plans add routes intentionally.
 8. Add `.github/workflows/ci.yml` and `.github/CODEOWNERS` (paths from `workstream-assignments.md` §3).
-9. `.gitignore`: verify `dist/` and `backend/test/.tmp/` are present (added at repository initialisation). Do not `git rm` an imported `dist/` yet — Electron loads it; WS-FND-P5 decides (see TD-02 for whether `dist/` is imported at all).
+9. `.gitignore`: verify `dist/` and `backend/test/.tmp/` are present (added at repository initialisation). Do not `git rm` an imported `dist/` yet — Electron loads it; WS-FND-P5 decides (the committed `dist/` is deleted on D8 per D-PLAN-13).
 10. Run the full test command locally and in CI; fill the handoff.
 
 ## 7. Edge cases
@@ -106,21 +106,21 @@
 | Build | Vite build | `npm run build` |
 
 ## 10. Acceptance criteria
-**Plan:** (1) docs on `main` (satisfied at repository initialisation) and source baseline present per TD-01; (2) `npm --prefix backend test` green, zero tests touch `backend/finmate.db`; (3) ported assertion count ≥ original; (4) route inventory identical; (5) CI and CODEOWNERS active on `main`.
+**Plan:** (1) docs on `main` (satisfied at repository initialisation) and the source baseline imported per D-PLAN-3; (2) `npm --prefix backend test` green, zero tests touch `backend/finmate.db`; (3) ported assertion count ≥ original; (4) route inventory identical; (5) CI and CODEOWNERS active on `main`.
 **Workstream contribution:** test/CI foundation required by every WS-FND plan.
 **Integration:** Gate **G1** items "docs on main", "route split", "CODEOWNERS".
 
 ## 11. Risks and recovery
 | Risk | Signal | Recovery |
 | --- | --- | --- |
-| Split breaks a route subtly | Ported tests or manual Electron smoke fails | Revert split PR (it is isolated); re-split route by route |
+| Split breaks a route subtly | Ported tests or manual Electron smoke fails | Revert only the route-split commit (`git revert <sha>`, possible because the PR is merged with a merge commit); re-split route by route |
 | CI cannot install deps (registry/network) | CI install step fails | Cache `node_modules`; document in PR; owners run tests locally until fixed |
 | Other workstreams start editing `index.js` before the split lands | Merge conflicts | Announce a 4-hour freeze on `routes/v1/index.js` on D1 |
 
 ## 12. Assumptions and unresolved questions
 - [A] `src/index.js` can be required without listening (baseline says it exports `app`). Verify in step 3.
-- [A] GitHub Actions is available for the repository (`Kathir-M-03/FINNMIN-JFK-John`, private: Actions minutes are limited by the account's plan — TD-10). If not, the same commands run as a pre-merge checklist.
-- [A] Branch protection on `main` requires GitHub Pro/Team for a private repository (TD-04); without it the rules in `development-workflow.md` are followed by agreement.
+- [A] GitHub Actions is available for the repository (`Kathir-M-03/FINNMIN-JFK-John`, private: Actions minutes are limited by the account's plan — TD-10; the manual live workflow uses an Actions secret per D-PLAN-11). If not, the same commands run as a pre-merge checklist.
+- [A] Branch protection on `main` requires GitHub Pro/Team for a private repository (TD-04, still open per `baseline.md` §6); without it "PR + green CI before merge" is enforced by team agreement.
 - [U] U-4 branching model (default: short-lived plan branches).
 
 ## 13. Completion handoff

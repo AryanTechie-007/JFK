@@ -2,7 +2,7 @@
 
 > **Local plan number: Plan 2 of 2 in WS-JON** · Unique ID: **`WS-JON-P2`** · Branch: `ws-jon/p2-proposals-corrections`
 
-> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/FINNMIN-JFK-John` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). **That code is not in the repository yet.** This plan cannot start until team decision **TD-01** (how the source baseline enters the repository) is resolved and, if the code is imported, the import PR is merged and verified (see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`.
+> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/FINNMIN-JFK-John` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). Per team decision **D-PLAN-3** (2026-10-13) the repository starts from that code at commit `fc0981d`; **until the source-baseline import commit is on `main` this plan cannot start** (one-time import by the team lead — see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). One plan = one branch = one PR (D-PLAN-4). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`.
 
 ## 1. Plan identity
 | Field | Value |
@@ -25,6 +25,7 @@
 
 ## 3. Scope
 **In:** proposal binding (params exactly as validated; `validation_tool_result_id` required); CARD block with `proposal_id`, `params_hash`, rendered grounded summary, warnings, `requires_ack`; deterministic instruction detector for T1 (`DISMISS_ALERT`, `UPDATE_PREFERENCE`, `RECATEGORIZE_TRANSACTION` scope TRANSACTION, `CONFIRM_CATEGORY`) → `issueIntentToken` + `executeT1` → `UNDO` block; router-only T1 → `CHIP`; T2 instructions (`UPDATE_PROFILE`, merchant-scope recategorize, `CREATE_CATEGORY_RULE`) → card; typed confirmations ("yes", "do it") never execute — reply points to the card; transaction search for corrections (C.6 groundable source); `addReviewItem` for specialist hints; conflict rule arbitration flag (John §B.7) and dependency-edge scheduling (PeerHint → `ATLAS HANDLE_PEER_FINDING`, max one hop).
+**Tier cut (D-PLAN-9):** if the end-of-D5 checkpoint cuts Tier 3, skip the dependency edge (PeerHint → ATLAS `HANDLE_PEER_FINDING`); arbitration stays (Tier 2).
 **Out:** UI rendering (WS-UI-P3); `RESTORE_GOAL` via chat (deferred).
 
 ## 4. Files and ownership

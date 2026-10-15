@@ -2,7 +2,7 @@
 
 > **Local plan number: Plan 2 of 3 in WS-UI** · Unique ID: **`WS-UI-P2`** · Branch: `ws-ui/p2-sentinel-settings`
 
-> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/FINNMIN-JFK-John` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). **That code is not in the repository yet.** This plan cannot start until team decision **TD-01** (how the source baseline enters the repository) is resolved and, if the code is imported, the import PR is merged and verified (see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`. Screen-level UI design: [`07-ui-screens-and-interactions.md`](../../../prototype-design/07-ui-screens-and-interactions.md) (generated, awaiting approval TD-05).
+> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/FINNMIN-JFK-John` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). Per team decision **D-PLAN-3** (2026-10-13) the repository starts from that code at commit `fc0981d`; **until the source-baseline import commit is on `main` this plan cannot start** (one-time import by the team lead — see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). One plan = one branch = one PR (D-PLAN-4). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`. Screen-level UI design: [`07-ui-screens-and-interactions.md`](../../../prototype-design/07-ui-screens-and-interactions.md) (generated 2026-10-13; awaiting team approval, TD-05).
 
 ## 1. Plan identity
 | Field | Value |
@@ -27,6 +27,7 @@
 
 ## 3. Scope
 **In:** Sentinel workspace sections; transaction list with filters and paging; inline correction (category picker filtered by movement type) → T1 `RECATEGORIZE_TRANSACTION` scope TRANSACTION with `UndoBar`, "apply to all from this merchant" → proposal card with dry-run counts; Needs-review actions (`CONFIRM_CATEGORY`, `DISMISS_REVIEW_ITEM`); bills panel (declared bills CRUD as T1); demo loader (visible only when backend reports `demo_controls: true` in `/health`, labelled "Demo: bank feed simulator", synthetic); Settings: profile (`UPDATE_PROFILE` card), preferences (`UPDATE_PREFERENCE` T1), consent toggle, memory facts list/delete (John store route), rules list (read-only; editing deferred); onboarding flow mapped to the same actions; bell feed from `/notifications`.
+**Tier cut (D-PLAN-9):** if the end-of-D5 checkpoint cuts Tier 3, skip the forecast/risk-radar section beyond the upcoming-bills list, and the demo loader control (the `reset-demo` script loads the data); transactions, corrections, review list, bills panel and Settings stay.
 **Out:** chat panels and John view (P3).
 
 ## 4. Files and ownership

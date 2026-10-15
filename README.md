@@ -2,7 +2,7 @@
 
 **An AI financial coach for retail-bank customers. The coach answers questions with figures from deterministic calculations, and nothing changes without the user's confirmation.**
 
-> **Status: planning complete, implementation not started.** This repository holds the full specification, prototype design and implementation plans for the FinMate AI prototype. It contains **no application code yet**. Implementation is blocked until the team resolves [TD-01](docs/team-decisions.md#td-01--source-baseline-import-the-existing-code-or-rebuild), which decides how the application code these plans build on gets into the repository. Everything below marked *planned* describes intended behaviour, not something that exists.
+> **Status: planning complete, implementation not started.** This repository holds the full specification, prototype design and implementation plans for the FinMate AI prototype. It contains **no application code yet**. The team took its implementation decisions on 2026-10-13 ([`baseline.md` §6](docs/implementation-plan/baseline.md)); implementation starts once the application code these plans build on (the *source baseline*, commit `fc0981d`, decision D-PLAN-3) has been imported into this repository. Everything below marked *planned* describes intended behaviour, not something that exists.
 
 ---
 
@@ -94,7 +94,7 @@ FINNMIN-JFK-John/
 
 - Git, and a GitHub account with Write access to this repository ([`development-workflow.md` §2](docs/development-workflow.md#2-one-time-setup)).
 - To implement the plans: Node.js ≥ 22.5 and npm. On Windows, use Git Bash or PowerShell; the plans give commands for both.
-- A Qwen API endpoint is needed **only** for the live-model evaluation. Its details are open decision TD-13 (U-2); every other test uses the fake provider.
+- A Qwen API endpoint is needed **only** for the live-model evaluation. Its key and model arrive on D3 (U-2, D-PLAN-11); if Qwen is unavailable a stand-in OpenAI-compatible provider is used (D-PLAN-12). Every other test uses the fake provider.
 
 ## Installation and setup
 
@@ -102,7 +102,7 @@ FINNMIN-JFK-John/
 git clone https://github.com/Kathir-M-03/FINNMIN-JFK-John.git
 cd FINNMIN-JFK-John
 ```
-There is nothing to install yet. Once the application code exists (TD-01 and then WS-FND-P1), setup will follow [`first-day-action-plan.md`](docs/implementation-plan/first-day-action-plan.md) §1: `npm ci`, `npm --prefix backend ci`, then copy `backend/.env.example` to `backend/.env` and set a local `JWT_SECRET`. **Never commit `.env` files or API keys.**
+There is nothing to install yet. Once the source baseline is imported (D-PLAN-3) and WS-FND-P1 has merged, setup will follow [`first-day-action-plan.md`](docs/implementation-plan/first-day-action-plan.md) §1: `npm ci`, `npm --prefix backend ci`, then copy `backend/.env.example` to `backend/.env` and set a local `JWT_SECRET`. **Never commit `.env` files or API keys.**
 
 ## Running the project
 
@@ -115,7 +115,7 @@ No tests exist yet. The planned commands, created by WS-FND-P1, are:
 npm --prefix backend test       # unit, contract and integration tests on temporary SQLite DBs (*.test.js)
 npm run build                   # Vite build
 npx oxlint                      # lint, including the "no money arithmetic in the frontend" rule
-npm --prefix backend run test:live   # live-model suite (*.live.js); manual, needs TD-13
+npm --prefix backend run test:live   # live-model suite (*.live.js); manual; Qwen from D3 or the stand-in provider
 ```
 The acceptance criteria are P-AC-01…P-AC-20 ([`06-testing-and-acceptance.md` §3](docs/prototype-design/06-testing-and-acceptance.md)) and the gates G1–G7 ([`acceptance-checklist.md`](docs/implementation-plan/acceptance-checklist.md)).
 
@@ -137,8 +137,8 @@ Seven workstreams contain 21 plans, owned by four developers. The full roadmap, 
 
 | Milestone | Content | Target |
 | --- | --- | --- |
-| M−1 Repository ready | Pre-implementation decisions recorded; source baseline resolved (TD-01) | Before D1 |
-| M0 Contracts agreed | Test harness, CI, route split, contract PRs | End D1 |
+| M−1 Repository ready | Source baseline `fc0981d` imported (D-PLAN-3); developer names mapped | Before D1 |
+| M0 Contracts agreed | Test harness, CI, route split (WS-FND-P1); WS-JON-P1 Draft PR with its contract commit | End D1 |
 | M1 Skeleton integrated | Migrations, event dispatcher, tool-result store, LLM adapter (fake), five workspaces render | End D3 |
 | M2 Deterministic core proven | Categorizer and Sentinel conformance, consent-safe actions, event-driven alerts | End D4 |
 | M3 AI layer integrated | Runner and specialists, John, proposals → confirm → propagation | End D7 |
@@ -152,13 +152,13 @@ Seven workstreams contain 21 plans, owned by four developers. The full roadmap, 
 | Dev C — AI Engineer | WS-JON (John), WS-AGT (specialist runner, Atlas/Nova/Iris, live evaluation) |
 | Dev D — Workspaces & Analytics | WS-SEN (Sentinel), WS-UI (React workspaces, chat UX, desktop) |
 
-Which person fills each role is still open ([TD-03](docs/team-decisions.md#td-03--developer-mapping-and-repository-access)).
+Which person fills each role is still open ([TD-03](docs/team-decisions.md#td-03--developer-mapping-and-repository-access-d-plan-1)).
 
 ## Current status and known limitations
 
-- **No application code.** The plans modify an existing codebase (the *source baseline*, described in [`baseline.md`](docs/implementation-plan/baseline.md)) that is not in this repository. **All 21 plans are Blocked** until TD-01 is resolved ([`repository-migration-notes.md` §5](docs/repository-migration-notes.md#5-source-code-dependency-sd)).
-- The prototype design is "Proposed" and awaits team approval (TD-05). The UI screen design (Doc 7) was generated from the existing documents and is also awaiting approval.
-- The Qwen endpoint is unknown (TD-13), so live-model criteria can't be verified yet.
+- **No application code.** The plans modify an existing codebase (the *source baseline*, described in [`baseline.md`](docs/implementation-plan/baseline.md)) that is not in this repository. Team decision D-PLAN-3 makes it the starting point of this repository; **all 21 plans are Blocked until that import is committed** ([`repository-migration-notes.md` §5](docs/repository-migration-notes.md#5-source-code-dependency-sd)).
+- The prototype design (Docs 0–6) was approved on 2026-10-13. The UI screen design (Doc 7) was generated from the existing documents and still awaits approval (TD-05).
+- Qwen details arrive on D3; until then live-model criteria can't be verified (a labelled stand-in provider may be used, D-PLAN-12).
 - CI and branch protection aren't configured. CI is created by WS-FND-P1. Branch protection on a private repository needs GitHub Pro or Team (TD-04).
 - Deferred features (ISO 20022 adapters, bank SSO, PostgreSQL, push notifications, several actions) are listed in [`00-overview.md` §3.2](docs/prototype-design/00-overview.md).
 
@@ -168,12 +168,12 @@ All four developers follow [`docs/development-workflow.md`](docs/development-wor
 
 - Nobody pushes to `main`.
 - Each plan gets its own branch, named `ws-<id>/p<n>-<slug>` and created from the latest `main`.
-- Changes that alter shared contracts go in a separate PR, which goes first.
-- Every PR is at most 600 lines, carries the completion handoff, passes the tests and is approved by the code owner, then is squash-merged.
+- **One plan = one branch = one PR** (D-PLAN-4). Shared contracts a plan produces are its first commit, in a Draft PR, approved by the consumers before the rest is reviewed.
+- The PR is reviewed commit by commit, carries the completion handoff, passes the tests, is approved by the code owner, and is merged with a **merge commit** (not squash).
 - Status and evidence are recorded in [`tracking/STATUS.md`](docs/implementation-plan/tracking/STATUS.md).
 
 When using a coding model, also follow [`execution-manual.md`](docs/implementation-plan/execution-manual.md).
 
 ## Licence
 
-No licence has been chosen yet. The repository is private, and the decision is tracked as [TD-24](docs/team-decisions.md#4-non-blocking-decisions-can-be-made-during-implementation). Until a licence is added, all rights are reserved by the project owners.
+No licence has been chosen yet. The repository is private, and the decision is tracked as [TD-24](docs/team-decisions.md#4-non-blocking). Until a licence is added, all rights are reserved by the project owners.

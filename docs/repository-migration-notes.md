@@ -7,9 +7,9 @@
 | Migration date | 2026-10-13 |
 | Input received | `finmate-docs-all.zip` — 54 Markdown files under `docs/` (specifications, prototype design, implementation plans, tracking) |
 | Previous repository | `AryanTechie-007/JFK` — **historical reference only.** It is out of scope: it was not accessed, cloned, copied from or modified during this migration, and no active instruction in this repository depends on it |
-| Status of this file | Audit trail. Records changes actually made. Update §2.2 and §5 when the repository is published and when TD-01 is resolved |
+| Status of this file | Audit trail. Records changes actually made. Update §2.2 when the repository is published and §5.5 when the source baseline is imported |
 
-> **Reading rule.** This is the only document that names the previous repository, and it does so only to explain where the plans came from. Nothing in this file is an instruction to use that repository.
+> **Reading rule.** This file names the previous repository to explain where the plans came from. Since 2026-10-13 the team's decision **D-PLAN-3** also names it in `implementation-plan/baseline.md` §6 and `workstream-assignments.md` §7 as the **one-time source of the initial code import** (`fc0981d`). Apart from that single import, no instruction uses the previous repository.
 
 ---
 
@@ -152,21 +152,21 @@ The plans are brownfield plans. They were written against application code (the 
 
 **Implication:** without the source baseline, no plan can start (cross-workstream matrix row 47).
 
-### 5.3 If TD-01 = import (procedure to follow, not yet performed)
-1. A developer who legitimately holds the code and has the **code owner's agreement** creates branch `chore/import-source-baseline` from `main`.
-2. Copy the working tree of the agreed commit (TD-02; recommended `fc0981d`) **without** its `.git` directory, `node_modules/`, any `.env` file except `.env.example`, `*.db*` files, and (recommended) `dist/`. Do not copy its `docs/` folder over this repository's `docs/` (this repository's copy is newer); compare and report differences instead.
+### 5.3 Import procedure (decided by D-PLAN-3 on 2026-10-13; not yet performed)
+1. The team lead (repository owner), who has access to the code and the code owner's agreement, creates branch `chore/import-source-baseline` from `main`.
+2. Copy the working tree of the agreed commit (TD-02; recommended `fc0981d`) **without** its `.git` directory, `node_modules/`, any `.env` file except `.env.example` and `*.db*` files. Keep the committed `dist/` (Electron loads it; D-PLAN-13 deletes it on D8 in WS-FND-P5). Do not copy its `docs/` folder over this repository's `docs/` (this repository's copy is newer); compare and report differences instead.
 3. Merge its `.gitignore` with this repository's `.gitignore` (keep every entry from both).
 4. Secret scan before committing, e.g. `git grep -n -I -E "(api[_-]?key|secret|password|token)\s*[:=]" -- .` and a check that no `.env` or `*.db` is staged (`git status`). Rotate any credential that ever appeared in the previous repository's history.
-5. Commit as one commit `chore: import source baseline from <commit> (TD-01)`; open a PR; Dev A and one other developer review.
+5. Commit as one commit `chore: import source baseline from fc0981d (D-PLAN-3)`; open a PR; Dev A and one other developer review.
 6. Re-verify `implementation-plan/baseline.md`: §2 stack facts, §3 module table, Appendix A (25 routes in `backend/src/routes/v1/index.js`), Appendix B tooling facts; run `node backend/test-v1-specs.js` against a temp DB (WS-FND-P1 §9 command). Record the result in this file (§5.5) and set WS-FND-P1 to *Ready* in STATUS.md.
 
-### 5.4 If TD-01 = greenfield
-All 21 plans must be re-planned before D1: *Modify/Keep/Delete* rows become *Create*; conformance plans (WS-CAT-P1, WS-SEN-P1) become build plans; WS-FND-P5 (legacy retirement) largely disappears; sizes and the D1–D9 schedule must be re-estimated; Doc 0 §1.6 ("existing code to reuse") no longer applies; TD-18 controls stay deferred. The specifications, Docs 0–7, the dependency structure between components and the four-developer allocation remain usable as the basis for the re-plan.
+### 5.4 Greenfield alternative (not chosen)
+The team chose the import (D-PLAN-3). For the record, a greenfield build would have required re-planning all 21 plans before D1: *Modify/Keep/Delete* rows become *Create*; conformance plans (WS-CAT-P1, WS-SEN-P1) become build plans; WS-FND-P5 (legacy retirement) largely disappears; sizes and the D1–D9 schedule must be re-estimated; Doc 0 §1.6 ("existing code to reuse") no longer applies; TD-18 controls stay deferred. The specifications, Docs 0–7, the dependency structure between components and the four-developer allocation remain usable as the basis for the re-plan.
 
 ### 5.5 Resolution record
 | Date | TD-01 decision | Imported commit | Verified by | Notes |
 | --- | --- | --- | --- | --- |
-| — | Pending | — | — | — |
+| 2026-10-13 | Import `fc0981d` (D-PLAN-3) | — (not yet committed) | — | Execution pending |
 
 ---
 
@@ -204,7 +204,10 @@ No specification was regenerated: all seven were present and internally referenc
 | 2 `beaa50f` | Generated Doc 7 (UI screens) and prototype-design overview notes |
 | 3 `7574143` | Implementation plans and planning package updated for the new repository |
 | 4 `a905032` | Root README, docs index, development workflow, team decisions, migration notes, `.gitignore` |
-| 5 | Final audit results (§8), conflict K-11, execution-manual cross-reference fix |
+| 5 `fadbab8` | Final audit results (§8), conflict K-11, execution-manual cross-reference fix |
+| 6 `008e29a` | Repository renamed to `Kathir-M-03/FINNMIN-JFK-John` |
+| 7 `f1d6210` (branch `team-updates-2026-10-13`) | The team's 36 updated files exactly as received in `finmate-docs-bundle.zip`, on top of commit 1 |
+| 8 (merge) | Merge of commit 7 into `main` (§10) |
 
 `git diff cb60980 HEAD -- docs/` shows every change made to the received documents. (Hashes are stable when the prepared history is pushed unchanged.)
 
@@ -240,4 +243,52 @@ Method: case-insensitive search of every file in the repository for `JFK`, `Arya
 ---
 
 ## 9. Unresolved items requiring a decision
-All listed with options and recommendations in [`team-decisions.md`](team-decisions.md). Most important: **TD-01** (source baseline), **TD-02** (import procedure), **TD-03** (people and access), **TD-04** (branch protection on a private repository), **TD-05** (design approval incl. Doc 7), **TD-13** (Qwen endpoint).
+All listed in [`team-decisions.md`](team-decisions.md) (updated 2026-10-15). Before D1: the **source-baseline import** (decided, not yet executed), **TD-03** (people and access), **TD-04** (branch protection). Also open: TD-05 (Doc 7 approval), TD-10, TD-11, TD-15…TD-17, TD-19…TD-21, the stand-in LLM provider (before D8).
+
+---
+
+## 10. Update of 2026-10-15 — team decision bundle merged
+
+### 10.1 What was received and how it was verified
+| Check | Result |
+| --- | --- |
+| Received | `finmate-docs-bundle.zip` — 54 files under `docs/` (same file list as the original package) |
+| Compared with the **original package** (`finmate-docs-all.zip`, commit `cb60980`) | **36 files changed, 18 identical, 0 added, 0 removed** — confirms the stated 36 updates (SHA-256 per file) |
+| Compared with the **prepared repository bundle** (`FINNMIN-JFK-John.bundle`, commit `008e29a`) | 41 files differ, 13 identical, **7 files missing** from the received bundle |
+| Origin of the 36 changes | Made on the original package, not on the prepared repository: none of the received files contains the repository edits of 2026-10-13 |
+| Nature of the 36 changes | Recording the team decisions of 2026-10-13: A-ARCH, C-1, C-3, C-4, C-5, U-1, U-2, U-4, D-PLAN-1…13 (`baseline.md` §6) and applying them consistently across plans, roadmap, matrix, manual, checklist, templates and tracking |
+
+**The 36 updated files:** `implementation-plan/` README, acceptance-checklist, baseline, cross-workstream-dependencies, execution-manual, first-day-action-plan, prompt-templates, roadmap, workstream-assignments; `tracking/` README, STATUS and the 7 state files; plans WS-AGT-P2, WS-AGT-P3, WS-CAT-P2, WS-CAT-P3, WS-FND-P1, WS-FND-P2, WS-FND-P3, WS-FND-P5, WS-FND-P6, WS-JON-P1, WS-JON-P2, WS-PLT-P1, WS-PLT-P2, WS-SEN-P1, WS-SEN-P2, WS-UI-P1, WS-UI-P2, WS-UI-P3. Unchanged by the team: all specifications, prototype-design Docs 0–6, `audit-report.md`, and plans WS-AGT-P1, WS-CAT-P1, WS-FND-P4.
+
+**Are they necessary?** Yes. Each change applies a recorded decision (e.g. one plan = one PR, merge commit; tier checkpoint at end of D5; Qwen details on D3 with a stand-in provider; LLM consent off by default; stub after half a day). A scripted scan found no leftover contradictions in the received set (no remaining "squash", "≤ 600 lines", "separate contract PR", "step 1", "blocked by U-2" instructions).
+
+### 10.2 Files missing from the received bundle — restored
+`README.md`, `.gitignore`, `docs/README.md`, `docs/development-workflow.md`, `docs/team-decisions.md`, `docs/repository-migration-notes.md`, `docs/prototype-design/07-ui-screens-and-interactions.md`. All seven are part of the repository and were restored, then updated for the team decisions (10.4).
+
+### 10.3 How the two sets were merged
+A three-way merge with the original package as the common base: the 36 team-updated files on one side, the repository edits of 2026-10-13 on the other. 18 of the 36 files merged automatically; 18 had overlapping edits. **In every overlap the team's text was kept**, then the repository information was re-applied where it is still true (repository URL, link to the workflow guide, source-baseline import status, Doc 7 references). The team's decisions were not altered. A line-by-line check confirms every line the team added is present verbatim except 10 lines that were amended only to record facts the team had left open: the repository name/link ("name/link still to be recorded"), the clone URL, the pending import, and that Doc 7 still awaits approval.
+
+### 10.4 Repository documents revised to match the team decisions
+| Document | Revision |
+| --- | --- |
+| `development-workflow.md` | Squash merge → **merge commit**; "≤ 600 lines / split plans / separate contract PRs" → **one plan = one branch = one PR**, contract files as the **first commit of a Draft PR**, review commit by commit; daily **rebase** with `--force-with-lease` on one's own plan branch only (never `main` or shared branches); stub after half a day; D1 table; tier checkpoint; full example rewritten; settings (merge commits only) |
+| `team-decisions.md` | Rewritten: each TD item mapped to the team decision that answered it; still-open items only; readiness verdict "almost ready" |
+| `prototype-design/07-…` | Conditional controls resolved by D-PLAN-5 (enabled); consent toggle **off by default** (D-PLAN-6); tier-cut note for the Sentinel workspace (D-PLAN-9) |
+| Plan banners (21), plans README, baseline, STATUS, state files, matrix row 47, roadmap M−1, checklist, first-day §0, execution manual, Doc 0 notes | "TD-01 pending" → "D-PLAN-3 decided; import of `fc0981d` pending"; repository name/link recorded where the team wrote "name/link still to be recorded" |
+| Root `README.md`, `docs/README.md` | Status, contribution rules and open items aligned with the decisions |
+
+### 10.5 Earlier recommendations superseded by team decisions
+| Earlier recommendation (2026-10-13) | Team decision | Now |
+| --- | --- | --- |
+| Squash merges; PRs ≤ 600 lines; split large plans; separate contract PRs | D-PLAN-4 | One PR per plan, merge commit, contract commit first in a Draft PR |
+| Merge `main` into branches by default | U-4 | Daily rebase (own plan branch, `--force-with-lease`) |
+| LLM key never in GitHub Actions | D-PLAN-11 | Key also stored as an Actions secret for the manual live workflow |
+| Exclude `dist/` from the import | D-PLAN-13 | Keep `dist/`; delete it on D8 |
+| "Stub after one day late" (matrix, original) | D-PLAN-7 | Half a day |
+
+### 10.6 Reference audit after the merge
+| Search | Result |
+| --- | --- |
+| `AryanTechie-007/JFK` | This file (history) and **D-PLAN-3** in `baseline.md` (§ banner and §6 row) and `workstream-assignments.md` §7: an **active team decision** naming the old repository as the one-time import source (`fc0981d`). No clone/pull/push/PR instruction for daily work |
+| Other repository URLs | Only `https://github.com/Kathir-M-03/FINNMIN-JFK-John` |
+| Links | All relative links and anchors resolve |

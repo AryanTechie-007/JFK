@@ -2,7 +2,7 @@
 
 > **Local plan number: Plan 1 of 2 in WS-SEN** · Unique ID: **`WS-SEN-P1`** · Branch: `ws-sen/p1-sentinel-conformance`
 
-> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/FINNMIN-JFK-John` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). **That code is not in the repository yet.** This plan cannot start until team decision **TD-01** (how the source baseline enters the repository) is resolved and, if the code is imported, the import PR is merged and verified (see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`.
+> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/FINNMIN-JFK-John` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). Per team decision **D-PLAN-3** (2026-10-13) the repository starts from that code at commit `fc0981d`; **until the source-baseline import commit is on `main` this plan cannot start** (one-time import by the team lead — see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). One plan = one branch = one PR (D-PLAN-4). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`.
 
 ## 1. Plan identity
 | Field | Value |
@@ -39,7 +39,7 @@
 | `backend/test/fixtures/sentinel/sip-reference.csv` | Create | 20 SIP cases computed in a spreadsheet (SEN-AC-20) | WS-SEN | Low |
 
 ## 5. Interfaces and contracts
-- Unchanged public API: `callSentinel(functionName, params, ctx)`, `SENTINEL_FUNCTIONS`, `loadSnapshotState`, `rules.*` (WS-PLT-P1 and WS-AGT-P1 depend on these shapes; any change = contract PR).
+- Unchanged public API: `callSentinel(functionName, params, ctx)`, `SENTINEL_FUNCTIONS`, `loadSnapshotState`, `rules.*` (WS-PLT-P1 and WS-AGT-P1 depend on these shapes; any change = a contract commit approved by them).
 - Envelope `SentinelResult@1`: `{tool_result_id, function, model_version, snapshot_id, status:'OK'|'PARTIAL'|'INSUFFICIENT_DATA'|'ERROR', confidence, data_quality: DataQuality@1, data, warnings[], computed_at}` validated with `contracts.validate('SentinelResult@1')` before return.
 - Rule output: `{verdict:'PASS'|'WARN'|'REJECT', rule_codes[], warnings[]}` (Sentinel §E) — frozen for WS-PLT-P1.
 
@@ -59,7 +59,7 @@ Listed per function in the test files; cross-cutting: empty ledger → `INSUFFIC
 
 ## 8. Constraints
 - No LLM import (SEN-AC-04). No writes. Integer paise and `decimal.js`/basis points only.
-- Do not change rule output shapes without a contract PR approved by WS-PLT and WS-AGT.
+- Do not change rule output shapes without a contract change approved by WS-PLT and WS-AGT (first commit of the PR that needs it).
 
 ## 9. Test plan
 | Test | Command |

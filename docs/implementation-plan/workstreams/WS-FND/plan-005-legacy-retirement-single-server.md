@@ -2,7 +2,7 @@
 
 > **Local plan number: Plan 5 of 6 in WS-FND** · Unique ID: **`WS-FND-P5`** · Branch: `ws-fnd/p5-legacy-retirement`
 
-> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/FINNMIN-JFK-John` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). **That code is not in the repository yet.** This plan cannot start until team decision **TD-01** (how the source baseline enters the repository) is resolved and, if the code is imported, the import PR is merged and verified (see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`.
+> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/FINNMIN-JFK-John` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). Per team decision **D-PLAN-3** (2026-10-13) the repository starts from that code at commit `fc0981d`; **until the source-baseline import commit is on `main` this plan cannot start** (one-time import by the team lead — see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). One plan = one branch = one PR (D-PLAN-4). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`.
 
 ## 1. Plan identity
 | Field | Value |
@@ -11,7 +11,7 @@
 | Owner / subagent | Dev A — Integration Lead / WS-FND subagent |
 | Objective | Make the prototype one server and one database (ADR-01, P-AC-01): delete Backend B, legacy REST routes, the Gemini coach route, legacy tables and sync code, and the temporary action-name aliases; Electron boots only port 4000 |
 | Expected outcome | No code path writes or reads legacy tables; `electron/main.js` starts one server; grep tests prove no `:4001`, no `x-user-id`, no `geminiService`, no `src/data/mock*` |
-| Size | ~1 day; done in 3 PRs (frontend leftovers check, backend deletions + migration, Electron/launch) |
+| Size | ~1 day; one PR with three commits (frontend-leftovers check, backend deletions + migration, Electron/launch), merged with a merge commit |
 
 ## 2. Dependencies
 | Type | Source | Needed | Early start |
@@ -93,7 +93,7 @@
 ## 11. Risks and recovery
 | Risk | Recovery |
 | --- | --- |
-| Hidden dependency on a legacy route discovered late | Revert the deletion PR (kept separate from the migration PR); owner fixes; retry |
+| Hidden dependency on a legacy route discovered late | Revert only the deletion commit (kept separate from the migration commit); owner fixes; retry |
 | Electron packaging relies on committed `dist/` | Keep `npm run app` = `vite build && electron .`; document |
 
 ## 12. Assumptions and unresolved questions

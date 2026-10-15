@@ -22,8 +22,8 @@ See the rows naming WS-AGT in `cross-workstream-dependencies.md`. Record here th
 - (none merged yet)
 
 ## 3. Decisions and assumptions in force
-- **TD-01 (2026-10-13): source baseline not yet in the repository — every plan in this sequence is Blocked until it is resolved** (`../../../team-decisions.md`).
-- Defaults from `baseline.md` §5–§6 (C-1, C-5, D-PLAN-2, U-4) unless the decision log in `tracking/STATUS.md` says otherwise.
+- **Source-baseline import (D-PLAN-3) not yet on `main` — every plan in this sequence is Blocked until it is** (`../../../repository-migration-notes.md` §5).
+- Decisions of 2026-10-13 in `baseline.md` §6: LLM agents with deterministic fallback; aim Tier 3, fall back to Tier 2 (checkpoint end of D5); one plan = one branch = one PR (contract commit first, Draft PR, merge commit); SC action names + aliases; keep table names; keep existing deferred actions only; LLM consent off by default; stub after half a day late; Qwen details on D3, stand-in provider if unavailable.
 
 ## 4. Handoff log (append Template E summaries, newest last)
 - (empty)

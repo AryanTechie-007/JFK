@@ -2,7 +2,7 @@
 
 > **Local plan number: Plan 2 of 2 in WS-PLT** · Unique ID: **`WS-PLT-P2`** · Branch: `ws-plt/p2-monitor-profile`
 
-> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/FINNMIN-JFK-John` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). **That code is not in the repository yet.** This plan cannot start until team decision **TD-01** (how the source baseline enters the repository) is resolved and, if the code is imported, the import PR is merged and verified (see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`.
+> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/FINNMIN-JFK-John` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). Per team decision **D-PLAN-3** (2026-10-13) the repository starts from that code at commit `fc0981d`; **until the source-baseline import commit is on `main` this plan cannot start** (one-time import by the team lead — see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). One plan = one branch = one PR (D-PLAN-4). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`.
 
 ## 1. Plan identity
 | Field | Value |
@@ -100,7 +100,7 @@ profile.listAccounts(userId); profile.balances(userId, conn) -> [{account_id, ba
 | Recompute cost on large ingests | Recompute only affected pairs; coalesce per event batch |
 
 ## 12. Assumptions and unresolved questions
-- [A] Consent default false for new users; demo seed sets true (Doc 6 §5).
+- [D] D-PLAN-6: LLM consent is off until the user opts in; the demo seed sets it on (Doc 6 §5).
 - [A] In-app notifications only for the prototype.
 
 ## 13. Completion handoff

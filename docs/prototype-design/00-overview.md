@@ -23,10 +23,10 @@
 Spec references use `SC §n` for `system-contracts.md` and `<Component> §x` for a component spec.
 
 > **Repository notes (added 2026-10-13, repository migration — no architecture change).**
-> 1. This package now lives in the project repository `https://github.com/Kathir-M-03/FINNMIN-JFK-John`. "The repository" / "existing code" in §1 and §4 below describe the **source baseline** — the application code these documents were written against, which is **not yet present** in the new repository (team decision TD-01 in `docs/team-decisions.md`).
+> 1. This package now lives in the project repository `https://github.com/Kathir-M-03/FINNMIN-JFK-John`. "The repository" / "existing code" in §1 and §4 below describe the **source baseline** — the application code these documents were written against, which per team decision D-PLAN-3 is imported into the new repository from commit `fc0981d` (import pending at the time of writing).
 > 2. R-11 / prerequisite P-0 ("merge the frozen specs") is **satisfied**: `docs/specifications/` and `docs/prototype-design/` are on `main` of the new repository from its first commit.
 > 3. §4 describes a six-person team and a branch-per-workstream model (U-4 default below). For execution these are **superseded** by `docs/implementation-plan/workstream-assignments.md` (four developers, short-lived plan branches) and `docs/development-workflow.md`. U-3 (browser vs Electron) is recorded as resolved to Electron in `docs/implementation-plan/baseline.md` C-2, pending confirmation Q-UI-01.
-> 4. Document 7, `07-ui-screens-and-interactions.md`, was **added** on 2026-10-13 to give screen-level UI design for WS-UI; it is generated from Docs 0–6 and the specifications and awaits approval (TD-05).
+> 4. Document 7, `07-ui-screens-and-interactions.md`, was **added** on 2026-10-13 to give screen-level UI design for WS-UI; it is generated from Docs 0–6 and the specifications and awaits team approval (TD-05). The team approved Docs 0–6 on 2026-10-13 (A-ARCH).
 
 ---
 

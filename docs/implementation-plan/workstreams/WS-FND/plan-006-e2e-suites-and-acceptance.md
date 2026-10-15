@@ -2,14 +2,14 @@
 
 > **Local plan number: Plan 6 of 6 in WS-FND** · Unique ID: **`WS-FND-P6`** · Branch: `ws-fnd/p6-e2e-acceptance`
 
-> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/FINNMIN-JFK-John` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). **That code is not in the repository yet.** This plan cannot start until team decision **TD-01** (how the source baseline enters the repository) is resolved and, if the code is imported, the import PR is merged and verified (see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`.
+> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/FINNMIN-JFK-John` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). Per team decision **D-PLAN-3** (2026-10-13) the repository starts from that code at commit `fc0981d`; **until the source-baseline import commit is on `main` this plan cannot start** (one-time import by the team lead — see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). One plan = one branch = one PR (D-PLAN-4). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`.
 
 ## 1. Plan identity
 | Field | Value |
 | --- | --- |
 | Workstream / local number / ID | WS-FND / **Plan 6** / `WS-FND-P6` |
 | Owner / subagent | Dev A — Integration Lead / WS-FND subagent; all owners on bug-fix duty |
-| Objective | Prove the integrated prototype: demo-journey E2E on the fake provider, security suite S-1…S-16, failure injection, restart persistence, live-model suite (if U-2 answered), and the signed acceptance checklist P-AC-01…20 |
+| Objective | Prove the integrated prototype: demo-journey E2E on the fake provider, security suite S-1…S-16, failure injection, restart persistence, live-model suite (Qwen from D3, or the agreed stand-in provider), and the signed acceptance checklist P-AC-01…20 |
 | Expected outcome | `backend/test/e2e/**` and `backend/test/security/**` green in CI; `docs/implementation-plan/reports/acceptance-run.md` with evidence per criterion |
 | Size | ~1 day + fix cycle |
 
@@ -17,7 +17,7 @@
 | Type | Source | Needed | Early start |
 | --- | --- | --- | --- |
 | integration | WS-FND-P4, WS-FND-P5, WS-CAT-P3, WS-SEN-P2, WS-PLT-P2, WS-AGT-P2, WS-JON-P2, WS-UI-P2, WS-UI-P3 | All merged | Test scaffolding can be written from D4 against merged parts |
-| integration | WS-AGT-P3 | Live evaluation results | Live part **blocked by U-2**; fake-provider part runs regardless |
+| integration | WS-AGT-P3 | Live evaluation results | Live part needs Qwen (details D3) or the stand-in provider (D-PLAN-12); fake-provider part runs regardless |
 
 **Unblocks:** G6, G7 sign-off.
 
@@ -45,12 +45,12 @@
 
 ## 6. Implementation steps
 1. Build E2E helper: `resetDemo()` into temp DB, start app, login demo user.
-2. Encode steps 1–10 (Doc 6 §5) as sub-tests; capture `trace_id`s to assert specialist fan-out (P-AC-11) and LLM call counts (P-AC-06: 0 LLM calls during seeding).
+2. Encode steps 1–10 (Doc 6 §5) as sub-tests (drop step 9 if the end-of-D5 checkpoint cut Tier 3, D-PLAN-9); capture `trace_id`s to assert specialist fan-out (P-AC-11) and LLM call counts (P-AC-06: 0 LLM calls during seeding).
 3. Security suite S-1…S-16 (secrets grep in `dist/` and logs; route table without token → 401; two-user isolation sweep over every route in `routes-inventory`; write-tool call → FORBIDDEN; typed "yes" → no execution; Sentinel connection write fails; raw-row immutability; rate limits; `/demo/*` 404 when `DEMO_CONTROLS` unset; …).
 4. Failure injection via env/test hooks (`LLM_PROVIDER=fake` with missing fixture; stub Sentinel function throwing; `PRAGMA query_only` toggled to force write failure).
 5. Restart test with child process.
 6. Remove all `{ todo: … }` markers and temporary fallbacks (e.g. seed loader fallback from WS-FND-P4); confirm none remain via grep.
-7. If U-2 answered: run `npm --prefix backend run test:live`, collect P-AC-17/18/19 numbers; else record "blocked by U-2" in the report.
+7. Run `npm --prefix backend run test:live` with Qwen (details from D3) or, if Qwen is unavailable, the agreed stand-in OpenAI-compatible provider (D-PLAN-12); collect P-AC-17/18/19 numbers and label them with the model actually used.
 8. Manual UI walkthrough for P-AC-20 and desktop; screenshots stored under `docs/implementation-plan/reports/screens/`.
 9. Fill `acceptance-checklist.md` evidence; team lead signs.
 
@@ -76,7 +76,7 @@
 | Gate | `npm test` (`tests/verifyApp.js`), `npm run build`, `npx oxlint` |
 
 ## 10. Acceptance criteria
-**Plan:** all suites green (live: thresholds met or blocked by U-2 documented); report complete.
+**Plan:** all suites green (live: thresholds met with Qwen or the labelled stand-in provider); report complete.
 **Workstream:** WS-FND accepted per `acceptance-checklist.md` §3.
 **Integration:** G5 (E2E), G6, G7 evidence.
 
@@ -87,7 +87,7 @@
 | Live latency above P-AC-19 | Report; tune `maxTokens`/model class mapping; record as known limitation if endpoint-bound |
 
 ## 12. Assumptions and unresolved questions
-- [U] U-2 for live criteria P-AC-17 (live part), 18, 19.
+- [D] D-PLAN-12 for live criteria P-AC-17 (live part), 18, 19; [U] stand-in provider and its owner, decided before D8.
 - [A] Manual UI walkthrough acceptable for P-AC-20 in the prototype.
 
 ## 13. Completion handoff

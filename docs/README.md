@@ -6,7 +6,7 @@ Everything needed to implement the FinMate AI prototype lives in this folder. St
 
 | You are… | Read, in this order |
 | --- | --- |
-| **Anyone, first day** | 1. [`team-decisions.md`](team-decisions.md) — what is still undecided (implementation is blocked until TD-01 is resolved) · 2. [`development-workflow.md`](development-workflow.md) — how the four of us use Git and GitHub · 3. [`implementation-plan/README.md`](implementation-plan/README.md) · 4. [`implementation-plan/baseline.md`](implementation-plan/baseline.md) · 5. [`implementation-plan/workstream-assignments.md`](implementation-plan/workstream-assignments.md) |
+| **Anyone, first day** | 1. [`team-decisions.md`](team-decisions.md) — what is still open (implementation starts once the source-baseline import, D-PLAN-3, is on `main`); the decisions themselves are in `implementation-plan/baseline.md` §6 · 2. [`development-workflow.md`](development-workflow.md) — how the four of us use Git and GitHub · 3. [`implementation-plan/README.md`](implementation-plan/README.md) · 4. [`implementation-plan/baseline.md`](implementation-plan/baseline.md) · 5. [`implementation-plan/workstream-assignments.md`](implementation-plan/workstream-assignments.md) |
 | **A developer starting a plan** | [`implementation-plan/execution-manual.md`](implementation-plan/execution-manual.md) §1–§4 → [`implementation-plan/prompt-templates.md`](implementation-plan/prompt-templates.md) (if using a coding model) → your plan file → the spec and design sections listed for your workstream in execution manual §1.4 → [`implementation-plan/tracking/STATUS.md`](implementation-plan/tracking/STATUS.md) |
 | **An AI coding assistant** | The plan file it is given, plus the context layers in execution manual §1.3–§1.5. Never the whole folder |
 | **Reviewing architecture** | [`prototype-design/00-overview.md`](prototype-design/00-overview.md) → [`01-system-architecture.md`](prototype-design/01-system-architecture.md) §8 (ADRs) → [`specifications/system-contracts.md`](specifications/system-contracts.md) |
@@ -83,14 +83,15 @@ Authority order when documents disagree: **specifications** (frozen) → **proto
 | File | Contains |
 | --- | --- |
 | [`development-workflow.md`](development-workflow.md) | **The four-developer Git/GitHub workflow**: concepts, setup, picking tasks, branching, PRs, reviews, parallel work, dependencies, command reference, full example, daily checklists |
-| [`team-decisions.md`](team-decisions.md) | Register of open decisions TD-01…TD-25 with options, recommendations, blocked tasks and status fields; readiness verdict |
+| [`team-decisions.md`](team-decisions.md) | Readiness register TD-01…TD-25 mapped to the team decisions of 2026-10-13 (D-PLAN-1…13), what is still open, recommendations, readiness verdict |
 | [`repository-migration-notes.md`](repository-migration-notes.md) | Audit trail: what was received, what changed, the source-code dependency, conflicts, reference audit |
 
 ## 4. Recovered vs generated
 - **Found and kept** (54 files received): all 7 specifications, prototype-design Docs 0–6, all 21 plans and the planning/tracking package. Nothing referenced by the plans was missing by filename.
 - **Generated:** `prototype-design/07-ui-screens-and-interactions.md` (substantive gap: screen-level design), and the repository guides in §3.4.
-- **Updated:** the planning package and plans (repository references, source-baseline gating, one spec conflict) — every change is listed in `repository-migration-notes.md` §4.
+- **Updated (2026-10-13):** the planning package and plans (repository references, source-baseline gating, one spec conflict) — listed in `repository-migration-notes.md` §4.
+- **Updated by the team (2026-10-13 decisions, received 2026-10-15):** 36 planning documents (decision record in `implementation-plan/baseline.md` §6; PR model, tiers, consent, Qwen handling). Merged with the repository updates above — see `repository-migration-notes.md` §10.
 
 ## 5. Unresolved questions and dependencies
-- **TD-01 — the application code (source baseline) is not in this repository.** All 21 plans are Blocked until the team decides to import it or re-plan for a greenfield build.
-- Other pre-implementation decisions: TD-02…TD-12; task-level: TD-13…TD-21 (including U-2, the Qwen endpoint); non-blocking: TD-22…TD-25. See [`team-decisions.md`](team-decisions.md).
+- **Source-baseline import (D-PLAN-3, decided 2026-10-13) not yet committed.** All 21 plans are Blocked until the code from `fc0981d` is imported into this repository.
+- Still open before D1: developer names and handles (TD-03), branch protection (TD-04), CI minutes (TD-10), tracking (TD-11), Doc 7 approval (TD-05). Task-level: TD-15…TD-17, TD-19…TD-21; the stand-in LLM provider before D8. See [`team-decisions.md`](team-decisions.md).

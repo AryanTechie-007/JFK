@@ -59,6 +59,7 @@ RULES FOR THIS SESSION:
    correctness, a security boundary (auth, consent, tokens, isolation, LLM data minimisation) or the data model.
 6. Never delete, skip or weaken an existing test. If a test contradicts the spec, report it.
 7. Evidence over claims: completion means passing commands with output shown.
+8. One plan = one branch = one PR. Never split the plan; if it grows, add commits in plan-step order.
 
 Reply only with: (a) your one-paragraph understanding of this workstream, (b) the documents you read, (c) any
 conflict you already see between the documents and the code. Then wait for the plan.
@@ -70,7 +71,7 @@ Implement [CURRENT PLAN] now. Plan file: [PLAN FILE].
 
 [PLAN TEXT]
 
-CONTRACTS YOU CONSUME OR PRODUCE (do not alter them unless this plan says it is the contract PR):
+CONTRACTS YOU CONSUME OR PRODUCE (do not alter them unless this plan produces them; if it does, write them as the FIRST commit and stop for consumer approval before continuing):
 [CONTRACTS]
 
 PREVIOUS HANDOFF:

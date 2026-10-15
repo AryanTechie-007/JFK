@@ -2,7 +2,7 @@
 
 > **Local plan number: Plan 2 of 2 in WS-SEN** · Unique ID: **`WS-SEN-P2`** · Branch: `ws-sen/p2-rules-and-views`
 
-> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/FINNMIN-JFK-John` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). **That code is not in the repository yet.** This plan cannot start until team decision **TD-01** (how the source baseline enters the repository) is resolved and, if the code is imported, the import PR is merged and verified (see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`.
+> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/FINNMIN-JFK-John` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). Per team decision **D-PLAN-3** (2026-10-13) the repository starts from that code at commit `fc0981d`; **until the source-baseline import commit is on `main` this plan cannot start** (one-time import by the team lead — see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). One plan = one branch = one PR (D-PLAN-4). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`.
 
 ## 1. Plan identity
 | Field | Value |
@@ -11,13 +11,13 @@
 | Owner / subagent | Dev D — Workspaces & Analytics Engineer / WS-SEN subagent |
 | Objective | (a) One rule library used identically by Sentinel and the Action Service (SEN-AC-06), including the missing `validateRebalance` and `loadState`; (b) publish JSON Schemas for every `/workspaces/*` response and conform the routes, including the Sentinel workspace views `overview`, `spending`, `timeseries`, `forecast` (Doc 2 §6; Sentinel §B.6.18); (c) parameter registry versioning, methods documentation and performance |
 | Expected outcome | `rules/index.js` is the single source; shared-corpus parity test; `schemas/http/workspaces-*.json` merged and enforced by contract tests; `METHODS.md`; performance test at 24 months × 300 rows |
-| Size | ~1 day; step 1 (schema drafts) starts D1 |
+| Size | ~1 day (D4 pm–D5 am); one PR, schema commit first |
 
 ## 2. Dependencies
 | Type | Source | Needed | Early start |
 | --- | --- | --- | --- |
-| implementation | WS-SEN-P1 | Proven functions | Yes for schema drafting |
-| implementation | WS-FND-P1 | Split route files `workspaces-*.js` | Yes for drafting (D1) |
+| implementation | WS-SEN-P1 | Proven functions | No |
+| implementation | WS-FND-P1 | Split route files `workspaces-*.js` | No (merged D1) |
 
 **Parallel with:** WS-PLT-P1/P2, WS-AGT-P1, WS-CAT-P2.
 **Unblocks:** WS-UI-P1 (schemas, interface), WS-UI-P2 (routes, implementation), WS-FND-P6.
@@ -48,13 +48,13 @@ rules.loadState(userId, conn) -> state      // current (not snapshot) state for 
 - Sentinel workspace views (Doc 2 §6): `GET /workspaces/sentinel/overview` (balances, coverage badge, upcoming bills incl. declared), `/spending?period=` (by category with parent roll-ups), `/timeseries?category_id=&months=`, `/forecast` (bill outlays, cash-flow risk).
 
 ## 6. Implementation steps
-1. **D1:** draft HTTP schemas from current route outputs + Doc 2 §6; open contract PR for WS-UI review.
+1. Schema commit first: HTTP schemas drafted from the current route outputs and Doc 2 §6, reconciled with what WS-UI-P1 (same developer) already consumes; Dev B reviews the Nova schema in the Draft PR.
 2. Inventory where validation logic lives (Sentinel `sentinel_validate_*`, `rules/index.js`, Action Service inline checks); move all logic into `rules/`.
 3. Implement `validateRebalance` (zero-sum, no protected/FIXED donor, per-leg cap validation) and `loadState`.
 4. Shared corpus (≥ 60 cases) run through both `callSentinel('sentinel_validate_*')` and `rules.*` directly → identical results (SEN-AC-06).
 5. Routes: conform outputs; add Sentinel view routes and `/workspaces/john`; contract tests.
 6. Parameter registry hash → `model_version` (SEN-AC-09).
-7. `METHODS.md` and backtest on held-out final month of the demo dataset; thresholds agreed with team lead, recorded in the doc.
+7. `METHODS.md` and backtest on the held-out final month of the demo dataset. Provisional limit (D-PLAN-10): monthly spend forecast within ±15 % of actual; confirm or adjust with the team lead on D4 after the baseline run and record the final number in `METHODS.md`.
 8. Performance test: generate 24 × 300 rows; assert p95 per function class per Sentinel §B.8.
 
 ## 7. Edge cases
@@ -85,11 +85,11 @@ rules.loadState(userId, conn) -> state      // current (not snapshot) state for 
 ## 11. Risks and recovery
 | Risk | Recovery |
 | --- | --- |
-| UI built against old shapes | Schema PR on D1–D2; UI adapts in WS-UI-P1/P2; aggregate alias kept until switch |
+| UI built against old shapes | WS-UI-P1 was built against current shapes (same developer); the schemas here reconcile them; WS-UI-P2 uses the schemas; aggregate alias kept until the switch |
 | Performance miss | Index review (`1xx`/`2xx` migration) and per-snapshot memoisation of base aggregates |
 
 ## 12. Assumptions and unresolved questions
-- [A] Backtest thresholds are set by the team lead with WS-SEN on D3 and recorded in `METHODS.md`.
+- [D] D-PLAN-10: provisional backtest limit ±15 %, confirmed on D4.
 
 ## 13. Completion handoff
 README template; list schemas, route changes, parity corpus size, perf numbers. Next eligible: **WS-UI-P2**, WS-FND-P6; notify WS-PLT to switch to `rules.*` names.

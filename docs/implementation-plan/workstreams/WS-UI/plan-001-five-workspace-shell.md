@@ -2,7 +2,7 @@
 
 > **Local plan number: Plan 1 of 3 in WS-UI** · Unique ID: **`WS-UI-P1`** · Branch: `ws-ui/p1-workspace-shell`
 
-> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/FINNMIN-JFK-John` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). **That code is not in the repository yet.** This plan cannot start until team decision **TD-01** (how the source baseline enters the repository) is resolved and, if the code is imported, the import PR is merged and verified (see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`. Screen-level UI design: [`07-ui-screens-and-interactions.md`](../../../prototype-design/07-ui-screens-and-interactions.md) (generated, awaiting approval TD-05).
+> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/FINNMIN-JFK-John` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). Per team decision **D-PLAN-3** (2026-10-13) the repository starts from that code at commit `fc0981d`; **until the source-baseline import commit is on `main` this plan cannot start** (one-time import by the team lead — see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). One plan = one branch = one PR (D-PLAN-4). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`. Screen-level UI design: [`07-ui-screens-and-interactions.md`](../../../prototype-design/07-ui-screens-and-interactions.md) (generated 2026-10-13; awaiting team approval, TD-05).
 
 ## 1. Plan identity
 | Field | Value |
@@ -17,7 +17,7 @@
 | Type | Source | Needed | Early start |
 | --- | --- | --- | --- |
 | interface | WS-FND-P1 | Route paths unchanged by split | Yes (D1) |
-| interface | WS-SEN-P2 | HTTP view schemas for `/workspaces/*` | Yes — code against current shapes, reconcile with schema PR |
+| interface | WS-SEN-P2 | HTTP view schemas for `/workspaces/*` | Yes — build against the current response shapes and Doc 2 §6; WS-SEN-P2 (same developer, D4–D5) publishes the schemas and WS-UI-P2 adopts them |
 | interface | WS-PLT-P1 | `/proposals`, `/proposals/:id/confirm`, `/proposals/:id/decline`, `/actions` contracts and canonical names | Yes — contract in Doc 2 §6 |
 
 **Parallel with:** WS-FND-P2/P3, WS-CAT-P1, WS-SEN-P1.
@@ -53,7 +53,7 @@
 4. Atlas: replace `goalService` calls with v1 workspace + proposals; Nova: rebalance via `/workspaces/nova/rebalance` (returns proposal) → card; cap edits → proposals.
 5. Remove mocks; Header/Badge read health and notification count. In the moved John view, delete the `askGeminiJohn` fallback and the `geminiService` import so it calls only `/api/v1/chat` (non-streaming) until WS-UI-P3; `conversationService.js` stays until WS-UI-P3 rebuilds the John view.
 6. Navigation: John, Sentinel, Nova, Atlas, Iris; Settings via avatar; temporarily route old Home/Analyser/Subscriptions views under Sentinel tab sections until P2 rebuilds them; remove Financial Health page.
-7. Mark deferred controls with `DisabledControl` — the Doc 0 §3.2 list minus actions that already work in the source baseline (`RESTORE_GOAL` stays enabled; conditional on TD-01 — see Doc 7 §8 and Q-UI-09); category-rule editing and `UPDATE_DECLARED_BILL` are disabled. `REMOVE_CAP` is enabled once WS-PLT-P1 registers it.
+7. Mark deferred controls with `DisabledControl` — the Doc 0 §3.2 list minus actions that already work in the source baseline (`RESTORE_GOAL` stays enabled — D-PLAN-5; see Doc 7 §8); category-rule editing and `UPDATE_DECLARED_BILL` are disabled. `REMOVE_CAP` is enabled once WS-PLT-P1 registers it.
 8. Lint rule; build; manual run in Electron.
 
 ## 7. Edge cases

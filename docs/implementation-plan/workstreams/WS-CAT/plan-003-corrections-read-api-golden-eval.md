@@ -2,7 +2,7 @@
 
 > **Local plan number: Plan 3 of 3 in WS-CAT** · Unique ID: **`WS-CAT-P3`** · Branch: `ws-cat/p3-corrections-read-api`
 
-> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/FINNMIN-JFK-John` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). **That code is not in the repository yet.** This plan cannot start until team decision **TD-01** (how the source baseline enters the repository) is resolved and, if the code is imported, the import PR is merged and verified (see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`.
+> **Repository context (updated 2026-10-13).** Work happens in `https://github.com/Kathir-M-03/FINNMIN-JFK-John` on a branch created from `main`, following [`development-workflow.md`](../../../development-workflow.md). Files marked *Modify*, *Keep*, *Delete*, *Move* or `[E]` belong to the **source baseline** — the application code described in [`baseline.md`](../../baseline.md). Per team decision **D-PLAN-3** (2026-10-13) the repository starts from that code at commit `fc0981d`; **until the source-baseline import commit is on `main` this plan cannot start** (one-time import by the team lead — see [`repository-migration-notes.md`](../../../repository-migration-notes.md) §5). One plan = one branch = one PR (D-PLAN-4). Statements below about what exists "on `main`" or "today" describe the source baseline, not the new repository's `main`.
 
 ## 1. Plan identity
 | Field | Value |
@@ -26,7 +26,7 @@
 ## 3. Scope
 **In:** executors and their undo; dry-run counts for merchant scope; read API + routes; versioned reads (CAT-AC-08); review items from specialist hints; golden evaluation script (CAT-AC-19 report).
 **Out:** link/duplicate/own-account actions and `DELETE_CATEGORY_RULE` (deferred, Doc 0 §3.2 / Doc 4 §8.1); taxonomy migration.
-**Scope note (audit A-18):** `SET_TRANSACTION_TYPE` and `CREATE_CATEGORY_RULE` are deferred in Doc 0 §3.2 but **already implemented in the source baseline** (as `SET_TRANSACTION_MOVEMENT_TYPE` / `CREATE_CATEGORY_RULE` in `action-service.js`). This plan only *moves* that existing behaviour into categorizer executors so nothing working is lost; it adds no new deferred action. Their UI controls stay as they are in the source baseline. If TD-01 is decided as a greenfield rebuild, there is no existing behaviour to move and these actions stay deferred (Q-UI-09).
+**Scope note (audit A-18):** `SET_TRANSACTION_TYPE` and `CREATE_CATEGORY_RULE` are deferred in Doc 0 §3.2 but **already implemented in the source baseline** (as `SET_TRANSACTION_MOVEMENT_TYPE` / `CREATE_CATEGORY_RULE` in `action-service.js`). This plan only *moves* that existing behaviour into categorizer executors so nothing working is lost; it adds no new deferred action. Their UI controls stay as they are in the source baseline. Confirmed by team decision D-PLAN-5 (2026-10-13).
 
 ## 4. Files and ownership
 | File | Action | Purpose | Ownership | Shared-file risk |
@@ -58,7 +58,7 @@ listReviewItems(session) -> ReviewItem[];  addReviewItem({txnId, reason:'SPECIAL
 - `TransactionView` includes `category_id`, `movement_type`, `status (AUTO|NEEDS_REVIEW|CONFIRMED|USER_SET)`, `confidence_band`, `merchant_display`, `amount_minor`, `posted_at`, `row_version`.
 
 ## 6. Implementation steps
-1. Agree executor contract with WS-PLT (contract PR in `docs/` if anything differs from §5).
+1. Agree the executor contract with WS-PLT (same developer). If anything differs from §5, record the change as the first commit of this PR.
 2. Extract logic from the action-service case bodies into `executors.js`, adapting to `(params, ctx, tx)`; add inverse capture.
 3. Implement merchant-scope dry-run and `include_confirmed` handling (CAT-AC-06/07).
 4. Implement `UNDO_CLASSIFICATION_CHANGE` (within 24 h, rows unchanged since — else `REJECTED_STALE`).
