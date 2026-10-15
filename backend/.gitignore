@@ -1,0 +1,5 @@
+node_modules/
+.env
+finmate.db
+finmate.db-shm
+finmate.db-wal

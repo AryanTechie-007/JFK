@@ -1,0 +1,10 @@
+{
+    "branch":  "sentinel",
+    "description":  "Sentinel Deterministic Financial Calculator \u0026 Predictor Tool",
+    "type":  "tool",
+    "directory":  "src/tools/sentinel",
+    "alias":  "tool/sentinel",
+    "standaloneTest":  "npm run test:sentinel",
+    "status":  "active-verified",
+    "desktopAppLauncher":  "launch.bat"
+}

@@ -1,0 +1,10 @@
+{
+    "branch":  "threshold-job",
+    "description":  "Threshold Job Deterministic Alerting Tool",
+    "type":  "tool",
+    "directory":  "src/tools/threshold-job",
+    "alias":  "tool/threshold-job",
+    "standaloneTest":  "npm run test:threshold-job",
+    "status":  "active-verified",
+    "desktopAppLauncher":  "launch.bat"
+}
