@@ -1,0 +1,60 @@
+{
+  "name": "finmate-nova-desktop",
+  "version": "4.0.0",
+  "description": "FinMate AI & Nova V4 — Multi-Agent Desktop Application (Electron)",
+  "main": "electron/main.js",
+  "scripts": {
+    "app": "electron .",
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "demo": "node demo.js",
+    "test": "node tests/verifyApp.js",
+    "test:v4": "node tests/novaEngine.test.js",
+    "test:gate": "node tests/verifyApp.js",
+    "test:nova": "node src/agents/nova/nova.test.js",
+    "test:john": "node src/agents/john/john.test.js",
+    "test:iris": "node src/agents/iris/iris.test.js",
+    "test:atlas": "node src/agents/atlas/atlas.test.js",
+    "test:sentinel": "node src/tools/sentinel/sentinel.test.js",
+    "test:tally": "node src/tools/tally/tally.test.js",
+    "test:threshold-job": "node src/tools/threshold-job/threshold-job.test.js",
+    "test:action-service": "node src/tools/action-service/action-service.test.js",
+    "dev:backend": "node backend/src/index.js",
+    "seed:backend": "node backend/src/seed.js",
+    "build": "vite build"
+  },
+  "keywords": [
+    "finmate",
+    "electron",
+    "nova",
+    "budget-guardian",
+    "sentinel",
+    "tally",
+    "john",
+    "iris",
+    "atlas",
+    "multi-agent"
+  ],
+  "author": "FinMate AI Team",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "lucide-react": "^1.30.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "recharts": "^3.10.1"
+  },
+  "optionalDependencies": {
+    "better-sqlite3": "^11.8.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.4",
+    "electron": "^41.2.0",
+    "oxlint": "^1.75.0",
+    "vite": "^8.2.0"
+  }
+}

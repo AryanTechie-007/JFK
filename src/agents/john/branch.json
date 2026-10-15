@@ -1,0 +1,10 @@
+{
+    "branch":  "john",
+    "description":  "John Master Orchestrator \u0026 Coach Agent",
+    "type":  "agent",
+    "directory":  "src/agents/john",
+    "alias":  "agent/john",
+    "standaloneTest":  "npm run test:john",
+    "status":  "active-verified",
+    "desktopAppLauncher":  "launch.bat"
+}

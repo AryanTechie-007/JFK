@@ -1,0 +1,10 @@
+{
+    "branch":  "action-service",
+    "description":  "Action Service T1/T2/T3 Mutation Governance Tool",
+    "type":  "tool",
+    "directory":  "src/tools/action-service",
+    "alias":  "tool/action-service",
+    "standaloneTest":  "npm run test:action-service",
+    "status":  "active-verified",
+    "desktopAppLauncher":  "launch.bat"
+}
