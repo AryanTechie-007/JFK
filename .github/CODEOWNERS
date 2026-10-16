@@ -1,0 +1,87 @@
+# FinMate AI — code owners (created by WS-FND-P1)
+#
+# Encodes workstream-assignments.md §4 (owned files) and §5 (shared-file rules).
+# GitHub handle -> workstream: Dev A @Falterred (WS-FND), Dev B @Kathir-M-03 (WS-CAT, WS-PLT),
+# Dev C @DEstroy746 (WS-JON, WS-AGT), Dev D @AryanTechie-007 (WS-SEN, WS-UI).
+# Order matters: the last matching pattern wins.
+
+# Default: Dev A reviews cross-cutting infrastructure until a more specific rule applies.
+* @Falterred
+
+# WS-FND — foundations, tooling, integration
+/backend/src/index.js @Falterred
+/backend/src/db.js @Falterred
+/backend/src/db/ @Falterred
+/backend/src/shared/ @Falterred
+/backend/src/platform/ @Falterred
+/backend/src/routes/v1/index.js @Falterred
+/backend/src/routes/v1/_shared.js @Falterred
+/backend/src/routes/v1/system.js @Falterred
+/backend/src/seed/ @Falterred
+/backend/src/seed.js @Falterred
+/backend/scripts/ @Falterred
+/backend/package.json @Falterred
+/backend/package-lock.json @Falterred
+/package.json @Falterred
+/package-lock.json @Falterred
+/backend/test/helpers/ @Falterred
+/backend/test-v1-specs.js @Falterred
+/.github/ @Falterred
+/.gitignore @Falterred
+/electron/ @Falterred
+/launch.bat @Falterred
+/docs/ @Falterred
+
+# WS-CAT — Item Categorizer & Ingestion (Dev B)
+/backend/src/engines/categorizer/ @Kathir-M-03
+/backend/src/shared/finance/ @Kathir-M-03
+/backend/src/platform/ingestion/ @Kathir-M-03
+/backend/src/routes/v1/categorizer.js @Kathir-M-03
+/backend/src/routes/v1/ingest.js @Kathir-M-03
+/backend/test/categorizer/ @Kathir-M-03
+/backend/test/ingestion/ @Kathir-M-03
+/backend/test/fixtures/categorizer/ @Kathir-M-03
+/backend/test/fixtures/ingestion/ @Kathir-M-03
+
+# WS-SEN — Sentinel Engine & Workspace Views (Dev D)
+/backend/src/engines/sentinel/ @AryanTechie-007
+/backend/src/routes/v1/workspaces-atlas.js @AryanTechie-007
+/backend/src/routes/v1/workspaces-nova.js @AryanTechie-007
+/backend/src/routes/v1/workspaces-iris.js @AryanTechie-007
+/backend/src/routes/v1/workspaces-sentinel.js @AryanTechie-007
+/backend/test/sentinel/ @AryanTechie-007
+/backend/test/fixtures/sentinel/ @AryanTechie-007
+
+# WS-PLT — Action Service, Profile & Budget Monitor (Dev B)
+/backend/src/platform/action-service.js @Kathir-M-03
+/backend/src/platform/profile.js @Kathir-M-03
+/backend/src/platform/budget-monitor.js @Kathir-M-03
+/backend/src/platform/plan-store.js @Kathir-M-03
+/backend/src/platform/tokens.js @Kathir-M-03
+/backend/src/routes/v1/actions.js @Kathir-M-03
+/backend/src/routes/v1/settings.js @Kathir-M-03
+/backend/src/routes/v1/alerts.js @Kathir-M-03
+/backend/test/actions/ @Kathir-M-03
+/backend/test/monitor/ @Kathir-M-03
+/backend/test/profile/ @Kathir-M-03
+
+# WS-AGT — Specialist Runner & LLM Specialists (Dev C)
+/backend/src/agents/atlas/ @DEstroy746
+/backend/src/agents/nova/ @DEstroy746
+/backend/src/agents/iris/ @DEstroy746
+/backend/src/agents/shared/ @DEstroy746
+/backend/test/agents/ @DEstroy746
+/backend/test/live/ @DEstroy746
+
+# WS-JON — John Orchestrator & Chat (Dev C)
+/backend/src/agents/john/ @DEstroy746
+/backend/src/shared/contracts/grounding.js @DEstroy746
+/backend/src/routes/v1/chat.js @DEstroy746
+/backend/test/john/ @DEstroy746
+/backend/test/integration/ @DEstroy746
+
+# WS-UI — Frontend Workspaces & Desktop Shell (Dev D)
+/src/ @AryanTechie-007
+/index.html @AryanTechie-007
+/vite.config.js @AryanTechie-007
+/.oxlintrc.json @AryanTechie-007

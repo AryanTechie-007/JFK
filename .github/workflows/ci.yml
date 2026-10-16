@@ -1,0 +1,68 @@
+# FinMate AI — CI (created by WS-FND-P1)
+#
+# Commands mirror workstream-assignments.md §7 rule 4.
+# oxlint runs non-blocking until the source baseline is clean (WS-FND-P6 makes it blocking).
+# Live-LLM tests are excluded: they match test/live/**/*.live.js only.
+
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend tests (node --test on temp DBs)
+    runs-on: ubuntu-latest
+    env:
+      ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.x"
+          cache: npm
+      - name: Install backend dependencies
+        run: npm ci --prefix backend
+      - name: Run backend test suite
+        run: npm --prefix backend test
+      - name: Legacy verification script (temp DB)
+        run: DB_PATH="$(mktemp -u)" node backend/test-v1-specs.js
+
+  build:
+    name: Frontend build
+    runs-on: ubuntu-latest
+    env:
+      ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.x"
+          cache: npm
+      - name: Install root dependencies
+        run: npm ci
+      - name: Build the renderer
+        run: npm run build
+
+  lint:
+    name: Lint (non-blocking)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    env:
+      ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.x"
+          cache: npm
+      - name: Install root dependencies
+        run: npm ci
+      - name: oxlint
+        run: npx oxlint
