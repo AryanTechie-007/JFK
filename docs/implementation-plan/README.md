@@ -10,7 +10,7 @@
 | Audit | `audit-report.md` — verdict **PASS WITH CORRECTIONS**; corrections applied |
 | Authoritative inputs | 1. `docs/prototype-design/` (prototype architecture, diagrams — see assumption A-ARCH; Doc 7 `07-ui-screens-and-interactions.md` added 2026-10-13, awaiting team approval, TD-05) · 2. `docs/specifications/` (frozen component specs + `system-contracts.md`) · 3. repository code, tests, config · 4. established conventions · 5. labelled recommendations |
 | Plans | 7 workstreams, 21 plans, each workstream numbered locally from Plan 1 |
-| Start condition | **All 21 plans are Blocked until the source-baseline import (D-PLAN-3) is on `main`.** Remaining open items: [`../team-decisions.md`](../team-decisions.md) |
+| Start condition | **Satisfied 2026-10-16:** the source-baseline import (D-PLAN-3, commit `645355c`) is on `main` and **WS-FND-P1 is Complete**, so no plan is blocked by the import; each plan now waits only on its own listed implementation dependencies (`tracking/STATUS.md`). Remaining open items: [`../team-decisions.md`](../team-decisions.md) |
 
 ## How the numbering works
 - **Every workstream has its own sequence starting at Plan 1.** "Plan 2" in WS-CAT and "Plan 2" in WS-UI are different plans.
