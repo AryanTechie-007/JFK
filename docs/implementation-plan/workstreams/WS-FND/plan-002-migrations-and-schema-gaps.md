@@ -107,11 +107,11 @@
 ## 13. Completion handoff
 README template; include `schema_migrations` listing, `TABLES.md`, and next eligible plans **WS-FND-P3, WS-FND-P4, WS-CAT-P2, WS-PLT-P1**.
 
-> **Outcome (2026-10-17):** implemented on branch `ws-fnd/p2-migrations`, not merged — see §14.
+> **Outcome (2026-10-17):** **Complete** — merged by the plan owner; see §14.
 
 ## 14. Implementation outcome (recorded 2026-10-17)
 
-**Status of this plan:** implemented and verified on branch `ws-fnd/p2-migrations` (commits `0a8b1c9`, `cc762b0`), **not pushed and not merged**; no PR. Under `tracking/README.md` §2/§3 the plan is therefore *In progress*, not *Complete* — Complete requires a merged PR, CI green on `main` and the independent review that D-PLAN-8 makes mandatory for this plan. Sections §1–§13 above are unchanged requirements; this section records what was actually built, including where it deviates.
+**Status of this plan:** **Complete (2026-10-17)** — merged by the plan owner. Branch `ws-fnd/p2-migrations` head `01383eb` (`0a8b1c9` runner + `000_baseline.sql`, `cc762b0` platform and ingestion tables, `01383eb` cross-platform baseline-test fix), pushed to `origin`. Two record items are outstanding rather than verified here: the merge commit / PR link, and the CI run on `main` after the merge — local `origin/main` still reads `10bcba8` and this session cannot fetch (`schannel: AcquireCredentialsHandle failed: SEC_E_NO_CREDENTIALS`). Record both when known, the same way WS-FND-P1 does. Sections §1–§13 above are unchanged requirements; this section records what was actually built, including where it deviates.
 
 ### 14.1 §6 steps → outcome
 | §6 step | Outcome | Evidence |
@@ -127,7 +127,7 @@ README template; include `schema_migrations` listing, `TABLES.md`, and next elig
 | 9. `TABLES.md`, full suite, handoff | `TABLES.md` written and extended with the table inventory; suite green (14.6); handoff recorded in `tracking/state/WS-FND.md`. | `backend/src/db/TABLES.md` |
 
 ### 14.2 Baseline comparison method and evidence
-The pre-change `db.js` was executed once against a fresh temp DB and the query `SELECT type, name, tbl_name, sql FROM sqlite_master WHERE name NOT LIKE 'sqlite_%' ORDER BY type, name` was captured (30 objects). The test re-runs that query on a database whose only applied migration is `000_baseline.sql` (the file is copied alone into a temp directory by `baselineOnlyDir()`) and compares with `assert.deepEqual` against the literal array — **no whitespace normalisation**, so any byte-level difference in a `sql` string fails. The comparison also excludes `tbl_name = 'schema_migrations'` (created by the runner, absent from the baseline) and asserts the excluded objects are exactly `schema_migrations` plus its autoindex. This is stricter than §11's "collapse whitespace" mitigation.
+The pre-change `db.js` was executed once against a fresh temp DB and the query `SELECT type, name, tbl_name, sql FROM sqlite_master WHERE name NOT LIKE 'sqlite_%' ORDER BY type, name` was captured (30 objects). The test re-runs that query on a database whose only applied migration is `000_baseline.sql` (the file is written alone into a temp directory by `baselineOnlyDir()`, with line endings canonicalised to LF) and compares with `assert.deepEqual` against the literal array — **no whitespace normalisation inside the statements**, so any byte-level difference in a `sql` string fails. Commit `01383eb` made this deterministic across checkouts: `BASELINE_SCHEMA` and the executed copy are both LF, because `core.autocrlf=true` on Windows otherwise put `\r\n` into `sqlite_master` and all 27 multi-line tables differed only by line endings. Strength is unchanged — mutating `PRIMARY KEY`→`UNIQUE` and widening a two-space indent to four both still fail the assertion. The comparison also excludes `tbl_name = 'schema_migrations'` (created by the runner, absent from the baseline) and asserts the excluded objects are exactly `schema_migrations` plus its autoindex. This is stricter than §11's "collapse whitespace" mitigation.
 
 ### 14.3 Migration runner behaviour (as implemented)
 - Order: every `*.sql` under `backend/src/db/migrations/`, sorted by an explicit lexical comparator (`migrate.js:37-43`); a missing directory yields an empty list.
