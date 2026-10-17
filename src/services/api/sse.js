@@ -59,7 +59,7 @@ export async function streamChat({
   onError,
 }) {
   const token = typeof localStorage !== 'undefined'
-    ? localStorage.getItem('finmate_token') || sessionStorage.getItem('finmate_token')
+    ? localStorage.getItem('finmate_token') || localStorage.getItem('finmate_auth_token') || sessionStorage.getItem('finmate_token')
     : null;
 
   const reqHeaders = {

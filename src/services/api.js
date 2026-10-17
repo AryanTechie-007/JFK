@@ -2,15 +2,21 @@
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
 
-// Token storage key
-const TOKEN_KEY = 'finmate_auth_token';
+// Token storage keys (unified across legacy auth and v1 API client)
+const TOKEN_KEY = 'finmate_token';
 
-export const getAuthToken = () => localStorage.getItem(TOKEN_KEY);
+export const getAuthToken = () =>
+  localStorage.getItem('finmate_token') ||
+  localStorage.getItem('finmate_auth_token') ||
+  sessionStorage.getItem('finmate_token');
+
 export const setAuthToken = (token) => {
   if (token) {
-    localStorage.setItem(TOKEN_KEY, token);
+    localStorage.setItem('finmate_token', token);
+    localStorage.setItem('finmate_auth_token', token);
   } else {
-    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem('finmate_token');
+    localStorage.removeItem('finmate_auth_token');
   }
 };
 

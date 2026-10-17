@@ -8,7 +8,10 @@
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api/v1';
 
 function getAuthHeader() {
-  const token = localStorage.getItem('finmate_token') || sessionStorage.getItem('finmate_token');
+  const token =
+    localStorage.getItem('finmate_token') ||
+    localStorage.getItem('finmate_auth_token') ||
+    sessionStorage.getItem('finmate_token');
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
@@ -28,6 +31,7 @@ async function request(endpoint, options = {}) {
 
     if (res.status === 401) {
       localStorage.removeItem('finmate_token');
+      localStorage.removeItem('finmate_auth_token');
       // Dispatch custom event so React shell can handle route preservation
       window.dispatchEvent(new CustomEvent('finmate:unauthorized'));
       throw new Error('Authentication expired. Please log in again.');
