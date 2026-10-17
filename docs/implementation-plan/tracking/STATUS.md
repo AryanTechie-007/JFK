@@ -6,10 +6,7 @@ Local plan numbers restart at Plan 1 in every workstream; always refer to plans 
 
 > **2026-10-16:** the **source-baseline import** (D-PLAN-3) is on `main` (import commit `645355c`, merged by PR #1) and **WS-FND-P1 is Complete**, so the note of 2026-10-15 is removed. Plans are now blocked only by their own listed implementation dependencies. Remaining open items: [`../../team-decisions.md`](../../team-decisions.md).
 
-## 1. Plans
-| Plan ID | Local | Title | Developer | Target (roadmap §4) | Status | Waiting on (implementation deps) | PR | Evidence (tests · acceptance · review) | Notes |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| WS-FND-P1 | Plan 1 | Baseline, Guardrails and Route Split | Dev A | D1 | Complete | — | merged (PR #2) | `npm --prefix backend test` 15/15; legacy script 7/7 on temp DB; ported asserts 45/45; route inventory 25/25; CI + CODEOWNERS on `main` | Branch `ws-fnd/p1-baseline-guardrails-route-split`; helper renamed to `setupTempDb`; root lockfile resynced (`604fa36`) |
+
 
 ## 1. Plans
 | Plan ID | Local | Title | Developer | Target (roadmap §4) | Status | Waiting on (implementation deps) | PR | Evidence (tests · acceptance · review) | Notes |
