@@ -6,24 +6,29 @@ Fed to every new coding session for this workstream (Template A `[STATE FILE]`).
 | --- | --- |
 | Developer | Dev D — Aryan (@AryanTechie-007) |
 | Branch prefix | `ws-ui/p<n>-<slug>` |
-| Current plan | WS-UI-P1 (not started) |
+| Current plan | Completed (WS-UI-P1, WS-UI-P2, WS-UI-P3 merged) |
 
 ## 1. Sequence overview
 | Local | Plan ID | Title | Objective (short) | Depends on | Status |
 | --- | --- | --- | --- | --- | --- |
-| Plan 1 | WS-UI-P1 | Five-Workspace Shell, Single API Client and Shared Components | Reshape the React app to the SC §18 / D-025 map: five nav items (John, Atlas, Nova, Iris, Sentinel) + Settings from the avatar menu; move views into… | WS-FND-P1, WS-PLT-P1, WS-SEN-P2 | Blocked |
-| Plan 2 | WS-UI-P2 | Sentinel Workspace and Settings | Build the Sentinel workspace per SC §18 (spending analyser, forecast and risk radar incl. declared bills, balances + data-quality badge, Needs-review list,… | WS-CAT-P2, WS-CAT-P3, WS-PLT-P2, WS-SEN-P2, WS-UI-P1 | Blocked |
-| Plan 3 | WS-UI-P3 | Chat UX (Streaming, Cards, Chips, Undo), Alert Explain and Desktop Verification | Rebuild the John view and workspace chat panels on the SSE `ChatResponse@1` stream: render TEXT/NOTICE/LINK/QUESTION/CARD/CHIP/UNDO blocks, confirm cards through… | WS-JON-P1, WS-JON-P2, WS-PLT-P1, WS-UI-P1 | Blocked |
+| Plan 1 | WS-UI-P1 | Five-Workspace Shell, Single API Client and Shared Components | Reshape React app to SC §18 map: five nav items + Settings; single API client; zero mocks; format-only display helpers | WS-FND-P1 | Complete (PR #5) |
+| Plan 2 | WS-UI-P2 | Sentinel Workspace and Settings | Build Sentinel workspace (Balances, Spending, Forecast, Ledger with inline T1/undo, Review queue, BillsPanel), Settings page | WS-UI-P1, WS-SEN-P2 | Complete (PR #6) |
+| Plan 3 | WS-UI-P3 | Chat UX (Streaming, Cards, Chips, Undo), Alert Explain and Desktop Verification | SSE chat parser/client, John star orchestrator view, BlockRenderer, Composer with stop & consent, workspace panels, alert explain trigger | WS-UI-P1, WS-UI-P2 | Complete (PR #7) |
 
 Plan files: `docs/implementation-plan/workstreams/WS-UI/`. Status of record: `tracking/STATUS.md`.
 
 ## 2. Interfaces this workstream consumes / produces
 See the rows naming WS-UI in `cross-workstream-dependencies.md`. Record here the merged contract files as they land:
-- (none merged yet)
+- Single client: `src/services/api/v1.js`
+- SSE client: `src/services/api/sse.js`
+- Block contracts: `src/workspaces/john/BlockRenderer.jsx`
+- Workspaces: `src/workspaces/{atlas,iris,john,nova,sentinel,settings}/*`
 
 ## 3. Decisions and assumptions in force
-- **Source-baseline import (D-PLAN-3) not yet on `main` — every plan in this sequence is Blocked until it is** (`../../../repository-migration-notes.md` §5).
-- Decisions of 2026-10-13 in `baseline.md` §6: LLM agents with deterministic fallback; aim Tier 3, fall back to Tier 2 (checkpoint end of D5); one plan = one branch = one PR (contract commit first, Draft PR, merge commit); SC action names + aliases; keep table names; keep existing deferred actions only; LLM consent off by default; stub after half a day late; Qwen details on D3, stand-in provider if unavailable.
+- All 5 workspaces operate with 100% deterministic figures and zero mock data.
+- Frontend does no money arithmetic (display formatting only via `src/lib/format.js`).
 
 ## 4. Handoff log (append Template E summaries, newest last)
-- (empty)
+- **WS-UI-P1**: Merged via PR #5 (commit `f233f2c`). Five-workspace shell, single `api/v1.js`, deleted mock files.
+- **WS-UI-P2**: Merged via PR #6 (commit `e26da14`). Modular Sentinel workspace, ledger, review queue, declared bills, Settings page, deleted legacy views & services.
+- **WS-UI-P3**: Merged via PR #7 (commit `72b4aaf`). SSE streaming, block renderer, star orchestrator, alert explain flow, deleted transitional services.
