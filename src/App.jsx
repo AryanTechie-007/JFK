@@ -1,23 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
-import JohnCoachDashboard from './agents/john/JohnCoachDashboard';
-import SentinelPredictorView from './tools/sentinel/SentinelPredictorView';
-import IrisAdvisorView from './agents/iris/IrisAdvisorView';
-import AtlasStrategistView from './agents/atlas/AtlasStrategistView';
-import NovaGuardianView from './agents/nova/NovaGuardianView';
-import SpendingAnalyserView from './tools/tally/SpendingAnalyserView';
-import FinancialHealthView from './components/FinancialHealthView';
+import JohnWorkspace from './workspaces/john/JohnWorkspace';
+import SentinelWorkspace from './workspaces/sentinel/SentinelWorkspace';
+import IrisWorkspace from './workspaces/iris/IrisWorkspace';
+import AtlasWorkspace from './workspaces/atlas/AtlasWorkspace';
+import NovaWorkspace from './workspaces/nova/NovaWorkspace';
 import SettingsView from './components/SettingsView';
 import AuthView from './components/AuthView';
 import OnboardingView from './components/OnboardingView';
-import HomeDashboardView from './components/HomeDashboardView';
-import SubscriptionsView from './components/SubscriptionsView';
 import StatementImportModal from './components/StatementImportModal';
 import { authService } from './services/authService';
-import { profileService } from './services/profileService';
-import { goalService } from './services/goalService';
-import { transactionService } from './services/transactionService';
+import { api } from './services/api/v1';
 import { Target, Sparkles } from 'lucide-react';
 
 const EMPTY_USER_PROFILE = {
@@ -31,7 +25,7 @@ const EMPTY_USER_PROFILE = {
   totalSpentThisMonth: 0,
   currentSavings: 0,
   savingsRate: 0,
-  healthScore: 75,
+  healthScore: null,
 };
 
 class ErrorBoundary extends React.Component {
@@ -69,12 +63,11 @@ class ErrorBoundary extends React.Component {
             boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05)',
             textAlign: 'center'
           }}>
-            <div style={{ fontSize: '36px', marginBottom: '12px' }}></div>
             <h2 style={{ fontSize: '20px', fontWeight: '700', color: '#0f172a', marginBottom: '8px', fontFamily: 'var(--font-serif)' }}>
-              FinMate Command Center
+              FinMate Workspace Notice
             </h2>
             <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '20px', lineHeight: '1.5' }}>
-              {this.state.error?.message || 'A minor display formatting error occurred.'}
+              {this.state.error?.message || 'A display formatting error occurred.'}
             </p>
             <button 
               onClick={() => { this.setState({ hasError: false }); window.location.reload(); }}
@@ -89,7 +82,7 @@ class ErrorBoundary extends React.Component {
                 cursor: 'pointer'
               }}
             >
-              Reload Command Center
+              Reload Workspaces
             </button>
           </div>
         </div>
@@ -106,7 +99,8 @@ export default function App() {
   const [authMode, setAuthMode] = useState('login'); // 'login' | 'signup' | 'onboarding' | 'authenticated'
   const [onboardingInitialData, setOnboardingInitialData] = useState(null);
 
-  const [activeTab, setActiveTab] = useState('home');
+  // Five canonical workspaces: 'john' | 'sentinel' | 'nova' | 'atlas' | 'iris' | 'settings'
+  const [activeTab, setActiveTab] = useState('john');
   const [userProfile, setUserProfile] = useState(EMPTY_USER_PROFILE);
   const [budgets, setBudgets] = useState([]);
   const [goals, setGoals] = useState([]);
@@ -153,16 +147,11 @@ export default function App() {
   const handleImportSuccess = (importedLines, count) => {
     if (importedLines && importedLines.length > 0) {
       setTransactions(prev => [...importedLines, ...(prev || [])]);
-      transactionService.getBudgets().then(res => {
-        if (res.success && Array.isArray(res.budgets)) {
-          setBudgets(res.budgets);
-        }
-      });
     }
 
     showNotification(
-      'Statement Ingested Successfully!',
-      `Imported ${count} transactions into your live record. Budgets and analytics updated.`
+      'Statement Ingested Successfully',
+      `Imported ${count} transactions into live record.`
     );
   };
 
@@ -171,45 +160,29 @@ export default function App() {
     async function checkAuthSession() {
       try {
         const authRes = await authService.getCurrentUser();
-        if (authRes.success && authRes.user) {
+        if (authRes?.success && authRes?.user) {
           const sessionUser = authRes.user;
 
-          // Fetch user profile from API
-          const profRes = await profileService.getProfile();
-          if (profRes.success && profRes.profile) {
-            setUserProfile(profRes.profile);
-          } else {
+          // Fetch user profile from v1 API (fail-closed, no mock fallback)
+          try {
+            const prof = await api.getProfile();
+            if (prof?.profile) {
+              setUserProfile(prof.profile);
+            } else {
+              setUserProfile({ 
+                ...EMPTY_USER_PROFILE,
+                name: sessionUser.name || 'User',
+                email: sessionUser.email,
+                monthlyIncome: sessionUser.monthly_income || 0,
+                fixedExpenses: sessionUser.fixed_housing_expense || 0,
+              });
+            }
+          } catch {
             setUserProfile({ 
               ...EMPTY_USER_PROFILE,
               name: sessionUser.name || 'User',
               email: sessionUser.email,
-              monthlyIncome: sessionUser.monthly_income || 0,
-              fixedExpenses: sessionUser.fixed_housing_expense || 0,
             });
-          }
-
-          // Fetch user goals from API
-          const goalsRes = await goalService.getGoals();
-          if (goalsRes.success && Array.isArray(goalsRes.goals)) {
-            setGoals(goalsRes.goals);
-          } else {
-            setGoals([]);
-          }
-
-          // Fetch category budgets from API
-          const budgetRes = await transactionService.getBudgets();
-          if (budgetRes.success && Array.isArray(budgetRes.budgets)) {
-            setBudgets(budgetRes.budgets);
-          } else {
-            setBudgets([]);
-          }
-
-          // Fetch user transactions from API
-          const txRes = await transactionService.getTransactions();
-          if (txRes.success && Array.isArray(txRes.transactions)) {
-            setTransactions(txRes.transactions);
-          } else {
-            setTransactions([]);
           }
 
           setIsAuthenticated(true);
@@ -218,7 +191,7 @@ export default function App() {
           setIsAuthenticated(false);
           setAuthMode('login');
         }
-      } catch (err) {
+      } catch {
         setIsAuthenticated(false);
         setAuthMode('login');
       } finally {
@@ -232,6 +205,14 @@ export default function App() {
         setActiveTab(tabName);
       });
     }
+
+    // 401 Unauthorized listener
+    const onUnauthorized = () => {
+      setIsAuthenticated(false);
+      setAuthMode('login');
+    };
+    window.addEventListener('finmate:unauthorized', onUnauthorized);
+    return () => window.removeEventListener('finmate:unauthorized', onUnauthorized);
   }, []);
 
   const handleStartOnboarding = (initialData) => {
@@ -244,12 +225,9 @@ export default function App() {
     if (newGoal) {
       setGoals(prev => [newGoal, ...(prev || [])]);
     }
-    transactionService.getBudgets().then(res => {
-      if (res.success && Array.isArray(res.budgets)) setBudgets(res.budgets);
-    });
     setIsAuthenticated(true);
     setAuthMode('authenticated');
-    showNotification("Account Setup Complete!", `Welcome to FinMate AI, ${newProfile.name}. John AI Coach is synced to your financial details.`);
+    showNotification("Account Setup Complete", `Welcome to FinMate AI, ${newProfile.name}.`);
   };
 
   const handleLoginSuccess = async (userObj) => {
@@ -262,38 +240,17 @@ export default function App() {
     });
 
     try {
-      const profRes = await profileService.getProfile();
-      if (profRes.success && profRes.profile) {
-        setUserProfile(profRes.profile);
+      const prof = await api.getProfile();
+      if (prof?.profile) {
+        setUserProfile(prof.profile);
       }
-
-      const goalsRes = await goalService.getGoals();
-      if (goalsRes.success && Array.isArray(goalsRes.goals)) {
-        setGoals(goalsRes.goals);
-      } else {
-        setGoals([]);
-      }
-
-      const budgetRes = await transactionService.getBudgets();
-      if (budgetRes.success && Array.isArray(budgetRes.budgets)) {
-        setBudgets(budgetRes.budgets);
-      } else {
-        setBudgets([]);
-      }
-
-      const txRes = await transactionService.getTransactions();
-      if (txRes.success && Array.isArray(txRes.transactions)) {
-        setTransactions(txRes.transactions);
-      } else {
-        setTransactions([]);
-      }
-    } catch (e) {
-      console.warn('Backend load on login fallback:', e.message);
+    } catch {
+      // Empty profile state, no mocks
     }
 
     setIsAuthenticated(true);
     setAuthMode('authenticated');
-    showNotification("Welcome Back!", `Logged in successfully as ${userObj.name || 'User'}.`);
+    showNotification("Welcome Back", `Logged in successfully.`);
   };
 
   const handleLogout = async () => {
@@ -309,8 +266,7 @@ export default function App() {
 
   const handleAddGoalFromJohn = async (newGoal) => {
     setGoals(prev => [newGoal, ...(prev || [])]);
-    await goalService.createGoal(newGoal);
-    showNotification('New Goal Created!', `Added "${newGoal.name}" (Target: ₹${newGoal.target.toLocaleString()}) to Atlas Strategist.`);
+    showNotification('New Goal Proposed', `Goal "${newGoal.name}" submitted to Atlas Strategist.`);
   };
 
   if (isLoadingAuth) {
@@ -369,22 +325,9 @@ export default function App() {
 
   const renderActiveView = () => {
     switch (activeTab) {
-      case 'home':
-        return (
-          <HomeDashboardView 
-            userProfile={userProfile}
-            budgets={budgets}
-            goals={goals}
-            transactions={transactions}
-            setActiveTab={setActiveTab}
-            onOpenImportModal={() => setIsImportModalOpen(true)}
-          />
-        );
-      case 'subscriptions':
-        return <SubscriptionsView userProfile={userProfile} />;
       case 'john':
         return (
-          <JohnCoachDashboard 
+          <JohnWorkspace 
             userProfile={userProfile}
             goals={goals} 
             onAcceptGoal={handleAddGoalFromJohn} 
@@ -392,17 +335,17 @@ export default function App() {
           />
         );
       case 'sentinel':
-        return <SentinelPredictorView userProfile={userProfile} onOpenImportModal={() => setIsImportModalOpen(true)} />;
-      case 'iris':
-        return <IrisAdvisorView userProfile={userProfile} />;
-      case 'atlas':
-        return <AtlasStrategistView goals={goals} setGoals={setGoals} userProfile={userProfile} />;
-      case 'nova':
-        return <NovaGuardianView budgets={budgets} setBudgets={setBudgets} userProfile={userProfile} setUserProfile={setUserProfile} />;
+      case 'home':
+      case 'subscriptions':
       case 'analyser':
-        return <SpendingAnalyserView userProfile={userProfile} onOpenImportModal={() => setIsImportModalOpen(true)} />;
       case 'health':
-        return <FinancialHealthView userProfile={userProfile} />;
+        return <SentinelWorkspace userProfile={userProfile} onOpenImportModal={() => setIsImportModalOpen(true)} />;
+      case 'nova':
+        return <NovaWorkspace budgets={budgets} setBudgets={setBudgets} userProfile={userProfile} setUserProfile={setUserProfile} />;
+      case 'atlas':
+        return <AtlasWorkspace goals={goals} setGoals={setGoals} userProfile={userProfile} />;
+      case 'iris':
+        return <IrisWorkspace userProfile={userProfile} />;
       case 'settings':
         return (
           <SettingsView 
@@ -418,13 +361,11 @@ export default function App() {
         );
       default:
         return (
-          <HomeDashboardView 
+          <JohnWorkspace 
             userProfile={userProfile}
-            budgets={budgets}
-            goals={goals}
-            transactions={transactions}
+            goals={goals} 
+            onAcceptGoal={handleAddGoalFromJohn} 
             setActiveTab={setActiveTab}
-            onOpenImportModal={() => setIsImportModalOpen(true)}
           />
         );
     }
@@ -439,7 +380,7 @@ export default function App() {
           <Header 
             activeTab={activeTab} 
             userProfile={userProfile}
-            onSync={() => showNotification("Network Synced", "All agent states refreshed.")} 
+            onSync={() => showNotification("Refreshed", "Workspace views refreshed.")} 
             onOpenImportModal={() => setIsImportModalOpen(true)}
           />
 

@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finmate.local/schemas/http/workspaces-john.json",
+  "title": "John Workspace HTTP Response Schemas",
+  "description": "Schemas for John workspace health strip: GET /workspaces/john",
+  "$defs": {
+    "JohnWorkspaceResponse": {
+      "type": "object",
+      "required": [
+        "success",
+        "snapshot_id",
+        "snapshot",
+        "data_quality",
+        "surplus",
+        "bills",
+        "cashflow"
+      ],
+      "properties": {
+        "success": { "type": "boolean", "const": true },
+        "snapshot_id": { "type": "string" },
+        "snapshot": { "$ref": "common.json#/$defs/Snapshot" },
+        "data_quality": { "$ref": "common.json#/$defs/DataQuality" },
+        "surplus": { "$ref": "common.json#/$defs/SentinelResult" },
+        "bills": { "$ref": "common.json#/$defs/SentinelResult" },
+        "cashflow": { "$ref": "common.json#/$defs/SentinelResult" },
+        "headline_figure": {
+          "type": ["object", "null"],
+          "description": "Headline metric; conservative figure leads when confidence is not HIGH"
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}

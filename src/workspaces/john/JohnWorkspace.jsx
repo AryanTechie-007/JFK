@@ -14,8 +14,7 @@ import {
   ShieldCheck,
   AlertTriangle
 } from 'lucide-react';
-import { AGENTS } from '../../data/mockFinancialData';
-import { askGeminiJohn } from '../../services/geminiService';
+import { AGENTS } from '../../lib/agents';
 import { conversationService } from '../../services/conversationService';
 import { workspaceService, formatMinorInr } from '../../services/workspaceService';
 import FormattedText from '../../components/FormattedText';
@@ -120,26 +119,14 @@ export default function JohnCoachDashboard({ userProfile, goals, onAcceptGoal, s
 
       setMessages((prev) => [...prev, johnMsg]);
       setExpandedTraceId(johnMsg.id);
-    } catch (_) {
-      // Fallback to legacy coach endpoint
-      const geminiResult = await askGeminiJohn(queryText, userProfile, goals, activeConversationId);
+    } catch (err) {
       const johnMsg = {
         id: `john-${Date.now()}`,
         sender: 'john',
-        text: geminiResult.text,
-        traces: geminiResult.traces?.length > 0 ? geminiResult.traces : undefined,
-        proposedGoal: geminiResult.proposedGoal || undefined,
-        proposals: geminiResult.proposals || [],
-        questions: geminiResult.questions || [],
-        snapshot_id: geminiResult.snapshot_id,
+        text: err.message || "I'm having trouble reaching the chat service right now. Please try again in a moment.",
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
-
-      if (geminiResult.conversationId) {
-        setActiveConversationId(geminiResult.conversationId);
-      }
       setMessages((prev) => [...prev, johnMsg]);
-      setExpandedTraceId(johnMsg.id);
     } finally {
       setIsThinking(false);
     }

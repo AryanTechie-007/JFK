@@ -23,6 +23,7 @@ const EXPECTED_V1_ROUTES = [
   'POST /actions/execute',
   'POST /actions/:id/undo',
   'GET /actions/history',
+  'GET /workspaces/john',
   'GET /workspaces/atlas',
   'GET /workspaces/atlas/archived',
   'POST /workspaces/atlas/validate',
@@ -33,6 +34,10 @@ const EXPECTED_V1_ROUTES = [
   'GET /workspaces/iris',
   'POST /workspaces/iris/simulate',
   'GET /workspaces/sentinel',
+  'GET /workspaces/sentinel/overview',
+  'GET /workspaces/sentinel/spending',
+  'GET /workspaces/sentinel/timeseries',
+  'GET /workspaces/sentinel/forecast',
   'GET /categorizer/status',
   'GET /categorizer/taxonomy',
   'GET /categorizer/review-queue',
@@ -49,6 +54,7 @@ const DOMAIN_ROUTERS = [
   'system',
   'chat',
   'actions',
+  'workspaces-john',
   'workspaces-atlas',
   'workspaces-nova',
   'workspaces-iris',
@@ -131,10 +137,10 @@ function domainRoutes(domain) {
   return collectRoutes(router.stack, V1);
 }
 
-test('the /api/v1 surface is exactly the 25 frozen method/path pairs', () => {
+test('the /api/v1 surface is exactly the frozen method/path pairs', () => {
   const app = loadApp();
   assert.deepEqual(v1Surface(app), [...EXPECTED_V1_ROUTES].sort());
-  assert.equal(v1Surface(app).length, 25);
+  assert.equal(v1Surface(app).length, EXPECTED_V1_ROUTES.length);
 });
 
 test('every expected route is reachable through the mounted app (no dropped wiring)', () => {

@@ -31,13 +31,15 @@ const {
 } = require('../../platform/profile');
 const { getSnapshot, createSnapshot } = require('../../platform/snapshot');
 const { MODEL_VERSION, SENTINEL_PARAMS } = require('./params');
+const rules = require('./rules');
 const {
   makeConstraint,
-  validateGoalChangeRule,
-  validateCapChangeRule,
-  checkAvailableBalanceRule,
-  validateProfileChangeRule,
-} = require('./rules');
+  validateGoalChange,
+  validateCapChange,
+  validateRebalance,
+  checkAvailableBalance,
+  validateProfile,
+} = rules;
 
 function getMonthDays(periodStr) {
   const [y, m] = String(periodStr || '2026-10').split('-').map(Number);
@@ -201,6 +203,7 @@ function buildEnvelope(state, functionName, data, intrinsicConfidence = 'HIGH', 
   return {
     schema: 'SentinelResult@1',
     tool_result_id: newId('trs'),
+    function: functionName,
     function_name: functionName,
     snapshot_id: state.snapshot.snapshot_id,
     ledger_version: state.snapshot.ledger_version,
@@ -216,6 +219,8 @@ function buildEnvelope(state, functionName, data, intrinsicConfidence = 'HIGH', 
       complete: dq.complete,
     },
     constraints_triggered: constraints,
+    warnings: constraints,
+    computed_at: new Date().toISOString(),
     data,
     value: data,
     error,
@@ -393,6 +398,7 @@ function sentinel_get_ledger_summary(stateInput, args = {}) {
         provisional_spend_minor: s.provisional_spend_minor,
         total_spend_minor: s.total_spend_minor,
         monthly_avg_minor: monthlyAvgMinor,
+        monthly_average_minor: monthlyAvgMinor,
         share_bp: ratioToBp(s.total_spend_minor, grandSpend.total_spend_minor),
         txn_count: entry.count,
       };
@@ -462,9 +468,10 @@ function sentinel_run_category_utilization(stateInput, args = {}) {
   const caps = getCapsForUser(state.user_id, period);
 
   const daysInMonth = getMonthDays(period);
+  const currentDateStr = state.current_date_ist || new Date().toISOString().slice(0, 10);
   const currentDay =
     period === state.current_month_ist
-      ? Math.max(1, parseInt(state.current_date_ist.slice(8, 10), 10) || 1)
+      ? Math.max(1, parseInt(currentDateStr.slice(8, 10), 10) || 1)
       : daysInMonth;
   const daysRemaining = Math.max(0, daysInMonth - currentDay);
 
@@ -847,7 +854,7 @@ function sentinel_run_rebalance_simulation(stateInput, args = {}) {
 // ============================================================================
 function sentinel_validate_cap_change(stateInput, args = {}) {
   const state = stateInput.snapshot ? stateInput : loadSnapshotState(stateInput, args.user_id);
-  const res = validateCapChangeRule(state, args);
+  const res = validateCapChange(state, args);
   return buildEnvelope(
     state,
     'sentinel_validate_cap_change',
@@ -1023,7 +1030,7 @@ function sentinel_run_goal_feasibility(stateInput, args = {}) {
 // ============================================================================
 function sentinel_validate_goal_change(stateInput, args = {}) {
   const state = stateInput.snapshot ? stateInput : loadSnapshotState(stateInput, args.user_id);
-  const res = validateGoalChangeRule(state, args);
+  const res = validateGoalChange(state, args);
   if (res.error_code === 'UNKNOWN_ENTITY') {
     return buildEnvelope(
       state,
@@ -1134,7 +1141,7 @@ function sentinel_flag_cashflow_risk(stateInput, args = {}) {
     ? args.outlays
     : sentinel_forecast_bill_outlays(state, { horizon_days: horizonDays }).data.outlays;
 
-  const balRes = checkAvailableBalanceRule(state, { amount_minor: 0 });
+  const balRes = checkAvailableBalance(state, { amount_minor: 0 });
   const startingAvailableMinor =
     balRes.verdict === 'BALANCE_UNKNOWN'
       ? Math.max(0, state.income_minor - state.fixed_commitments_minor)
@@ -1355,7 +1362,7 @@ function sentinel_run_spending_simulation(stateInput, args = {}) {
 // ============================================================================
 function sentinel_check_available_balance(stateInput, args = {}) {
   const state = stateInput.snapshot ? stateInput : loadSnapshotState(stateInput, args.user_id);
-  const res = checkAvailableBalanceRule(state, args);
+  const res = checkAvailableBalance(state, args);
   return buildEnvelope(
     state,
     'sentinel_check_available_balance',
@@ -1520,6 +1527,12 @@ const SENTINEL_FUNCTIONS = Object.freeze({
 function callSentinel(fnName, userId, snapshot, args = {}) {
   const fn = SENTINEL_FUNCTIONS[fnName];
   if (!fn) throw new Error(`Unknown Sentinel function: ${fnName}`);
+
+  // SEN-AC-03: Reject identity parameters passed into tool args
+  if (args && (args.user_id !== undefined || args.tenant_id !== undefined)) {
+    throw new Error('Identity parameters (user_id, tenant_id) are prohibited in Sentinel tool arguments');
+  }
+
   const snapId = typeof snapshot === 'object' ? snapshot.snapshot_id : snapshot;
   const state = loadSnapshotState(snapId, userId);
   return fn(state, args);
@@ -1532,10 +1545,5 @@ module.exports = {
   callSentinel,
   SENTINEL_FUNCTIONS,
   ...SENTINEL_FUNCTIONS,
-  rules: {
-    validateGoalChangeRule,
-    validateCapChangeRule,
-    checkAvailableBalanceRule,
-    validateProfileChangeRule,
-  },
+  rules,
 };

@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finmate.local/schemas/http/workspaces-atlas.json",
+  "title": "Atlas Workspace HTTP Response Schemas",
+  "description": "Schemas for GET /workspaces/atlas, GET /workspaces/atlas/archived, POST /workspaces/atlas/validate, POST /workspaces/atlas/sip",
+  "$defs": {
+    "GoalCard": {
+      "type": "object",
+      "required": ["goal_id", "name", "target_minor", "current_minor", "status"],
+      "properties": {
+        "goal_id": { "type": "string" },
+        "name": { "type": "string" },
+        "target_minor": { "type": "integer", "minimum": 1 },
+        "current_minor": { "type": "integer", "minimum": 0 },
+        "monthly_add_minor": { "type": "integer", "minimum": 0 },
+        "deadline": { "type": ["string", "null"], "format": "date" },
+        "priority": { "type": "string", "enum": ["HIGH", "MEDIUM", "LOW"] },
+        "status": { "type": "string", "enum": ["ACTIVE", "PAUSED", "COMPLETED", "ARCHIVED"] },
+        "progress": { "type": ["object", "null"] },
+        "confidence": { "type": ["string", "null"] },
+        "tool_result_id": { "type": ["string", "null"] }
+      },
+      "additionalProperties": true
+    },
+
+    "AtlasWorkspaceResponse": {
+      "type": "object",
+      "required": [
+        "success",
+        "snapshot_id",
+        "snapshot",
+        "data_quality",
+        "baseline",
+        "surplus_baseline",
+        "balance",
+        "available_balance",
+        "goals",
+        "goal_cards",
+        "archived_goals"
+      ],
+      "properties": {
+        "success": { "type": "boolean", "const": true },
+        "snapshot_id": { "type": "string" },
+        "snapshot": { "$ref": "common.json#/$defs/Snapshot" },
+        "data_quality": { "$ref": "common.json#/$defs/DataQuality" },
+        "baseline": { "$ref": "common.json#/$defs/SentinelResult" },
+        "surplus_baseline": { "type": "object" },
+        "surplus_confidence": { "type": ["string", "null"] },
+        "balance": { "$ref": "common.json#/$defs/SentinelResult" },
+        "available_balance": { "type": "object" },
+        "goals": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/GoalCard" }
+        },
+        "goal_cards": {
+          "type": "array",
+          "items": { "type": "object" }
+        },
+        "archived_goals": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/GoalCard" }
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "AtlasArchivedResponse": {
+      "type": "object",
+      "required": ["success", "archived", "archived_goals"],
+      "properties": {
+        "success": { "type": "boolean" },
+        "archived": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/GoalCard" }
+        },
+        "archived_goals": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/GoalCard" }
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "AtlasValidateResponse": {
+      "type": "object",
+      "required": ["success", "validation"],
+      "properties": {
+        "success": { "type": "boolean" },
+        "validation": { "$ref": "common.json#/$defs/SentinelResult" },
+        "feasibility": {
+          "oneOf": [
+            { "$ref": "common.json#/$defs/SentinelResult" },
+            { "type": "null" }
+          ]
+        },
+        "balance_check": {
+          "oneOf": [
+            { "$ref": "common.json#/$defs/SentinelResult" },
+            { "type": "null" }
+          ]
+        },
+        "proposal": {
+          "oneOf": [
+            { "$ref": "common.json#/$defs/Proposal" },
+            { "type": "null" }
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "AtlasSipResponse": {
+      "type": "object",
+      "required": ["success", "illustrative_only", "disclaimer", "sip", "result", "envelope"],
+      "properties": {
+        "success": { "type": "boolean" },
+        "illustrative_only": { "type": "boolean", "const": true },
+        "disclaimer": { "type": "string" },
+        "sip": { "$ref": "common.json#/$defs/SentinelResult" },
+        "result": { "type": "object" },
+        "envelope": { "$ref": "common.json#/$defs/SentinelResult" }
+      },
+      "additionalProperties": true
+    }
+  }
+}

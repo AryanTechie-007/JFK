@@ -1,0 +1,188 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finmate.local/schemas/http/workspaces-sentinel.json",
+  "title": "Sentinel Workspace HTTP Response Schemas",
+  "description": "Schemas for Sentinel workspace views: /overview, /spending, /timeseries, /forecast, and legacy aggregate",
+  "$defs": {
+    "SentinelOverviewResponse": {
+      "type": "object",
+      "required": [
+        "snapshot_id",
+        "snapshot",
+        "data_quality",
+        "as_of_date",
+        "available_balance",
+        "surplus",
+        "upcoming_bills",
+        "health_score"
+      ],
+      "properties": {
+        "success": { "type": "boolean" },
+        "snapshot_id": { "type": "string" },
+        "snapshot": { "$ref": "common.json#/$defs/Snapshot" },
+        "data_quality": { "$ref": "common.json#/$defs/DataQuality" },
+        "as_of_date": { "type": "string", "format": "date" },
+        "balances": { "type": ["object", "array"] },
+        "available_balance": { "$ref": "common.json#/$defs/SentinelResult" },
+        "surplus": { "$ref": "common.json#/$defs/SentinelResult" },
+        "upcoming_bills": { "$ref": "common.json#/$defs/SentinelResult" },
+        "health_score": { "$ref": "common.json#/$defs/SentinelResult" }
+      },
+      "additionalProperties": true
+    },
+
+    "SentinelSpendingResponse": {
+      "type": "object",
+      "required": [
+        "snapshot_id",
+        "snapshot",
+        "data_quality",
+        "period",
+        "summary",
+        "categories",
+        "top_merchants",
+        "uncategorized_total_minor",
+        "unclassified_total_minor"
+      ],
+      "properties": {
+        "success": { "type": "boolean" },
+        "snapshot_id": { "type": "string" },
+        "snapshot": { "$ref": "common.json#/$defs/Snapshot" },
+        "data_quality": { "$ref": "common.json#/$defs/DataQuality" },
+        "period": { "type": "string", "pattern": "^\\d{4}-\\d{2}$" },
+        "summary": { "$ref": "common.json#/$defs/SentinelResult" },
+        "categories": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["category_id", "total_minor"],
+            "properties": {
+              "category_id": { "type": "string" },
+              "parent_category_id": { "type": ["string", "null"] },
+              "name": { "type": "string" },
+              "total_minor": { "type": "integer" },
+              "count": { "type": "integer" },
+              "is_parent": { "type": "boolean" }
+            },
+            "additionalProperties": true
+          }
+        },
+        "top_merchants": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["merchant_name", "total_minor"],
+            "properties": {
+              "merchant_name": { "type": "string" },
+              "total_minor": { "type": "integer" },
+              "count": { "type": "integer" }
+            },
+            "additionalProperties": true
+          }
+        },
+        "uncategorized_total_minor": { "type": "integer", "minimum": 0 },
+        "unclassified_total_minor": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": true
+    },
+
+    "SentinelTimeseriesResponse": {
+      "type": "object",
+      "required": [
+        "snapshot_id",
+        "snapshot",
+        "data_quality",
+        "granularity",
+        "timeseries",
+        "buckets"
+      ],
+      "properties": {
+        "success": { "type": "boolean" },
+        "snapshot_id": { "type": "string" },
+        "snapshot": { "$ref": "common.json#/$defs/Snapshot" },
+        "data_quality": { "$ref": "common.json#/$defs/DataQuality" },
+        "granularity": { "type": "string", "enum": ["MONTH", "WEEK", "DAY"] },
+        "timeseries": { "$ref": "common.json#/$defs/SentinelResult" },
+        "buckets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["bucket", "spend_signed_minor"],
+            "properties": {
+              "bucket": { "type": "string" },
+              "category_id": { "type": ["string", "null"] },
+              "spend_signed_minor": { "type": "integer" }
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "SentinelForecastResponse": {
+      "type": "object",
+      "required": [
+        "snapshot_id",
+        "snapshot",
+        "data_quality",
+        "horizon_days",
+        "bills_forecast",
+        "cashflow_risk",
+        "anomalies"
+      ],
+      "properties": {
+        "success": { "type": "boolean" },
+        "snapshot_id": { "type": "string" },
+        "snapshot": { "$ref": "common.json#/$defs/Snapshot" },
+        "data_quality": { "$ref": "common.json#/$defs/DataQuality" },
+        "horizon_days": { "type": "integer", "minimum": 1, "maximum": 90 },
+        "bills_forecast": { "$ref": "common.json#/$defs/SentinelResult" },
+        "cashflow_risk": { "$ref": "common.json#/$defs/SentinelResult" },
+        "anomalies": { "$ref": "common.json#/$defs/SentinelResult" }
+      },
+      "additionalProperties": true
+    },
+
+    "SentinelAggregateResponse": {
+      "type": "object",
+      "required": [
+        "success",
+        "snapshot_id",
+        "snapshot",
+        "data_quality",
+        "surplus",
+        "summary",
+        "timeseries",
+        "bills",
+        "cashflow_risk",
+        "anomalies",
+        "available_balance",
+        "health_score",
+        "profile",
+        "review_queue",
+        "transactions",
+        "categories"
+      ],
+      "properties": {
+        "success": { "type": "boolean", "const": true },
+        "snapshot_id": { "type": "string" },
+        "snapshot": { "$ref": "common.json#/$defs/Snapshot" },
+        "data_quality": { "$ref": "common.json#/$defs/DataQuality" },
+        "surplus": { "$ref": "common.json#/$defs/SentinelResult" },
+        "summary": { "$ref": "common.json#/$defs/SentinelResult" },
+        "timeseries": { "$ref": "common.json#/$defs/SentinelResult" },
+        "bills": { "$ref": "common.json#/$defs/SentinelResult" },
+        "cashflow_risk": { "$ref": "common.json#/$defs/SentinelResult" },
+        "anomalies": { "$ref": "common.json#/$defs/SentinelResult" },
+        "available_balance": { "$ref": "common.json#/$defs/SentinelResult" },
+        "health_score": { "$ref": "common.json#/$defs/SentinelResult" },
+        "profile": { "type": "object" },
+        "review_queue": { "type": "array" },
+        "transactions": { "type": "array" },
+        "categories": { "type": "array" }
+      },
+      "additionalProperties": true
+    }
+  }
+}

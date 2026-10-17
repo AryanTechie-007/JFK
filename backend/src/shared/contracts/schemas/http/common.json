@@ -1,0 +1,301 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finmate.local/schemas/http/common.json",
+  "title": "FinMate Shared HTTP and Entity Contract Schemas",
+  "description": "Canonical definitions for Snapshot@1, DataQuality@1, SentinelResult@1, Proposal@1, and ErrorBody@1",
+  "$defs": {
+    "Snapshot": {
+      "$id": "Snapshot@1",
+      "type": "object",
+      "required": [
+        "snapshot_id",
+        "created_at",
+        "as_of_date",
+        "categorization_version",
+        "plan_version",
+        "balance_version",
+        "taxonomy_version",
+        "model_version",
+        "reason"
+      ],
+      "properties": {
+        "snapshot_id": {
+          "type": "string",
+          "description": "Unique snapshot identifier (e.g. snap_01...)"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO timestamp in UTC"
+        },
+        "as_of_date": {
+          "type": "string",
+          "format": "date",
+          "description": "'Today' in Asia/Kolkata (YYYY-MM-DD)"
+        },
+        "categorization_version": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "plan_version": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "balance_version": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "taxonomy_version": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "model_version": {
+          "type": "string",
+          "description": "Parameter registry version (MAJOR.MINOR+hash)"
+        },
+        "reason": {
+          "type": "string",
+          "enum": [
+            "CHAT_REQUEST",
+            "WORKSPACE_VIEW",
+            "MONITOR_RUN",
+            "ACTION_VALIDATION",
+            "ALERT_OPEN"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "DataQuality": {
+      "$id": "DataQuality@1",
+      "type": "object",
+      "required": [
+        "categorization_version",
+        "coverage_by_amount_bp",
+        "uncategorized_amount_minor",
+        "provisional_amount_minor",
+        "unclassified_movement_amount_minor",
+        "needs_review_count",
+        "uncategorized_count",
+        "pending_pipeline_count",
+        "import_in_progress",
+        "complete"
+      ],
+      "properties": {
+        "categorization_version": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "coverage_by_amount_bp": {
+          "type": ["integer", "null"],
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "uncategorized_amount_minor": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "provisional_amount_minor": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unclassified_movement_amount_minor": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "card_payment_unmatched_minor": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "needs_review_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "uncategorized_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "pending_pipeline_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "import_in_progress": {
+          "type": "boolean"
+        },
+        "complete": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "SentinelResult": {
+      "$id": "SentinelResult@1",
+      "type": "object",
+      "required": [
+        "tool_result_id",
+        "function",
+        "status",
+        "snapshot_id",
+        "computed_at",
+        "model_version",
+        "categorization_version",
+        "data_quality",
+        "params_hash"
+      ],
+      "properties": {
+        "tool_result_id": {
+          "type": "string",
+          "description": "Unique result identifier (e.g. res_01...)"
+        },
+        "function": {
+          "type": "string",
+          "description": "Name of the Sentinel tool called"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "OK",
+            "INVALID_INPUT",
+            "SNAPSHOT_NOT_FOUND",
+            "DATA_STALE",
+            "INSUFFICIENT_HISTORY",
+            "UNKNOWN_ENTITY",
+            "TIMEOUT",
+            "INTERNAL_ERROR"
+          ]
+        },
+        "data": {
+          "type": ["object", "null"],
+          "description": "Function-specific computed payload"
+        },
+        "confidence": {
+          "type": ["string", "null"],
+          "enum": ["HIGH", "MEDIUM", "LOW", null]
+        },
+        "variance_band": {
+          "type": ["object", "null"],
+          "properties": {
+            "low_minor": { "type": "integer" },
+            "high_minor": { "type": "integer" }
+          },
+          "additionalProperties": true
+        },
+        "data_as_of": {
+          "type": ["string", "null"],
+          "format": "date"
+        },
+        "snapshot_id": {
+          "type": "string"
+        },
+        "categorization_version": {
+          "type": "integer"
+        },
+        "data_quality": {
+          "$ref": "#/$defs/DataQuality"
+        },
+        "constraint_codes": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "computed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "model_version": {
+          "type": "string"
+        },
+        "params_hash": {
+          "type": "string"
+        },
+        "error": {
+          "type": ["object", "null"]
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "Proposal": {
+      "$id": "Proposal@1",
+      "type": "object",
+      "required": [
+        "proposal_id",
+        "action",
+        "params",
+        "params_hash",
+        "tier",
+        "origin",
+        "proposer",
+        "base_versions",
+        "snapshot_id",
+        "state",
+        "expires_at",
+        "created_at"
+      ],
+      "properties": {
+        "proposal_id": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string"
+        },
+        "params": {
+          "type": "object"
+        },
+        "params_hash": {
+          "type": "string"
+        },
+        "tier": {
+          "type": "string",
+          "enum": ["T1", "T2", "T3"]
+        },
+        "origin": {
+          "type": "string",
+          "enum": ["UI_FORM", "CHAT_SUGGESTION", "ALERT_SUGGESTION", "SCHEDULED_SCAN"]
+        },
+        "proposer": {
+          "type": "string",
+          "enum": ["USER", "JOHN", "ATLAS", "NOVA", "IRIS", "BUDGET_MONITOR"]
+        },
+        "base_versions": {
+          "type": "object",
+          "properties": {
+            "categorization_version": { "type": "integer" },
+            "plan_version": { "type": "integer" },
+            "balance_version": { "type": "integer" }
+          }
+        },
+        "snapshot_id": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string",
+          "enum": ["PENDING", "CONFIRMED", "DECLINED", "EXPIRED", "EXECUTED", "FAILED"]
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "ErrorBody": {
+      "$id": "ErrorBody@1",
+      "type": "object",
+      "required": ["code", "message"],
+      "properties": {
+        "code": { "type": "string" },
+        "message": { "type": "string" },
+        "retryable": { "type": "boolean" },
+        "details": { "type": "array" }
+      },
+      "additionalProperties": true
+    }
+  }
+}

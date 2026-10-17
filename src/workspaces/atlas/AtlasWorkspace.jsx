@@ -13,7 +13,6 @@ import {
   ArrowUpRight,
   ArrowDownLeft,
 } from 'lucide-react';
-import { goalService } from '../../services/goalService';
 import { workspaceService } from '../../services/workspaceService';
 import WorkspaceChatPanel from '../../components/WorkspaceChatPanel';
 
@@ -131,19 +130,8 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
           action_type: 'CREATE_GOAL',
           params: valRes.proposal.params,
         });
-      } else {
-        await goalService.createGoal({
-          name: newGoalName.trim(),
-          target: Number(newGoalTarget),
-          monthlyAdd: Number(newGoalAdd) || 0,
-          priority: newGoalPriority,
-        });
       }
 
-      const freshGoals = await goalService.getGoals();
-      if (freshGoals.success && Array.isArray(freshGoals.goals)) {
-        setGoals(freshGoals.goals);
-      }
       await loadAtlasWorkspace();
 
       setNewGoalName('');
@@ -237,10 +225,6 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
         });
       }
 
-      const freshGoals = await goalService.getGoals();
-      if (freshGoals.success && Array.isArray(freshGoals.goals)) {
-        setGoals(freshGoals.goals);
-      }
       await loadAtlasWorkspace();
       setEditingGoal(null);
       setStatusBanner('Goal changes validated and saved.');
@@ -265,19 +249,11 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
   const handleDeleteGoal = async (goalObj) => {
     const goalId = goalObj.goal_id || goalObj.id;
     try {
-      if (String(goalId).startsWith('g_')) {
-        await workspaceService.executeAction({
-          action_type: 'DELETE_GOAL',
-          params: { goal_id: goalId },
-          acknowledged_warnings: true,
-        });
-      } else {
-        await goalService.deleteGoal(goalId);
-      }
-      const freshGoals = await goalService.getGoals();
-      if (freshGoals.success && Array.isArray(freshGoals.goals)) {
-        setGoals(freshGoals.goals);
-      }
+      await workspaceService.executeAction({
+        action_type: 'DELETE_GOAL',
+        params: { goal_id: goalId },
+        acknowledged_warnings: true,
+      });
       await loadAtlasWorkspace();
       setEditingGoal(null);
     } catch (_) {}
@@ -290,10 +266,6 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
         params: { goal_id: goalId },
       });
       await loadAtlasWorkspace();
-      const freshGoals = await goalService.getGoals();
-      if (freshGoals.success && Array.isArray(freshGoals.goals)) {
-        setGoals(freshGoals.goals);
-      }
     } catch (_) {}
   };
 

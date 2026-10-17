@@ -1,12 +1,12 @@
 /**
- * Sentinel v5.0 Parameter Registry & Model Version (Sentinel §B.3)
+ * Sentinel v5.0 Parameter Registry & Model Version (Sentinel §B.3, §C.4, SEN-AC-09)
  */
 
-const MODEL_VERSION = '5.0.0';
+const crypto = require('node:crypto');
 
-const SENTINEL_PARAMS = Object.freeze({
-  model_version: MODEL_VERSION,
+const MAJOR_MINOR = '5.0';
 
+const RAW_PARAMS = {
   // Data Quality & Coverage thresholds (bp)
   high_coverage_floor_bp: 8500,
   medium_coverage_floor_bp: 7000,
@@ -45,9 +45,27 @@ const SENTINEL_PARAMS = Object.freeze({
   savings_target_bp: 2000, // 20% savings rate -> 25/25
   outflow_healthy_bp: 6000, // <=60% outflow -> 25/25
   Max_goal_years: 30,
+};
+
+function computeParamsHash(paramsObj) {
+  const keys = Object.keys(paramsObj)
+    .filter((k) => k !== 'model_version' && k !== 'params_hash')
+    .sort();
+  const canonical = JSON.stringify(keys.map((k) => [k, paramsObj[k]]));
+  return crypto.createHash('sha256').update(canonical).digest('hex').slice(0, 8);
+}
+
+const paramsHash = computeParamsHash(RAW_PARAMS);
+const MODEL_VERSION = `${MAJOR_MINOR}+${paramsHash}`;
+
+const SENTINEL_PARAMS = Object.freeze({
+  ...RAW_PARAMS,
+  model_version: MODEL_VERSION,
+  params_hash: paramsHash,
 });
 
 module.exports = {
   MODEL_VERSION,
   SENTINEL_PARAMS,
+  computeParamsHash,
 };

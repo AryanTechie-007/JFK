@@ -1,5 +1,5 @@
 /**
- * Sentinel v5.0 Shared Rule Library (Sentinel §A.2, §B.6 functions 9, 12, 15 + Profile validator)
+ * Sentinel v5.0 Shared Rule Library (Sentinel §A.2, §B.6 functions 9, 12, 15 + Rebalance & Profile validators)
  * Used by both Sentinel tool calls AND Action Service pre-execution re-validation.
  */
 
@@ -20,10 +20,10 @@ function makeConstraint(code, details = {}, overrideSeverity = null) {
 }
 
 /**
- * Goal Validator (`sentinel_validate_goal_change`)
+ * Goal Validator (`sentinel_validate_goal_change`, SEN-AC-06)
  * Operations: CREATE, UPDATE, SET_STATUS, SET_MONTH_OVERRIDE, ADD_FUNDS, RELEASE_FUNDS, RESTORE
  */
-function validateGoalChangeRule(state, params = {}) {
+function validateGoalChange(state, params = {}) {
   const {
     operation = 'CREATE',
     goal_id = null,
@@ -41,13 +41,15 @@ function validateGoalChangeRule(state, params = {}) {
   const maxYear = parseInt(currentDateIst.slice(0, 4), 10) + 30;
   const maxDeadline = `${maxYear}${currentDateIst.slice(4)}`;
 
-  const existingGoals = state.goals || [];
+  const existingGoals = state.all_goals_including_archived || state.goals || [];
   const targetGoal = goal_id ? existingGoals.find((g) => g.goal_id === goal_id) : null;
 
   if (operation !== 'CREATE' && !targetGoal) {
     return {
       verdict: 'REJECTED',
       constraints: [],
+      rule_codes: ['UNKNOWN_ENTITY'],
+      warnings: [],
       error_code: 'UNKNOWN_ENTITY',
     };
   }
@@ -152,13 +154,15 @@ function validateGoalChangeRule(state, params = {}) {
     goal_id: goal_id || null,
     period: period || null,
     constraints,
+    rule_codes: constraints.map((c) => c.code),
+    warnings: constraints.filter((c) => c.severity === 'WARNING').map((c) => c.message),
   };
 }
 
 /**
- * Cap Validator (`sentinel_validate_cap_change`)
+ * Cap Validator (`sentinel_validate_cap_change`, SEN-AC-06)
  */
-function validateCapChangeRule(state, params = {}) {
+function validateCapChange(state, params = {}) {
   const {
     category_id,
     new_cap_minor,
@@ -174,7 +178,6 @@ function validateCapChangeRule(state, params = {}) {
   const spendToDateMinor = Number(state.spendByCategory?.[category_id]?.total_spend_minor) || 0;
 
   // Floor rule: For current month, floor is max(spend_to_date_minor, 10_000 paise = ₹100)
-  // Wait: if someone reduces cap below spend already incurred in current month, CAP_BELOW_FLOOR triggers
   const isCurrentOrUnspecifiedMonth = !period || period === state.current_month_ist;
   const floorMinor = isCurrentOrUnspecifiedMonth
     ? Math.max(spendToDateMinor, SENTINEL_PARAMS.min_cap_floor_minor)
@@ -259,13 +262,109 @@ function validateCapChangeRule(state, params = {}) {
     scope,
     period: period || state.current_month_ist,
     constraints,
+    rule_codes: constraints.map((c) => c.code),
+    warnings: constraints.filter((c) => c.severity === 'WARNING').map((c) => c.message),
   };
 }
 
 /**
- * Available Balance Validator (`sentinel_check_available_balance`)
+ * Rebalance Validator (`validateRebalance`, SEN-AC-06, SEN-AC-18)
+ * Checks:
+ * - Net zero sum across all transfer legs
+ * - No transfer from FIXED category
+ * - No transfer from protected category without override
+ * - Per-leg donor cap does not drop below floor (spend to date or min floor)
  */
-function checkAvailableBalanceRule(state, params = {}) {
+function validateRebalance(state, params = {}) {
+  const transfers = Array.isArray(params) ? params : (params.transfers || []);
+  const constraints = [];
+
+  if (!Array.isArray(transfers) || transfers.length === 0) {
+    const emptyConstraint = makeConstraint('NO_ELIGIBLE_DONOR', {});
+    return {
+      verdict: 'REJECTED',
+      transfers: [],
+      constraints: [emptyConstraint],
+      rule_codes: [emptyConstraint.code],
+      warnings: [],
+    };
+  }
+
+  const protectedSet = new Set(state.preferences?.protected_categories || []);
+  const caps = state.caps || [];
+
+  // Track aggregated donor changes to ensure cumulative deduction doesn't breach floor
+  const donorDeductions = new Map();
+
+  for (const leg of transfers) {
+    const fromId = leg.from_category_id;
+    const toId = leg.to_category_id;
+    const amt = Number(leg.amount_minor);
+
+    if (!fromId || !toId || fromId === toId || !Number.isFinite(amt) || amt <= 0) {
+      constraints.push(makeConstraint('DONOR_CAP_TOO_LOW', { fromId, toId, amount_minor: amt }));
+      continue;
+    }
+
+    // Donor FIXED check
+    if (isFixedCategory(fromId)) {
+      constraints.push(
+        makeConstraint('CATEGORY_FIXED_NOT_REDUCIBLE', {
+          category_id: fromId,
+          category_label: getCategoryDisplayName(fromId),
+        })
+      );
+    }
+
+    // Donor protected check
+    const isProt = [...protectedSet].some(
+      (p) => p === fromId || (fromId && fromId.startsWith(`${p}.`))
+    );
+    if (isProt && !leg.override_protected) {
+      constraints.push(
+        makeConstraint('CATEGORY_PROTECTED', {
+          category_id: fromId,
+          category_label: getCategoryDisplayName(fromId),
+        })
+      );
+    }
+
+    donorDeductions.set(fromId, (donorDeductions.get(fromId) || 0) + amt);
+  }
+
+  // Validate donor caps against floors
+  for (const [fromId, totalDeduction] of donorDeductions.entries()) {
+    const capObj = caps.find((c) => c.category_id === fromId);
+    const capMinor = capObj ? Number(capObj.effective_amount_minor ?? capObj.amount_minor) : 0;
+    const spendToDateMinor = Number(state.spendByCategory?.[fromId]?.total_spend_minor) || 0;
+    const floorMinor = Math.max(spendToDateMinor, SENTINEL_PARAMS.min_cap_floor_minor);
+
+    if (capMinor - totalDeduction < floorMinor) {
+      constraints.push(
+        makeConstraint('DONOR_CAP_TOO_LOW', {
+          category_id: fromId,
+          cap_minor: capMinor,
+          deduction_minor: totalDeduction,
+          floor_minor: floorMinor,
+        })
+      );
+    }
+  }
+
+  const hasMandatory = constraints.some((c) => c.severity === 'MANDATORY');
+  return {
+    verdict: hasMandatory ? 'REJECTED' : 'PASS',
+    transfers,
+    constraints,
+    rule_codes: constraints.map((c) => c.code),
+    warnings: constraints.filter((c) => c.severity === 'WARNING').map((c) => c.message),
+  };
+}
+
+/**
+ * Available Balance Validator (`sentinel_check_available_balance`, SEN-AC-06)
+ */
+function checkAvailableBalance(state, params = {}) {
   const { amount_minor = 0 } = params;
   const requestedMinor = Number(amount_minor) || 0;
   const constraints = [];
@@ -276,7 +375,8 @@ function checkAvailableBalanceRule(state, params = {}) {
 
   const accountsWithBalance = liquidAccounts.filter((a) => a.balance_minor != null);
   if (accountsWithBalance.length === 0) {
-    constraints.push(makeConstraint('BALANCE_UNKNOWN', {}));
+    const balanceUnknown = makeConstraint('BALANCE_UNKNOWN', {});
+    constraints.push(balanceUnknown);
     return {
       verdict: 'BALANCE_UNKNOWN',
       total_liquid_minor: 0,
@@ -284,6 +384,8 @@ function checkAvailableBalanceRule(state, params = {}) {
       available_minor: 0,
       requested_minor: requestedMinor,
       constraints,
+      rule_codes: [balanceUnknown.code],
+      warnings: [],
     };
   }
 
@@ -329,6 +431,8 @@ function checkAvailableBalanceRule(state, params = {}) {
       available_minor: availableMinor,
       requested_minor: requestedMinor,
       constraints,
+      rule_codes: constraints.map((c) => c.code),
+      warnings: constraints.filter((c) => c.severity === 'WARNING').map((c) => c.message),
     };
   }
 
@@ -339,13 +443,15 @@ function checkAvailableBalanceRule(state, params = {}) {
     available_minor: availableMinor,
     requested_minor: requestedMinor,
     constraints,
+    rule_codes: constraints.map((c) => c.code),
+    warnings: constraints.filter((c) => c.severity === 'WARNING').map((c) => c.message),
   };
 }
 
 /**
- * Profile Validator (`sentinel_validate_profile`)
+ * Profile Validator (`sentinel_validate_profile`, SEN-AC-06)
  */
-function validateProfileChangeRule(state, params = {}) {
+function validateProfile(state, params = {}) {
   const { declared_income_minor, fixed_expense_lines } = params;
   const errors = [];
   if (declared_income_minor != null && Number(declared_income_minor) < 0) {
@@ -362,13 +468,35 @@ function validateProfileChangeRule(state, params = {}) {
     verdict: errors.length === 0 ? 'PASS' : 'REJECTED',
     errors,
     constraints: [],
+    rule_codes: [],
+    warnings: [],
   };
+}
+
+/**
+ * Loads current live (not snapshot-pinned) state for Action Service execution re-validation (SEN-AC-06)
+ */
+function loadState(userId, conn = null) {
+  const { createSnapshot } = require('../../../platform/snapshot');
+  const { loadSnapshotState } = require('../index');
+  const snap = createSnapshot(userId);
+  return loadSnapshotState(snap, userId);
 }
 
 module.exports = {
   makeConstraint,
-  validateGoalChangeRule,
-  validateCapChangeRule,
-  checkAvailableBalanceRule,
-  validateProfileChangeRule,
+  // Normalized function names
+  validateGoalChange,
+  validateCapChange,
+  validateRebalance,
+  checkAvailableBalance,
+  validateProfile,
+  loadState,
+
+  // Aliases kept for backwards compatibility with Action Service / existing imports
+  validateGoalChangeRule: validateGoalChange,
+  validateCapChangeRule: validateCapChange,
+  validateRebalanceRule: validateRebalance,
+  checkAvailableBalanceRule: checkAvailableBalance,
+  validateProfileChangeRule: validateProfile,
 };

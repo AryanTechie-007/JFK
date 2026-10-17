@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finmate.local/schemas/http/workspaces-iris.json",
+  "title": "Iris Workspace HTTP Response Schemas",
+  "description": "Schemas for GET /workspaces/iris and POST /workspaces/iris/simulate",
+  "$defs": {
+    "IrisWorkspaceResponse": {
+      "type": "object",
+      "required": [
+        "success",
+        "snapshot_id",
+        "snapshot",
+        "data_quality",
+        "baseline",
+        "surplus_baseline",
+        "spending_summary",
+        "ledger_summary",
+        "bill_forecast",
+        "upcoming_bills",
+        "cashflow_risk",
+        "anomalies",
+        "simulation",
+        "goals",
+        "caps"
+      ],
+      "properties": {
+        "success": { "type": "boolean", "const": true },
+        "snapshot_id": { "type": "string" },
+        "snapshot": { "$ref": "common.json#/$defs/Snapshot" },
+        "data_quality": { "$ref": "common.json#/$defs/DataQuality" },
+        "baseline": { "$ref": "common.json#/$defs/SentinelResult" },
+        "surplus_baseline": { "type": "object" },
+        "spending_summary": { "$ref": "common.json#/$defs/SentinelResult" },
+        "ledger_summary": { "type": "object" },
+        "bill_forecast": { "$ref": "common.json#/$defs/SentinelResult" },
+        "upcoming_bills": { "type": "object" },
+        "cashflow_risk": { "$ref": "common.json#/$defs/SentinelResult" },
+        "anomalies": { "$ref": "common.json#/$defs/SentinelResult" },
+        "simulation": { "$ref": "common.json#/$defs/SentinelResult" },
+        "simulation_confidence": { "type": ["string", "null"] },
+        "goals": {
+          "type": "array",
+          "items": { "type": "object" }
+        },
+        "caps": {
+          "type": "array",
+          "items": { "type": "object" }
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "IrisSimulateResponse": {
+      "type": "object",
+      "required": [
+        "success",
+        "simulation",
+        "confidence",
+        "constraints",
+        "cashflow_risk",
+        "proposals"
+      ],
+      "properties": {
+        "success": { "type": "boolean" },
+        "simulation": { "$ref": "common.json#/$defs/SentinelResult" },
+        "confidence": { "type": ["string", "null"] },
+        "constraints": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "cashflow_risk": {
+          "oneOf": [
+            { "$ref": "common.json#/$defs/SentinelResult" },
+            { "type": "null" }
+          ]
+        },
+        "proposals": {
+          "type": "array",
+          "items": { "$ref": "common.json#/$defs/Proposal" }
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}

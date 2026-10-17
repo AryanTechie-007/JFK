@@ -8,7 +8,7 @@ import {
   CheckCircle2, 
   ArrowUpRight 
 } from 'lucide-react';
-import { AGENTS } from '../data/mockFinancialData';
+import { AGENTS } from '../lib/agents';
 import { profileService } from '../services/profileService';
 
 export default function FinancialHealthView({ userProfile }) {

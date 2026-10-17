@@ -18,8 +18,8 @@ Local plan numbers restart at Plan 1 in every workstream; always refer to plans 
 | WS-CAT-P1 | Plan 1 | Categorizer Conformance and Pipeline Fixes | Dev B | D2 | Ready | — | — | — | — |
 | WS-CAT-P2 | Plan 2 | Canonical Ingestion Gateway | Dev B | D5 | Blocked | WS-CAT-P1, WS-FND-P2 | — | — | Seed files from WS-FND-P4 are validated here (built against SC §17.7) |
 | WS-CAT-P3 | Plan 3 | Corrections via the Action Service, Read API and Golden Evaluation | Dev B | D6 | Blocked | WS-CAT-P1, WS-FND-P4 | — | — | — |
-| WS-SEN-P1 | Plan 1 | Sentinel Conformance: Envelope, Read-Only Access and Golden Tests | Dev D | D4 am | Ready | — | — | — | — |
-| WS-SEN-P2 | Plan 2 | Rule-Library Parity, Workspace View Contracts and Performance | Dev D | D5 am | Blocked | WS-SEN-P1 | — | — | WS-FND-P1 done; schema commit first; Dev B reviews the Nova schema; backtest ±15 % provisional (D-PLAN-10) |
+| WS-SEN-P1 | Plan 1 | Sentinel Conformance: Envelope, Read-Only Access and Golden Tests | Dev D | D4 am | Complete | — | — | SEN-AC-01..05, 10, 19, 20 green (71/71 tests pass); PRAGMA query_only=ON; determinism replay | Completed on `dev-d` |
+| WS-SEN-P2 | Plan 2 | Rule-Library Parity, Workspace View Contracts and Performance | Dev D | D5 am | In progress | — | — | 5/5 HTTP schema tests green | Step 1 schemas complete; rule parity next |
 | WS-PLT-P1 | Plan 1 | Consent-Safe Action Service | Dev B | D4 am | Blocked | WS-FND-P2 | — | — | Contract commit first; Draft PR for Dev C/D approval on D2 |
 | WS-PLT-P2 | Plan 2 | Event-Driven Budget Monitor and Profile Conformance | Dev B | D4 | Blocked | WS-FND-P3, WS-PLT-P1 | — | — | — |
 | WS-AGT-P1 | Plan 1 | Specialist Runner and Nova on the LLM Adapter | Dev C | D5 | Blocked | WS-FND-P3 | — | — | — |
@@ -27,7 +27,7 @@ Local plan numbers restart at Plan 1 in every workstream; always refer to plans 
 | WS-AGT-P3 | Plan 3 | Live-Model Evaluation (Qwen prototype endpoint) | Dev C | D9 (U-2) | Blocked | WS-AGT-P2 | — | — | Qwen key/model arrive D3; stand-in provider if unavailable (D-PLAN-12) |
 | WS-JON-P1 | Plan 1 | LLM Router Fallback, Grounded Synthesis, Streaming and Consent | Dev C | D4 am | Blocked | WS-FND-P3 | — | — | Contract commit first; Draft PR for Dev D approval on D1 |
 | WS-JON-P2 | Plan 2 | Proposals, Rule-Detected Instructions, Corrections and Arbitration in Chat | Dev C | D7 am | Blocked | WS-CAT-P3, WS-JON-P1, WS-PLT-P1 | — | — | Tier cut note: dependency edge skipped if Tier 3 is cut |
-| WS-UI-P1 | Plan 1 | Five-Workspace Shell, Single API Client and Shared Components | Dev D | D2 | Ready | — | — | — | — |
+| WS-UI-P1 | Plan 1 | Five-Workspace Shell, Single API Client and Shared Components | Dev D | D2 | In review | — | — | Zero mocks, grep gate green | Shell reshaped on `dev-d`; single v1 API client; shared components created |
 | WS-UI-P2 | Plan 2 | Sentinel Workspace and Settings | Dev D | D7 am | Blocked | WS-CAT-P2, WS-CAT-P3, WS-PLT-P2, WS-SEN-P2, WS-UI-P1 | — | — | Tier cut note: forecast radar + demo loader skipped if Tier 3 is cut |
 | WS-UI-P3 | Plan 3 | Chat UX (Streaming, Cards, Chips, Undo), Alert Explain and Desktop Verification | Dev D | D8 am | Blocked | WS-JON-P2, WS-PLT-P1, WS-UI-P1 | — | — | — |
 

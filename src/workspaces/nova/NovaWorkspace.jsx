@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { workspaceService, formatMinorInr } from '../../services/workspaceService';
 import WorkspaceChatPanel from '../../components/WorkspaceChatPanel';
-import './NovaGuardianView.css';
+import './NovaWorkspace.css';
 
 const TAXONOMY_CAP_CATEGORIES = [
   { id: 'FOOD', label: 'Food & Dining (All)' },

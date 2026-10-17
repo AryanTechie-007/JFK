@@ -1,30 +1,23 @@
 import React from 'react';
-import { Bell, Sparkles, RefreshCw, Zap } from 'lucide-react';
-import { AGENTS } from '../data/mockFinancialData';
+import { RefreshCw, Zap } from 'lucide-react';
 
 export default function Header({ activeTab, onSync, onOpenImportModal, userProfile }) {
   const getTabInfo = () => {
     switch (activeTab) {
-      case 'home':
-        return { title: 'Home Overview' };
-      case 'subscriptions':
-        return { title: 'Subscriptions' };
       case 'john':
-        return { title: 'Financial Coach' };
-      case 'iris':
-        return { title: 'Smart Spending Advisor' };
-      case 'atlas':
-        return { title: 'Saving Strategist' };
+        return { title: 'John — Financial Coach' };
+      case 'sentinel':
+        return { title: 'Sentinel — Financial Observer' };
       case 'nova':
-        return { title: 'Budget Guardian' };
-      case 'analyser':
-        return { title: 'Spending & Trend Analyser' };
-      case 'health':
-        return { title: 'Financial Health Scorecard' };
+        return { title: 'Nova — Budget Guardian' };
+      case 'atlas':
+        return { title: 'Atlas — Savings Strategist' };
+      case 'iris':
+        return { title: 'Iris — Spending Advisor' };
       case 'settings':
         return { title: 'Profile & Settings' };
       default:
-        return { title: 'Command Center' };
+        return { title: 'FinMate AI Workspaces' };
     }
   };
 
@@ -57,34 +50,38 @@ export default function Header({ activeTab, onSync, onOpenImportModal, userProfi
             style={{ color: 'var(--accent-emerald)', fontWeight: '700' }}
             title="Import Bank Statement or CSV"
           >
-            <span>+ Import CSV</span>
+            <span>+ Import Feed</span>
           </button>
         )}
 
-        <button 
-          onClick={onSync}
-          className="btn btn-secondary btn-sm"
-          title="Resync AI Agents"
-        >
-          <RefreshCw size={13} />
-          <span>Resync Agents</span>
-        </button>
+        {onSync && (
+          <button 
+            onClick={onSync}
+            className="btn btn-secondary btn-sm"
+            title="Refresh Workspaces"
+          >
+            <RefreshCw size={13} />
+            <span>Refresh</span>
+          </button>
+        )}
 
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          padding: '6px 12px',
-          backgroundColor: 'var(--bg-surface)',
-          border: '1px solid var(--border-color)',
-          borderRadius: 'var(--radius-sm)'
-        }}>
-          <Zap size={14} color="var(--accent-emerald)" />
-          <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)' }}>Health Score:</span>
-          <span className="mono" style={{ fontSize: '13px', fontWeight: '700', color: 'var(--accent-emerald)', fontFamily: 'var(--font-serif)' }}>
-            {userProfile?.healthScore || 75}/100
-          </span>
-        </div>
+        {userProfile?.healthScore != null && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '6px 12px',
+            backgroundColor: 'var(--bg-surface)',
+            border: '1px solid var(--border-color)',
+            borderRadius: 'var(--radius-sm)'
+          }}>
+            <Zap size={14} color="var(--accent-emerald)" />
+            <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)' }}>Health:</span>
+            <span className="mono" style={{ fontSize: '13px', fontWeight: '700', color: 'var(--accent-emerald)', fontFamily: 'var(--font-serif)' }}>
+              {userProfile.healthScore}/100
+            </span>
+          </div>
+        )}
       </div>
     </header>
   );

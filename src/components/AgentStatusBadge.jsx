@@ -1,5 +1,5 @@
 import React from 'react';
-import { AGENTS } from '../data/mockFinancialData';
+import { AGENTS } from '../lib/agents';
 
 export default function AgentStatusBadge({ agentId, showStatus = true }) {
   const agent = AGENTS[agentId] || AGENTS.john;

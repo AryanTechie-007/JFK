@@ -61,6 +61,8 @@ router.get('/workspaces/atlas', (req, res) => {
     available_balance: availableBalance.data,
     goals: goalCards.map((gc) => ({
       ...gc.goal,
+      current_minor: Number(gc.goal.saved_minor) || 0,
+      target_minor: Number(gc.goal.target_minor) || 1,
       progress: gc.progress,
       confidence: gc.confidence,
       tool_result_id: gc.tool_result_id,

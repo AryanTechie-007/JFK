@@ -1,32 +1,26 @@
 import React from 'react';
 import { 
-  LayoutGrid, 
   Bot, 
-  BarChart3, 
-  Sparkles, 
+  Activity, 
   ShieldCheck, 
   Target, 
-  Activity, 
+  Compass, 
   Settings, 
   LogOut,
-  ChevronRight,
+  Sparkles,
   CreditCard
 } from 'lucide-react';
-import { AGENTS } from '../data/mockFinancialData';
 
 export default function Sidebar({ activeTab, setActiveTab, userProfile, onLogout }) {
   const profile = userProfile || {};
 
+  // Five canonical workspaces per SC §18 / D-025
   const navItems = [
-    { id: 'home', label: 'Home Overview', icon: LayoutGrid, color: '#005f41' },
-    { id: 'subscriptions', label: 'Subscriptions', icon: CreditCard, color: '#6366f1' },
-    { id: 'john', label: 'John AI Coach', icon: Bot, color: '#059669' },
-    { id: 'analyser', label: 'Spending Analyser', icon: BarChart3, color: '#005f41' },
-    { id: 'iris', label: 'Spending Advisor', icon: Sparkles, color: '#d97706' },
-    { id: 'nova', label: 'Budget Guardian', icon: ShieldCheck, color: '#dc2626' },
-    { id: 'atlas', label: 'Saving Strategist', icon: Target, color: '#059669' },
-    { id: 'health', label: 'Financial Health', icon: Activity, color: '#059669' },
-    { id: 'settings', label: 'User Profile & Settings', icon: Settings, color: 'var(--text-muted)' }
+    { id: 'john', label: 'John (Coach)', role: 'Master Coach', icon: Bot, color: '#059669' },
+    { id: 'sentinel', label: 'Sentinel', role: 'Observer', icon: Activity, color: '#2563EB' },
+    { id: 'nova', label: 'Nova', role: 'Budget Guardian', icon: ShieldCheck, color: '#dc2626' },
+    { id: 'atlas', label: 'Atlas', role: 'Savings Strategist', icon: Target, color: '#d97706' },
+    { id: 'iris', label: 'Iris', role: 'Spending Advisor', icon: Compass, color: '#8b5cf6' },
   ];
 
   return (
@@ -63,13 +57,16 @@ export default function Sidebar({ activeTab, setActiveTab, userProfile, onLogout
             FinMate AI
           </div>
           <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '500', fontFamily: 'var(--font-sans)' }}>
-            FinHack Financial Mentor
+            5 Autonomous Workspaces
           </div>
         </div>
       </div>
 
       {/* Navigation Links */}
       <div style={{ padding: '0 12px', flex: 1, overflowY: 'auto' }}>
+        <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', padding: '0 10px 8px', fontWeight: '600' }}>
+          Workspaces
+        </div>
         <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -96,15 +93,18 @@ export default function Sidebar({ activeTab, setActiveTab, userProfile, onLogout
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <Icon size={18} color={isActive ? 'var(--accent-emerald)' : 'var(--text-muted)'} />
-                  <span>{item.label}</span>
+                  <Icon size={18} color={isActive ? item.color : 'var(--text-muted)'} />
+                  <div>
+                    <div>{item.label}</div>
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 'normal' }}>{item.role}</div>
+                  </div>
                 </div>
                 {isActive && (
                   <div style={{
                     width: '3px',
                     height: '16px',
                     borderRadius: '2px',
-                    backgroundColor: 'var(--accent-emerald)'
+                    backgroundColor: item.color
                   }} />
                 )}
               </button>
@@ -113,7 +113,7 @@ export default function Sidebar({ activeTab, setActiveTab, userProfile, onLogout
         </nav>
       </div>
 
-      {/* Footer Profile Snippet & Logout */}
+      {/* Footer Profile Snippet & Settings */}
       <div style={{
         padding: '16px',
         borderTop: '1px solid var(--border-color)',
@@ -122,28 +122,31 @@ export default function Sidebar({ activeTab, setActiveTab, userProfile, onLogout
         justifyContent: 'space-between',
         backgroundColor: 'var(--bg-card)'
       }}>
-        <div>
+        <div 
+          onClick={() => setActiveTab('settings')}
+          style={{ cursor: 'pointer', flex: 1 }}
+        >
           <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)', fontFamily: 'var(--font-serif)' }}>
-            {profile.name || 'Account Holder'}
+            {profile.name || profile.display_name || 'Account Holder'}
           </div>
           <div className="mono" style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>
-            Income: ₹{(Number(profile?.monthlyIncome || profile?.monthly_income) || 0).toLocaleString()}/mo
+            {profile.declared_income_minor != null ? `Income: ₹${(profile.declared_income_minor / 100).toLocaleString()}/mo` : 'Settings & Preferences'}
           </div>
         </div>
 
         <div style={{ display: 'flex', gap: '4px' }}>
           <button 
             onClick={() => setActiveTab('settings')}
-            className="btn btn-ghost btn-sm"
-            title="Edit Financial Inputs"
+            className={`btn btn-ghost btn-sm ${activeTab === 'settings' ? 'active' : ''}`}
+            title="Profile & Settings"
           >
-            <Settings size={16} color="#64748b" />
+            <Settings size={16} color="var(--text-muted)" />
           </button>
           
           <button 
             onClick={onLogout}
             className="btn btn-ghost btn-sm"
-            title="Log Out & Return to Sign In"
+            title="Sign Out"
             style={{ color: '#dc2626' }}
           >
             <LogOut size={16} />

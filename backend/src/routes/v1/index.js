@@ -14,6 +14,7 @@ router.use(requireAuth);
 router.use(require('./system'));
 router.use(require('./chat'));
 router.use(require('./actions'));
+router.use(require('./workspaces-john'));
 router.use(require('./workspaces-atlas'));
 router.use(require('./workspaces-nova'));
 router.use(require('./workspaces-iris'));

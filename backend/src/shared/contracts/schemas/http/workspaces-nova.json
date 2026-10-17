@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finmate.local/schemas/http/workspaces-nova.json",
+  "title": "Nova Workspace HTTP Response Schemas",
+  "description": "Schemas for GET /workspaces/nova, POST /workspaces/nova/validate-cap, POST /workspaces/nova/rebalance",
+  "$defs": {
+    "CategoryCap": {
+      "type": "object",
+      "required": ["category_id", "cap_minor", "period"],
+      "properties": {
+        "category_id": { "type": "string" },
+        "cap_minor": { "type": "integer", "minimum": 0 },
+        "period": { "type": "string", "pattern": "^\\d{4}-\\d{2}$" },
+        "scope": { "type": "string", "enum": ["STANDING", "MONTH"] },
+        "is_override": { "type": "boolean" },
+        "utilization_bp": { "type": "integer", "minimum": 0 },
+        "spent_minor": { "type": "integer" }
+      },
+      "additionalProperties": true
+    },
+
+    "NovaWorkspaceResponse": {
+      "type": "object",
+      "required": [
+        "success",
+        "snapshot_id",
+        "month",
+        "snapshot",
+        "data_quality",
+        "utilization",
+        "velocity",
+        "anomalies",
+        "surplus_baseline",
+        "alerts",
+        "taxonomy"
+      ],
+      "properties": {
+        "success": { "type": "boolean", "const": true },
+        "snapshot_id": { "type": "string" },
+        "month": { "type": "string", "pattern": "^\\d{4}-\\d{2}$" },
+        "snapshot": { "$ref": "common.json#/$defs/Snapshot" },
+        "data_quality": { "$ref": "common.json#/$defs/DataQuality" },
+        "utilization": { "$ref": "common.json#/$defs/SentinelResult" },
+        "velocity": { "$ref": "common.json#/$defs/SentinelResult" },
+        "anomalies": {
+          "type": "array",
+          "items": { "type": "object" }
+        },
+        "surplus_baseline": { "type": "object" },
+        "alerts": {
+          "type": "array",
+          "items": { "type": "object" }
+        },
+        "taxonomy": {
+          "type": "array",
+          "items": { "type": "object" }
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "NovaValidateCapResponse": {
+      "type": "object",
+      "required": ["success", "validation"],
+      "properties": {
+        "success": { "type": "boolean" },
+        "validation": { "$ref": "common.json#/$defs/SentinelResult" },
+        "proposal": {
+          "oneOf": [
+            { "$ref": "common.json#/$defs/Proposal" },
+            { "type": "null" }
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "NovaRebalanceResponse": {
+      "type": "object",
+      "required": ["success", "rebalance", "envelope"],
+      "properties": {
+        "success": { "type": "boolean" },
+        "rebalance": { "$ref": "common.json#/$defs/SentinelResult" },
+        "envelope": { "$ref": "common.json#/$defs/SentinelResult" },
+        "proposal": {
+          "oneOf": [
+            { "$ref": "common.json#/$defs/Proposal" },
+            { "type": "null" }
+          ]
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}

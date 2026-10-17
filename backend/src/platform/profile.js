@@ -256,6 +256,23 @@ function getCanonicalProfile(userId) {
   syncUserStateFromLegacy(userId);
   const canonicalId = toCanonicalUserId(userId);
   const row = db.prepare('SELECT * FROM user_profiles_v1 WHERE user_id = ?').get(canonicalId);
+  if (!row) {
+    return {
+      schema: 'UserProfile@1',
+      user_id: canonicalId,
+      display_name: 'Default User',
+      currency: 'INR',
+      locale: 'en-IN',
+      timezone: 'Asia/Kolkata',
+      declared_income_minor: 0,
+      fixed_expense_lines: [],
+      preferences: { ...DEFAULT_PREFERENCES },
+      accounts: [],
+      declared_bills: [],
+      version: 1,
+      updated_at: new Date().toISOString(),
+    };
+  }
   let fixedExpenseLines = [];
   let preferences = { ...DEFAULT_PREFERENCES };
   try {
