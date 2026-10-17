@@ -108,395 +108,117 @@ const db = new Db(raw);
 
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
+db.pragma('busy_timeout = 2000');
 
-db.exec(`
-CREATE TABLE IF NOT EXISTS users (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL,
-  email TEXT UNIQUE NOT NULL,
-  password_hash TEXT NOT NULL,
-  occupation TEXT,
-  monthly_income REAL DEFAULT 0,
-  fixed_housing_expense REAL DEFAULT 0,
-  risk_strategy TEXT DEFAULT 'balanced',
-  created_at TEXT DEFAULT (datetime('now'))
-);
+const { migrate } = require('./db/migrate');
 
-CREATE TABLE IF NOT EXISTS goals (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
-  target_amount REAL NOT NULL,
-  saved_amount REAL DEFAULT 0,
-  monthly_allocation REAL DEFAULT 0,
-  priority TEXT DEFAULT 'medium',
-  status TEXT DEFAULT 'active',
-  source TEXT DEFAULT 'user',
-  created_at TEXT DEFAULT (datetime('now'))
-);
+// The schema is owned by the versioned migrations in backend/src/db/migrations.
+// 000_baseline.sql reproduces the CREATE TABLE block that used to live here verbatim,
+// so a database created by the older code opens unchanged (WS-FND-P2 §5).
+migrate(raw);
 
-CREATE TABLE IF NOT EXISTS budget_categories (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  category TEXT NOT NULL,
-  monthly_cap REAL NOT NULL,
-  UNIQUE(user_id, category)
-);
+// Startup integrity check (S-14 in docs/prototype-design/05-security-and-reliability.md).
+// Two distinct invariants:
+//   1. PRAGMA integrity_check must return exactly 'ok'; a corrupt or unreadable database
+//      is never served, in any environment.
+//   2. Every version counter must be at least the highest row version it stamps
+//      (Doc 2 §3.6: counters only increase). The row-version columns are the ones the
+//      source baseline has: transactions_v1.categorized_version and
+//      categorization_history.version for the ledger, goals_v1.version and
+//      caps_v1.version for the plan, user_profiles_v1.version and
+//      declared_bills_v1.version for the profile, category_rules.version for the rules.
+//      A violation is a development warning, a hard failure under NODE_ENV=test, and a
+//      hard failure in production (plan-002-migrations-and-schema-gaps.md §6 step 8).
+const COUNTER_ROW_VERSIONS = [
+  {
+    counter: 'ledger_version',
+    refs: [
+      ['transactions_v1', 'categorized_version'],
+      ['categorization_history', 'version'],
+    ],
+  },
+  {
+    counter: 'plan_version',
+    refs: [
+      ['goals_v1', 'version'],
+      ['caps_v1', 'version'],
+    ],
+  },
+  {
+    counter: 'profile_version',
+    refs: [
+      ['user_profiles_v1', 'version'],
+      ['declared_bills_v1', 'version'],
+    ],
+  },
+  {
+    counter: 'rules_version',
+    refs: [['category_rules', 'version']],
+  },
+];
 
-CREATE TABLE IF NOT EXISTS transactions (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  raw_description TEXT NOT NULL,
-  amount REAL NOT NULL,
-  category TEXT NOT NULL DEFAULT 'Uncategorized',
-  txn_date TEXT DEFAULT (datetime('now')),
-  created_at TEXT DEFAULT (datetime('now'))
-);
+function currentEnvironment() {
+  const env = process.env.NODE_ENV;
+  if (env === 'test' || env === 'production' || env === 'development') return env;
+  return 'development';
+}
 
-CREATE TABLE IF NOT EXISTS upcoming_bills (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  label TEXT NOT NULL,
-  amount REAL NOT NULL,
-  due_date TEXT NOT NULL,
-  is_paid INTEGER DEFAULT 0
-);
+function assertIntegrity(rawDb) {
+  let rows;
+  try {
+    rows = rawDb.prepare('PRAGMA integrity_check').all();
+  } catch (error) {
+    throw new Error(
+      'STARTUP_INTEGRITY_CHECK_FAILED: PRAGMA integrity_check could not run: ' + error.message
+    );
+  }
+  const results = rows.map((row) => Object.values(row)[0]);
+  if (results.length !== 1 || results[0] !== 'ok') {
+    throw new Error(
+      'STARTUP_INTEGRITY_CHECK_FAILED: PRAGMA integrity_check returned ' + JSON.stringify(results)
+    );
+  }
 
-CREATE TABLE IF NOT EXISTS subscriptions (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
-  amount REAL NOT NULL,
-  billing_cycle TEXT DEFAULT 'monthly',
-  category TEXT DEFAULT 'Entertainment',
-  next_billing_date TEXT,
-  created_at TEXT DEFAULT (datetime('now'))
-);
+  const violations = [];
+  const users = rawDb
+    .prepare(
+      'SELECT user_id, ledger_version, plan_version, profile_version, rules_version FROM user_state_versions'
+    )
+    .all();
+  for (const user of users) {
+    for (const { counter, refs } of COUNTER_ROW_VERSIONS) {
+      const counterValue = Number(user[counter]);
+      let maxRowVersion = 0;
+      for (const [table, column] of refs) {
+        const row = rawDb
+          .prepare('SELECT MAX(' + column + ') AS max_version FROM ' + table + ' WHERE user_id = ?')
+          .get(user.user_id);
+        const value =
+          row && row.max_version !== null && row.max_version !== undefined
+            ? Number(row.max_version)
+            : 0;
+        if (value > maxRowVersion) maxRowVersion = value;
+      }
+      if (maxRowVersion > counterValue) {
+        violations.push(
+          user.user_id + ': ' + counter + '=' + counterValue + ' but a row version is ' + maxRowVersion
+        );
+      }
+    }
+  }
 
--- ============================================================================
--- V1 Specification Canonical Tables (SC §5–§17)
--- ============================================================================
+  if (violations.length === 0) return;
 
-CREATE TABLE IF NOT EXISTS user_state_versions (
-  user_id TEXT PRIMARY KEY,
-  ledger_version INTEGER NOT NULL DEFAULT 1,
-  plan_version INTEGER NOT NULL DEFAULT 1,
-  profile_version INTEGER NOT NULL DEFAULT 1,
-  rules_version INTEGER NOT NULL DEFAULT 1,
-  import_in_progress INTEGER NOT NULL DEFAULT 0,
-  last_updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
+  const message = 'VERSION_COUNTER_INCONSISTENT: ' + violations.join('; ');
+  const env = currentEnvironment();
+  if (env === 'development') {
+    console.warn('[db] ' + message + ' (development: continuing)');
+    return;
+  }
+  if (env === 'production') console.error('[db] ' + message);
+  throw new Error(message);
+}
 
-CREATE TABLE IF NOT EXISTS user_profiles_v1 (
-  user_id TEXT PRIMARY KEY,
-  numeric_user_id INTEGER,
-  display_name TEXT NOT NULL DEFAULT 'User',
-  currency TEXT NOT NULL DEFAULT 'INR',
-  locale TEXT NOT NULL DEFAULT 'en-IN',
-  timezone TEXT NOT NULL DEFAULT 'Asia/Kolkata',
-  declared_income_minor INTEGER,
-  fixed_expense_lines_json TEXT NOT NULL DEFAULT '[]',
-  preferences_json TEXT NOT NULL DEFAULT '{}',
-  version INTEGER NOT NULL DEFAULT 1,
-  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
-
-CREATE TABLE IF NOT EXISTS accounts_v1 (
-  account_id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  display_name TEXT NOT NULL,
-  type TEXT NOT NULL DEFAULT 'CHECKING',
-  institution TEXT NOT NULL DEFAULT 'Primary Bank',
-  last4 TEXT NOT NULL DEFAULT '0000',
-  is_own_account INTEGER NOT NULL DEFAULT 1,
-  balance_minor INTEGER,
-  balance_as_of TEXT,
-  credit_limit_minor INTEGER,
-  statement_day INTEGER,
-  due_day INTEGER,
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
-
-CREATE TABLE IF NOT EXISTS transactions_v1 (
-  txn_id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  account_id TEXT NOT NULL,
-  source TEXT NOT NULL DEFAULT 'STATEMENT_IMPORT',
-  status TEXT NOT NULL DEFAULT 'POSTED',
-  direction TEXT NOT NULL DEFAULT 'DEBIT',
-  amount_minor INTEGER NOT NULL,
-  currency TEXT NOT NULL DEFAULT 'INR',
-  txn_timestamp TEXT NOT NULL,
-  txn_date TEXT NOT NULL,
-  booking_date TEXT,
-  raw_description TEXT NOT NULL,
-  normalized_description TEXT NOT NULL,
-  counterparty_raw TEXT,
-  merchant_id TEXT,
-  merchant_display_name TEXT,
-  rail TEXT DEFAULT 'OTHER',
-  vpa TEXT,
-  mcc TEXT,
-  external_ref TEXT,
-  movement_type TEXT NOT NULL DEFAULT 'EXPENSE',
-  category_id TEXT,
-  classification_status TEXT NOT NULL DEFAULT 'UNCATEGORIZED',
-  classification_confidence TEXT NOT NULL DEFAULT 'LOW',
-  classification_confidence_bp INTEGER NOT NULL DEFAULT 0,
-  classification_source TEXT NOT NULL DEFAULT 'FALLBACK',
-  rule_id TEXT,
-  categorized_version INTEGER NOT NULL DEFAULT 1,
-  paired_txn_id TEXT,
-  linked_expense_txn_id TEXT,
-  superseded_by TEXT,
-  is_duplicate_of TEXT,
-  legacy_txn_id INTEGER,
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
-CREATE INDEX IF NOT EXISTS idx_txns_v1_user_date ON transactions_v1(user_id, txn_date);
-CREATE INDEX IF NOT EXISTS idx_txns_v1_user_cat ON transactions_v1(user_id, category_id);
-
-CREATE TABLE IF NOT EXISTS categorization_history (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  txn_id TEXT NOT NULL,
-  user_id TEXT NOT NULL,
-  version INTEGER NOT NULL,
-  movement_type TEXT NOT NULL,
-  category_id TEXT,
-  classification_status TEXT NOT NULL,
-  classification_confidence TEXT NOT NULL,
-  classification_confidence_bp INTEGER NOT NULL,
-  classification_source TEXT NOT NULL,
-  rule_id TEXT,
-  reason_code TEXT,
-  paired_txn_id TEXT,
-  linked_expense_txn_id TEXT,
-  is_duplicate_of TEXT,
-  superseded_by TEXT,
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
-CREATE INDEX IF NOT EXISTS idx_cat_hist_txn_ver ON categorization_history(txn_id, version);
-
-CREATE TABLE IF NOT EXISTS review_items (
-  review_id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  txn_id TEXT NOT NULL UNIQUE,
-  reason TEXT NOT NULL,
-  suggested_category_id TEXT,
-  suggested_movement_type TEXT NOT NULL,
-  confidence_bp INTEGER NOT NULL DEFAULT 0,
-  candidate_pair_txn_id TEXT,
-  priority_score INTEGER NOT NULL DEFAULT 0,
-  status TEXT NOT NULL DEFAULT 'OPEN',
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  resolved_at TEXT,
-  resolved_by_action_id TEXT
-);
-
-CREATE TABLE IF NOT EXISTS category_rules (
-  rule_id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  match_type TEXT NOT NULL,
-  pattern TEXT NOT NULL,
-  direction TEXT NOT NULL DEFAULT 'DEBIT',
-  category_id TEXT,
-  movement_type TEXT NOT NULL DEFAULT 'EXPENSE',
-  priority INTEGER NOT NULL DEFAULT 100,
-  active INTEGER NOT NULL DEFAULT 1,
-  version INTEGER NOT NULL DEFAULT 1,
-  created_from_action_id TEXT,
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
-
-CREATE TABLE IF NOT EXISTS goals_v1 (
-  goal_id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  name TEXT NOT NULL,
-  target_minor INTEGER NOT NULL,
-  saved_minor INTEGER NOT NULL DEFAULT 0,
-  monthly_add_minor INTEGER NOT NULL DEFAULT 0,
-  deadline TEXT,
-  priority_tier TEXT NOT NULL DEFAULT 'MEDIUM',
-  priority_rank INTEGER NOT NULL DEFAULT 2,
-  status TEXT NOT NULL DEFAULT 'ACTIVE',
-  archived_at TEXT,
-  restore_until TEXT,
-  version INTEGER NOT NULL DEFAULT 1,
-  legacy_goal_id INTEGER,
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
-
-CREATE TABLE IF NOT EXISTS goal_month_overrides (
-  user_id TEXT NOT NULL,
-  goal_id TEXT NOT NULL,
-  period TEXT NOT NULL,
-  monthly_add_minor INTEGER NOT NULL,
-  set_by_action_id TEXT,
-  PRIMARY KEY (user_id, goal_id, period)
-);
-
-CREATE TABLE IF NOT EXISTS caps_v1 (
-  cap_id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  category_id TEXT NOT NULL,
-  amount_minor INTEGER NOT NULL,
-  scope TEXT NOT NULL DEFAULT 'STANDING',
-  source TEXT NOT NULL DEFAULT 'USER',
-  watching INTEGER NOT NULL DEFAULT 0,
-  version INTEGER NOT NULL DEFAULT 1,
-  updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-  UNIQUE(user_id, category_id)
-);
-
-CREATE TABLE IF NOT EXISTS cap_month_overrides (
-  user_id TEXT NOT NULL,
-  category_id TEXT NOT NULL,
-  period TEXT NOT NULL,
-  amount_minor INTEGER NOT NULL,
-  reason TEXT NOT NULL DEFAULT 'USER_PLAN',
-  set_by_action_id TEXT,
-  PRIMARY KEY (user_id, category_id, period)
-);
-
-CREATE TABLE IF NOT EXISTS declared_bills_v1 (
-  bill_id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  label TEXT NOT NULL,
-  category_id TEXT NOT NULL,
-  amount_minor INTEGER NOT NULL,
-  cadence TEXT NOT NULL DEFAULT 'MONTHLY',
-  due_day INTEGER NOT NULL DEFAULT 1,
-  next_due_date TEXT NOT NULL,
-  active INTEGER NOT NULL DEFAULT 1,
-  version INTEGER NOT NULL DEFAULT 1,
-  legacy_sub_id INTEGER,
-  legacy_bill_id INTEGER
-);
-
-CREATE TABLE IF NOT EXISTS alerts_v1 (
-  alert_id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  kind TEXT NOT NULL,
-  category_id TEXT,
-  period TEXT NOT NULL,
-  tier TEXT NOT NULL,
-  severity TEXT NOT NULL,
-  dedupe_key TEXT NOT NULL UNIQUE,
-  headline_data_json TEXT NOT NULL DEFAULT '{}',
-  sentinel_result_ids_json TEXT NOT NULL DEFAULT '[]',
-  status TEXT NOT NULL DEFAULT 'OPEN',
-  narrative_cache_json TEXT,
-  cooldown_until TEXT,
-  raised_at TEXT NOT NULL DEFAULT (datetime('now')),
-  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
-
-CREATE TABLE IF NOT EXISTS snapshots_v1 (
-  snapshot_id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  created_at TEXT NOT NULL,
-  as_of TEXT NOT NULL,
-  current_date_ist TEXT NOT NULL,
-  current_month_ist TEXT NOT NULL,
-  ledger_version INTEGER NOT NULL,
-  plan_version INTEGER NOT NULL,
-  profile_version INTEGER NOT NULL,
-  rules_version INTEGER NOT NULL,
-  taxonomy_version TEXT NOT NULL DEFAULT '1.0.0',
-  sentinel_model_version TEXT NOT NULL DEFAULT '5.0.0'
-);
-
-CREATE TABLE IF NOT EXISTS proposals_v1 (
-  proposal_id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  request_id TEXT NOT NULL,
-  snapshot_id TEXT NOT NULL,
-  origin TEXT NOT NULL,
-  proposer TEXT NOT NULL,
-  action_type TEXT NOT NULL,
-  tier TEXT NOT NULL,
-  target_entity_type TEXT NOT NULL,
-  target_entity_id TEXT,
-  params_json TEXT NOT NULL,
-  rationale_json TEXT NOT NULL,
-  validation_tool_result_id TEXT,
-  impact_preview_json TEXT NOT NULL DEFAULT '{}',
-  preconditions_json TEXT NOT NULL DEFAULT '{}',
-  reversible INTEGER NOT NULL DEFAULT 1,
-  undo_window_s INTEGER NOT NULL DEFAULT 300,
-  depends_on_proposal_id TEXT,
-  status TEXT NOT NULL DEFAULT 'PENDING',
-  expires_at TEXT NOT NULL,
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
-
-CREATE TABLE IF NOT EXISTS confirmation_tokens (
-  token_id TEXT PRIMARY KEY,
-  proposal_id TEXT NOT NULL,
-  user_id TEXT NOT NULL,
-  action_type TEXT NOT NULL,
-  params_hash TEXT NOT NULL,
-  snapshot_id TEXT NOT NULL,
-  tier TEXT NOT NULL,
-  issued_at TEXT NOT NULL,
-  expires_at TEXT NOT NULL,
-  used_at TEXT
-);
-
-CREATE TABLE IF NOT EXISTS action_ledger (
-  action_id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  proposal_id TEXT,
-  idempotency_key TEXT NOT NULL UNIQUE,
-  action_type TEXT NOT NULL,
-  status TEXT NOT NULL,
-  proposer TEXT NOT NULL,
-  params_json TEXT NOT NULL,
-  previous_state_json TEXT,
-  new_versions_json TEXT,
-  reversible_until TEXT,
-  undone_by_action_id TEXT,
-  executed_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
-
-CREATE TABLE IF NOT EXISTS memory_facts (
-  fact_id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  text TEXT NOT NULL,
-  source_turn_id TEXT,
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
-
-CREATE TABLE IF NOT EXISTS chat_threads (
-  thread_id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  workspace TEXT NOT NULL DEFAULT 'JOHN',
-  rolling_summary TEXT NOT NULL DEFAULT '',
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
-
-CREATE TABLE IF NOT EXISTS chat_turns (
-  turn_id TEXT PRIMARY KEY,
-  thread_id TEXT NOT NULL,
-  user_id TEXT NOT NULL,
-  request_id TEXT NOT NULL,
-  role TEXT NOT NULL,
-  message TEXT NOT NULL,
-  response_json TEXT,
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
-
-CREATE TABLE IF NOT EXISTS outbox_events (
-  event_id TEXT PRIMARY KEY,
-  type TEXT NOT NULL,
-  user_id TEXT NOT NULL,
-  occurred_at TEXT NOT NULL,
-  trace_id TEXT NOT NULL,
-  versions_json TEXT NOT NULL,
-  payload_json TEXT NOT NULL
-);
-`);
+assertIntegrity(raw);
 
 module.exports = db;

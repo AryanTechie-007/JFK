@@ -89,6 +89,8 @@
 **Workstream:** single schema authority established for WS-FND-P3/P4/P5.
 **Integration:** G2 item "Migration `000_baseline.sql` reproduces today's schema exactly".
 
+**Recorded outcome (2026-10-17):** the plan and workstream criteria are met on the branch and the integration criterion is met by the baseline test, but nothing is merged — see §14.6 for commands and results and §14.10 for the remaining risks.
+
 ## 11. Risks and recovery
 | Risk | Recovery |
 | --- | --- |
@@ -96,9 +98,116 @@
 | A module mutates schema at runtime (e.g. `ALTER` in code) | Grep `ALTER TABLE`/`CREATE TABLE` outside `db/`; move into migrations |
 | Integrity check too strict for existing dev DBs | Warn-only when `NODE_ENV=development`; strict in test |
 
+**Recorded outcome (2026-10-17):** no whitespace normalisation was needed (the comparison is byte-exact); no runtime DDL remains outside the migration files — the only `CREATE` statement elsewhere is the runner's own `schema_migrations` table at `backend/src/db/migrate.js:27` (plus comments at `backend/src/db.js:115-117`); the integrity policy was implemented as warn-in-development and throw-in-test/production, which leaves §6 step 8's "refuse start in non-test env" and this row's development wording as an open owner decision (§14.8 item 2).
+
 ## 12. Assumptions and unresolved questions
 - [A] D-PLAN-2 (keep physical names). If vetoed, a rename migration is added in WS-FND-P5, not here.
 - [A] Immutability of raw transaction fields (S-13) is checked by WS-CAT-P1 against `transactions_v1`; if raw and classified data share one table, CAT adds a trigger blocking updates to raw columns in `1xx`.
 
 ## 13. Completion handoff
 README template; include `schema_migrations` listing, `TABLES.md`, and next eligible plans **WS-FND-P3, WS-FND-P4, WS-CAT-P2, WS-PLT-P1**.
+
+> **Outcome (2026-10-17):** implemented on branch `ws-fnd/p2-migrations`, not merged — see §14.
+
+## 14. Implementation outcome (recorded 2026-10-17)
+
+**Status of this plan:** implemented and verified on branch `ws-fnd/p2-migrations` (commits `0a8b1c9`, `cc762b0`), **not pushed and not merged**; no PR. Under `tracking/README.md` §2/§3 the plan is therefore *In progress*, not *Complete* — Complete requires a merged PR, CI green on `main` and the independent review that D-PLAN-8 makes mandatory for this plan. Sections §1–§13 above are unchanged requirements; this section records what was actually built, including where it deviates.
+
+### 14.1 §6 steps → outcome
+| §6 step | Outcome | Evidence |
+| --- | --- | --- |
+| 1. Dump today's schema | Captured by requiring the pre-change `backend/src/db.js` against an empty temp DB: 27 tables + 3 indexes = 30 `sqlite_master` objects. Stored **inside the test**, not at the fixture path (14.7). | `backend/test/db/schema-baseline.test.js:28` (`BASELINE_SCHEMA`) |
+| 2. `000_baseline.sql` | The old inline `db.exec` template copied verbatim, `IF NOT EXISTS` kept, plus a UTF-8 header comment. 392 lines. | `backend/src/db/migrations/000_baseline.sql` |
+| 3. `migrate.js` | Runner with per-file sha-256 recording, lexical order, per-file transaction, rollback, checksum and missing-file guards. 115 lines. | `backend/src/db/migrate.js` |
+| 4. `db.js` | Opens the DB, sets WAL / `foreign_keys` / `busy_timeout = 2000`, calls `migrate(raw)`, then runs the startup integrity check; wrapper classes, `Db` methods and `module.exports = db` unchanged. 224 lines. | `backend/src/db.js:107-224` |
+| 5. `schema-baseline.test.js` | Baseline-only temp directory, application-schema dump excluding `sqlite_%` and `tbl_name = 'schema_migrations'`, deep-equal against the captured dump; a second test pins the metadata table. | `backend/test/db/schema-baseline.test.js:30-86` |
+| 6. Existing-DB test | Executes `000_baseline.sql` directly, snapshots `sqlite_master`, runs `runMigrations`, asserts pre-existing objects are unchanged and `010`/`011` applied. | `backend/test/db/migrate.test.js:295-321` |
+| 7. `010` + `011` | Nine tables, twelve indexes, CHECK / UNIQUE / composite-PK constraints (inventory in 14.5). | `010_platform_tables.sql` (95 lines), `011_ingestion_tables.sql` (31 lines) |
+| 8. Startup integrity check | `PRAGMA integrity_check` must return exactly `ok` in every environment; per-user counter vs maximum row version comparison, environment-dependent handling (14.4). | `backend/src/db.js:120-222`; tests `migrate.test.js:371-438` |
+| 9. `TABLES.md`, full suite, handoff | `TABLES.md` written and extended with the table inventory; suite green (14.6); handoff recorded in `tracking/state/WS-FND.md`. | `backend/src/db/TABLES.md` |
+
+### 14.2 Baseline comparison method and evidence
+The pre-change `db.js` was executed once against a fresh temp DB and the query `SELECT type, name, tbl_name, sql FROM sqlite_master WHERE name NOT LIKE 'sqlite_%' ORDER BY type, name` was captured (30 objects). The test re-runs that query on a database whose only applied migration is `000_baseline.sql` (the file is copied alone into a temp directory by `baselineOnlyDir()`) and compares with `assert.deepEqual` against the literal array — **no whitespace normalisation**, so any byte-level difference in a `sql` string fails. The comparison also excludes `tbl_name = 'schema_migrations'` (created by the runner, absent from the baseline) and asserts the excluded objects are exactly `schema_migrations` plus its autoindex. This is stricter than §11's "collapse whitespace" mitigation.
+
+### 14.3 Migration runner behaviour (as implemented)
+- Order: every `*.sql` under `backend/src/db/migrations/`, sorted by an explicit lexical comparator (`migrate.js:37-43`); a missing directory yields an empty list.
+- Metadata: `CREATE TABLE IF NOT EXISTS schema_migrations (id TEXT PRIMARY KEY, checksum TEXT NOT NULL, applied_at TEXT NOT NULL DEFAULT (datetime('now')))` (`migrate.js:27-31`). §5 wrote only `schema_migrations(id TEXT PK, applied_at)`; the `checksum` column is required by §6 step 3.
+- Checksum: lowercase hex sha-256 of the UTF-8 file text (`migrate.js:33-35`).
+- Transactions: `BEGIN IMMEDIATE` … `COMMIT` per file, `ROLLBACK` on error, the row is inserted only after the statements succeed (`migrate.js:94-104`); a rollback failure is swallowed so the original error surfaces (`migrate.js:50-57`).
+- Refusals: `MIGRATION_CHECKSUM_MISMATCH` when a recorded file's content changed (`migrate.js:85-92`); `MIGRATION_FILE_MISSING` when a recorded id has no file (`migrate.js:69-78`) — the second guard is **not** in this plan, but without it a deleted migration would be silently skipped on existing databases and re-applied on new ones.
+- Interface: `migrate(rawDb) -> { applied: string[] }`; `runMigrations(raw, dir)` is the directory seam the tests use; `sha256` and `MIGRATIONS_DIR` are also exported (`migrate.js:59-115`).
+
+### 14.4 Startup integrity check behaviour (as implemented)
+- `PRAGMA integrity_check` must return a single row equal to `'ok'`; anything else, including a `PRAGMA` error, raises `STARTUP_INTEGRITY_CHECK_FAILED` in **every** environment (`db.js:166-180`).
+- The counter check reads every row of `user_state_versions` and compares each counter with the maximum row version it stamps, treating missing/NULL as 0 (`db.js:182-208`).
+- Environment policy (`db.js:160-164`, `210-220`): `development` (also the default for unset or unrecognised `NODE_ENV`) logs `[db] VERSION_COUNTER_INCONSISTENT: … (development: continuing)` and continues; `test` throws; `production` writes the same message to stderr via `console.error` and throws.
+- The check runs at module load (`db.js:222`), so it runs for every importer including tests, and it throws rather than calling `process.exit` because test files require `db.js` at import time.
+- Tested three ways (`migrate.test.js:371-438`, each starting the real module in a worker thread with an `env` override): a fresh database starts and records all three migrations; an inconsistent database refuses under `NODE_ENV=test`; the same database only warns under `NODE_ENV=development`.
+
+### 14.5 Schema inventory added (exact)
+`010_platform_tables.sql`: `tool_results`, `intent_tokens`, `event_deliveries`, `jobs`, `jobs_dead_letter`, `traces`, `rolling_summaries`.
+`011_ingestion_tables.sql`: `ingestion_batches`, `ingestion_errors`.
+Indexes (12): `idx_tool_results_user_request`, `idx_tool_results_reuse`, `idx_intent_tokens_user`, `idx_event_deliveries_pending`, `idx_jobs_due`, `idx_jobs_user`, `idx_jobs_dead_letter_kind`, `idx_traces_user_started`, `idx_rolling_summaries_user`, `idx_ingestion_batches_user`, `idx_ingestion_batches_status`, `idx_ingestion_errors_batch`.
+Column-level definitions, CHECK constraints, primary keys and unique constraints are listed in `backend/src/db/TABLES.md`, section "New table inventory", and asserted at `migrate.test.js:191-294`.
+
+### 14.6 Test results
+| Command | Result | Note |
+| --- | --- | --- |
+| `npm --prefix backend test` | 30 tests, 30 pass, 0 fail | Full-filesystem run, **before** the three startup-integrity tests existed. This command cannot be re-run in the restricted sandbox: the runner spawns one process per file and the sandbox denies it. Re-verified 2026-10-17: `5 tests, 0 pass, 5 fail`, every failure `Error: spawn EPERM` at the spawn step — one failed process per test file, no test body executed, so this is an execution-environment result, not a product-code failure. |
+| `node --test --test-isolation=none test/temp-db.test.js test/routes-inventory.test.js test/legacy-v1-specs.test.js test/db/migrate.test.js test/db/schema-baseline.test.js` (from `backend/`) | 33 tests, 33 pass, 0 fail, exit 0 | Verified 2026-10-17. Same five files and assertions as §9, run in one runner process without per-file process isolation. |
+| The same five files, one `node --test --test-isolation=none <file>` each | 4/4, 4/4, 7/7, 16/16, 2/2 | Per-file confirmation of the 33 total. |
+| `node backend/test-v1-specs.js` with a temp `DB_PATH` | ALL SPECIFICATION VERIFICATION TESTS PASSED! (exit 0) | Verified 2026-10-17. |
+| `npx oxlint` | 152 warnings, 0 errors, exit 0 | Non-blocking, per the WS-FND-P1 CI convention. |
+| `npm run build` | passes with full filesystem access (built in 1.42s); **fails in the restricted sandbox** | Sandbox failure is `failed to load config from … vite.config.js` / `[plugin externalize-deps] Error: spawn EPERM` inside vite's `optimizeSafeRealPathSync`. It is an execution-environment restriction, not a product-code failure: this plan changes no file under `src/` or `vite.config.js`. |
+
+New test files: `backend/test/db/migrate.test.js` (16 tests) and `backend/test/db/schema-baseline.test.js` (2 tests). §9 names a third, `test/db/new-tables.test.js`, which §4 does not list; its constraint tests were folded into `migrate.test.js`.
+
+### 14.7 Deviations from this plan and from Doc 2 §3
+| Item | §5 / Doc 2 wrote | Implemented | Status |
+| --- | --- | --- | --- |
+| `tool_results` | §5: `params_json, result_json, status`; Doc 2 §3.5: `params, params_hash, snapshot_id, envelope` | Doc 2 columns, **no** `status` (status is part of the `SentinelResult@1` envelope, SC §10.2); extra index `(function, params_hash, snapshot_id)` for SC §10.3 reuse | Doc 2 verified; the index is an addition |
+| `intent_tokens` | §5: `token PK` | `token_hash TEXT PRIMARY KEY` (sha-256), no plaintext column | Doc 2 §3.4 + WS-PLT-P1 verified; **differs from §5 on a security boundary — owner approval required** |
+| `jobs` / `jobs_dead_letter` | §5: job-queue shape; Doc 2 §3.5: `job_name`/`last_run_at`/`last_status`, `jobs_dead_letter(id, source, ref, error, created_at)` | §5 queue shape (`job_id PK, kind, user_id, run_at, locked_until, attempts, payload_json, status`) and `jobs_dead_letter(job_id PK, kind, payload_json, last_error, failed_at)` | **Doc 2 amendment and owner approval required** |
+| `traces` | §5: `span_id PK`; Doc 2: `PK(trace_id, span_id)` | `PK(trace_id, span_id)` + `parent_span_id` | Doc 2 verified for the key; `parent_span_id` comes from WS-FND-P3 |
+| `rolling_summaries` | §5: `summary_text` | `summary` with `CHECK (length(summary) <= 800)`, `through_turn_id`/`updated_at` `NOT NULL` | Doc 2 §3.5 verified |
+| `ingestion_batches` / `ingestion_errors` | §5: `source, format, counts_json`, `UNIQUE(user_id, idempotency_key)`; Doc 2: `UNIQUE(tenant_id, idempotency_key)`, `PK(batch_id, row_index)` | Doc 2 columns, `UNIQUE(user_id, idempotency_key)`, `PK(batch_id, row_index, code)` + `field`/`detail` | **Doc 2 amendment required for both keys; owner approval required** |
+
+Other recorded deviations:
+- §6 step 1's fixture path `backend/test/fixtures/fnd/schema-before.json` is outside §4's file table, so the golden dump is embedded in `schema-baseline.test.js:28` with a header comment at `:6-13`. **Owner approval required** for the artifact-path deviation.
+- §7's ".js migration" support (guarded `ALTER TABLE … ADD COLUMN`) is **not implemented**; the runner applies `.sql` files only. **Owner decision required** if a consumer needs it before merge.
+- `tenant_id TEXT NOT NULL DEFAULT 'demo'` was added to all nine new tables (Doc 2 §3); baseline tables still lack it (out of scope until WS-FND-P5).
+- `busy_timeout = 2000` was added (`db.js:111`), which §3 requires and the baseline lacked.
+
+### 14.8 Owner decisions required before consumers rely on the affected contracts
+1. **Counter-to-row-version mapping** (§6 step 8): `ledger_version` ↔ `transactions_v1.categorized_version` + `categorization_history.version`; `plan_version` ↔ `goals_v1.version` + `caps_v1.version`; `profile_version` ↔ `user_profiles_v1.version` + `declared_bills_v1.version`; `rules_version` ↔ `category_rules.version`. Derived by inspecting `backend/src/engines/categorizer/index.js:56-88`, `backend/src/platform/snapshot.js:93-104` and the version-bump pairs in `backend/src/platform/action-service.js`; **documented nowhere**. Doc 2 §3.1 instead names `categorization_version` and `balance_version`, neither of which exists in the baseline.
+2. **Startup behaviour for inconsistent counters** (§6 step 8 vs §11): §11 says warn-only in development and strict in test; §6 says "log + refuse start in non-test env". Implemented warn in development, throw in test, throw in production; unset `NODE_ENV` is treated as development. **Owner approval required** for the production half and the default.
+3. **`intent_tokens.token_hash`** vs §5's plaintext `token` — security boundary; WS-PLT-P1 is the consumer and has not reviewed the table.
+4. **`jobs` / `jobs_dead_letter`** shape and the Doc 2 §3.5 amendment; consumers WS-FND-P3 (queue + dead letter) and SC §13.6.
+5. **`ingestion_batches` uniqueness** — `UNIQUE(user_id, idempotency_key)` vs Doc 2's `UNIQUE(tenant_id, idempotency_key)`; consumer WS-CAT-P2.
+6. **`ingestion_errors` primary key** — `(batch_id, row_index, code)` vs Doc 2's `(batch_id, row_index)`; consumer WS-CAT-P2.
+7. **Embedded schema fixture** vs the §6 step 1 path — owner approval for the deviation, or a follow-up commit adding the fixture.
+8. **JavaScript migrations** — required before merge, or deferred to WS-FND-P3.
+9. **Duplicate summary authority** — `chat_threads.rolling_summary` (baseline) and `rolling_summaries` (new) both exist; WS-JON must choose one and WS-FND-P5 must delete the other.
+
+### 14.9 Known limitations
+- `.sql` migrations only; no `.js` migration support (§7).
+- No `balance_version` counter (Doc 2 §3.1) in the schema, so the integrity check cannot verify it.
+- The golden baseline schema lives inside a test file, not at the planned fixture path.
+- Two rolling-summary authorities exist until WS-JON/WS-FND-P5 resolves them.
+
+### 14.10 Risks (observed, not hypothetical)
+- The nine new tables are shared schema consumed by WS-FND-P3, WS-PLT-P1, WS-CAT-P2 and WS-JON; none has reviewed the shape, so a mismatch surfaces at runtime rather than at build time.
+- The counter mapping is inferred from call sites; a write path that bumps a row version without its counter (for example `backend/src/platform/profile.js:99-108`, `124-135`) is not detected, and a production throw on a legacy developer database blocks startup until counters are repaired.
+- Merged migration files are immutable: any later edit to `000`/`010`/`011` aborts startup on every existing database with `MIGRATION_CHECKSUM_MISMATCH`.
+- Local `main` is at `8e8521a` while `origin/main` is `10bcba8`; the PR must target `origin/main` so the diff stays at the eight P2 files.
+
+### 14.11 Integration instructions for consumers
+Migrations run automatically at module load of `backend/src/db.js`; nothing is run by hand. On first start against any database `schema_migrations` records, in this order, with these checksums:
+
+| id | sha-256 |
+| --- | --- |
+| `000_baseline.sql` | `f9cf36f87dde6eac31f0ff13b46746187ec184401c0a6ce95f993026dcc5bbb7` |
+| `010_platform_tables.sql` | `111731fe2b096669281f8a3eb411ed37499dea8aacf51a79fe2d875ff64a9923` |
+| `011_ingestion_tables.sql` | `e6c59ae8cf6d4ab265abe02641080b494e72726d6fc040cef9ab87b38a6c2e19` |
+
+Existing databases upgrade in place (`000` is `IF NOT EXISTS` and a no-op; `010`/`011` create the new objects). New migrations take the next free number in the author's range. No environment variable, seed step or route changes; the route inventory is unchanged (25 routes, `routes-inventory.test.js` 4/4). Read `backend/src/db/TABLES.md` before writing queries against the new tables.

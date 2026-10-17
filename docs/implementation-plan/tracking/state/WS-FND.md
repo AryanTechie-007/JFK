@@ -6,13 +6,13 @@ Fed to every new coding session for this workstream (Template A `[STATE FILE]`).
 | --- | --- |
 | Developer | Dev A — Abhilash (@Falterred) |
 | Branch prefix | `ws-fnd/p<n>-<slug>` |
-| Current plan | WS-FND-P1 — **Complete** (2026-10-16); next: WS-FND-P2 |
+| Current plan | WS-FND-P2 — implementation complete on `ws-fnd/p2-migrations`, no PR yet (2026-10-17); next: WS-FND-P3 |
 
 ## 1. Sequence overview
 | Local | Plan ID | Title | Objective (short) | Depends on | Status |
 | --- | --- | --- | --- | --- | --- |
 | Plan 1 | WS-FND-P1 | Baseline, Guardrails and Route Split | Give every other workstream a safe place to work: specs and design on `main` (done at initialisation), a real test runner on temporary databases, CI, CODEOWNERS, and one route file per domain… | A-ARCH, C-1 | Complete |
-| Plan 2 | WS-FND-P2 | Migrations Framework and Schema Gaps | Replace the inline `CREATE TABLE IF NOT EXISTS` block in `backend/src/db.js` with versioned SQL migrations, reproduce today's schema exactly, and add the tables the… | WS-FND-P1 | Ready |
+| Plan 2 | WS-FND-P2 | Migrations Framework and Schema Gaps | Replace the inline `CREATE TABLE IF NOT EXISTS` block in `backend/src/db.js` with versioned SQL migrations, reproduce today's schema exactly, and add the tables the… | WS-FND-P1 | In progress (implementation complete; no PR) |
 | Plan 3 | WS-FND-P3 | Event Dispatcher, Tool-Result Store, Traces and LLM Adapter | Build the shared plumbing every component needs and the source baseline lacks: outbox event append + dispatcher with retries and dead letter (G-3), persistent tool results with… | C-1, U-2, WS-FND-P2 | Blocked |
 | Plan 4 | WS-FND-P4 | Demo Dataset and Seed | Produce the labelled synthetic dataset and a one-command reset so every demo, golden test and E2E run starts from identical, independently verified state (prototype… | WS-CAT-P2, WS-FND-P2, WS-PLT-P1 | Blocked |
 | Plan 5 | WS-FND-P5 | Legacy Retirement and Single-Server Desktop | Make the prototype one server and one database (ADR-01, P-AC-01): delete Backend B, legacy REST routes, the Gemini coach route, legacy tables and sync code, and the… | WS-CAT-P2, WS-FND-P3, WS-JON-P1, WS-PLT-P1, WS-UI-P1, WS-UI-P2, WS-UI-P3 | Blocked |
@@ -23,6 +23,11 @@ Plan files: `docs/implementation-plan/workstreams/WS-FND/`. Status of record: `t
 ## 2. Interfaces this workstream consumes / produces
 See the rows naming WS-FND in `cross-workstream-dependencies.md`. Record here the merged contract files as they land:
 - (none merged yet — WS-FND-P1 produces no shared contract files; its test helpers `setupTempDb()`, `loadApp()`, `signup()`, `createUser()` and `authed()` are the frozen harness other workstreams test against)
+- WS-FND-P2 (branch only, not merged) adds the migration interface `migrate(rawDb) -> { applied: string[] }` +
+  `runMigrations(raw, dir)`, the metadata table `schema_migrations`, the numbering ranges, and nine new tables —
+  `tool_results`, `intent_tokens`, `event_deliveries`, `jobs`, `jobs_dead_letter`, `traces`, `rolling_summaries`,
+  `ingestion_batches`, `ingestion_errors`. Six of those definitions are **not approved contracts** (see
+  `backend/src/db/TABLES.md` §“Approval status” and plan §14.8).
 
 ## 3. Decisions and assumptions in force
 - **Source-baseline import (D-PLAN-3): resolved 2026-10-16** — import commit `645355c` is merged into `main` (PR #1), so this sequence is no longer blocked (`../../../repository-migration-notes.md` §5).
@@ -43,3 +48,41 @@ See the rows naming WS-FND in `cross-workstream-dependencies.md`. Record here th
 - Unblocks: WS-FND-P2, WS-CAT-P1, WS-SEN-P1, WS-UI-P1 (WS-SEN-P2 still waits on WS-SEN-P1).
 - Note: `backend/test/live/.gitkeep` and `backend/test/temp-db.test.js` were created because the plan
   text requires them though plan §4 omits them; `npx oxlint` stays non-blocking until WS-FND-P6.
+### WS-FND-P2 — Migrations Framework and Schema Gaps — implemented 2026-10-17, not merged
+- Branch `ws-fnd/p2-migrations`, commits `0a8b1c9` (runner + baseline schema) and `cc762b0` (platform
+  and ingestion tables + `TABLES.md`); two ahead of the merged P1/docs commit `10bcba8`, **not pushed**,
+  no PR, no review. Local `main` is still `8e8521a`; a PR must target `origin/main` (`10bcba8`).
+- Implemented all nine plan §6 steps: `000_baseline.sql` (392 lines, verbatim pre-migration DDL),
+  `migrate.js` (lexical order, sha-256 in `schema_migrations`, per-file transaction + rollback,
+  `MIGRATION_CHECKSUM_MISMATCH`, `MIGRATION_FILE_MISSING`), `db.js` = open + pragmas (WAL,
+  `foreign_keys`, `busy_timeout = 2000`) + `migrate` + startup integrity check, `010`/`011` with
+  constraints and indexes, exact baseline test, existing-database test, `TABLES.md`.
+- Schema added: 9 tables (`tool_results`, `intent_tokens`, `event_deliveries`, `jobs`,
+  `jobs_dead_letter`, `traces`, `rolling_summaries`, `ingestion_batches`, `ingestion_errors`) and 12
+  indexes. Checksums: `000` `f9cf36f8…bbb7`, `010` `111731fe…9923`, `011` `e6c59ae8…e19`. The full
+  inventory is in `backend/src/db/TABLES.md`.
+- Tests, verified 2026-10-17: `node --test --test-isolation=none` over the five files from
+  `backend/` → **33 tests, 33 pass, 0 fail, exit 0** (temp-db 4/4, routes-inventory 4/4,
+  legacy-v1-specs 7/7, migrate 16/16, schema-baseline 2/2); `node backend/test-v1-specs.js` on a temp
+  `DB_PATH` → ALL SPECIFICATION VERIFICATION TESTS PASSED; `npx oxlint` → 152 warnings, 0 errors.
+  `npm --prefix backend test` reported 30/30 in the earlier full-access session, before the three
+  startup-integrity tests existed; it cannot run in the restricted sandbox — re-verified 2026-10-17 it
+  reports `5 tests, 0 pass, 5 fail` with `Error: spawn EPERM` on every test file at the spawn step and
+  no test body executed, so that is an execution-environment result, not a product failure. `npm run build`
+  passes with full access and is blocked by the same sandbox restriction, which is unrelated to this
+  plan (no change under `src/` or `vite.config.js`).
+- Evidence locations: `backend/test/db/migrate.test.js` (438 lines), `backend/test/db/schema-baseline.test.js`
+  (86 lines), plan §14 (14.6 commands and results, 14.7 deviations), `backend/src/db/TABLES.md`.
+- Unresolved owner decisions (details in plan §14.8 and `TABLES.md` "Approval status"): counter-to-row-version
+  mapping (inferred, documented nowhere; Doc 2 names `categorization_version`/`balance_version` which do
+  not exist); environment policy for inconsistent counters (dev warn, test/production throw — plan §6
+  step 8 vs §11 contradict); `intent_tokens.token_hash` vs plan §5's plaintext `token` (security
+  boundary); `jobs`/`jobs_dead_letter` shape needing a Doc 2 §3.5 amendment; `ingestion_batches`
+  UNIQUE key (`user_id` vs Doc 2's `tenant_id`); `ingestion_errors` PK (`(batch_id, row_index, code)`);
+  golden schema embedded in a test instead of §6 step 1's fixture path; no JavaScript-migration support
+  (plan §7); duplicate summary authority (`chat_threads.rolling_summary` vs `rolling_summaries`).
+- Also required before this is "Complete" per `tracking/README.md` §3: push the branch, open the PR
+  against `origin/main` with the handoff as description, the D-PLAN-8 independent review (mandatory for
+  this plan), and CI green on `main` after merge. WS-FND-P3, WS-FND-P4, WS-CAT-P2 and WS-PLT-P1 stay
+  blocked until then even though the migration infrastructure works locally.
+
