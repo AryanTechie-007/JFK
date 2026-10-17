@@ -71,6 +71,12 @@ export const api = {
     });
   },
 
+  delete: (endpoint) => {
+    return request(endpoint, {
+      method: 'DELETE',
+    });
+  },
+
   /* Workspace Read Routes */
   getWorkspace: (name, params = {}) => api.get(`/workspaces/${name}`, params),
   getSentinelOverview: () => api.get('/workspaces/sentinel/overview'),
@@ -79,23 +85,40 @@ export const api = {
   getSentinelForecast: (params = {}) => api.get('/workspaces/sentinel/forecast', params),
   getJohnHealthStrip: () => api.get('/workspaces/john'),
 
+  /* Categorizer Routes */
+  getTaxonomy: () => api.get('/categorizer/taxonomy'),
+  getReviewQueue: () => api.get('/categorizer/review-queue'),
+  getCategorizerStatus: () => api.get('/categorizer/status'),
+
   /* Proposals (T2/T3 forms) */
-  submitProposal: ({ action, params }) => api.post('/proposals', { action, params }),
+  submitProposal: ({ action, params }) => api.post('/actions/propose', { action_type: action, params }),
   confirmProposal: (proposalId, { params_hash, ack = false } = {}) =>
-    api.post(`/proposals/${proposalId}/confirm`, { params_hash, ack }),
-  declineProposal: (proposalId) => api.post(`/proposals/${proposalId}/decline`),
+    api.post('/actions/execute', { proposal_id: proposalId, params_hash, ack }),
+  declineProposal: (proposalId) => api.post('/actions/execute', { proposal_id: proposalId, status: 'DECLINED' }),
 
   /* Instant Actions (T1 taps) */
-  executeAction: ({ action, params, idempotency_key = crypto.randomUUID() }) =>
-    api.post('/actions', { action, params, idempotency_key }),
+  executeAction: ({ action, params, idempotency_key = (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'act_' + Date.now()) }) =>
+    api.post('/actions/execute', { action_type: action, params, idempotency_key }),
   undoAction: (actionId) => api.post(`/actions/${actionId}/undo`),
+
+  /* Settings, Profile & Memory Facts */
+  getSettings: () => api.get('/settings'),
+  getCategoryRules: () => api.get('/settings/category-rules'),
+  getMemoryFacts: () => api.get('/settings/memory-facts'),
+  addMemoryFact: (text) => api.post('/memory/facts', { text }),
+  deleteMemoryFact: (factId) => api.delete(`/memory/facts/${factId}`),
+  getProfile: () => api.get('/profile').catch(() => api.get('/settings').then(s => ({ profile: s?.profile }))),
+  getPreferences: () => api.get('/preferences').catch(() => api.get('/settings').then(s => ({ preferences: s?.profile }))),
+
+  /* Ingestion */
+  ingestBatch: (data) => api.post('/ingest/batch', data),
+  ingestManual: (data) => api.post('/ingest/manual', data),
 
   /* System & Context */
   getHealth: () => api.get('/health'),
-  getNotifications: () => api.get('/notifications'),
-  getAlerts: (params = {}) => api.get('/alerts', params),
-  getProfile: () => api.get('/profile'),
-  getPreferences: () => api.get('/preferences'),
+  getNotifications: () => api.get('/notifications').catch(() => ({ notifications: [] })),
+  getAlerts: (params = {}) => api.get('/alerts', params).catch(() => ({ alerts: [] })),
 };
 
 export default api;
+

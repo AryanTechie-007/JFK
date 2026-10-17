@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { Sparkles, Target, DollarSign, User, AlertCircle, Loader2, ShieldCheck } from 'lucide-react';
-import { profileService } from '../services/profileService';
-import { goalService } from '../services/goalService';
-import { subscriptionService } from '../services/subscriptionService';
+import { api } from '../services/api/v1';
 import InteractiveSpotsBackground from './InteractiveSpotsBackground';
 
 export default function OnboardingView({ initialData, onCompleteOnboarding, isDarkMode = false }) {
@@ -133,29 +131,57 @@ export default function OnboardingView({ initialData, onCompleteOnboarding, isDa
     };
 
     try {
-      // Send onboarding profile to backend API (POST /api/profile/onboarding)
-      const profileResult = await profileService.saveOnboarding({
-        ...onboardingProfile,
-        initialGoal,
+      // 1. Update Profile via v1 Action Service (T1/T2)
+      await api.executeAction({
+        action: 'UPDATE_USER_PROFILE',
+        params: {
+          display_name: name,
+          declared_income_minor: Math.round(numIncome * 100),
+        },
       });
 
-      // Save initial goal to backend API (POST /api/goals)
-      await goalService.createGoal(initialGoal);
+      // 2. Update Preferences
+      await api.executeAction({
+        action: 'UPDATE_USER_PREFERENCES',
+        params: {
+          risk_comfort: (riskProfile || 'BALANCED').toUpperCase(),
+          llm_processing_consent: true,
+        },
+      });
 
-      // Save user-entered subscriptions to backend API
+      // 3. Create initial goal
+      try {
+        await api.executeAction({
+          action: 'CREATE_GOAL',
+          params: {
+            name: primaryGoalName,
+            target_minor: Math.round(numTarget * 100),
+            monthly_add_minor: Math.round(numMonthlyAlloc * 100),
+            priority: 'HIGH',
+          },
+        });
+      } catch (_) {}
+
+      // 4. Save declared recurring bills
       if (subscriptionsList.length > 0) {
         for (const sub of subscriptionsList) {
           try {
-            await subscriptionService.addSubscription(sub);
+            await api.executeAction({
+              action: 'CREATE_DECLARED_BILL',
+              params: {
+                label: sub.name,
+                amount_minor: Math.round(sub.amount * 100),
+                cadence: 'MONTHLY',
+                next_due_date: new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10),
+              },
+            });
           } catch (_) {}
         }
       }
 
-      const finalProfile = profileResult.profile || onboardingProfile;
-      onCompleteOnboarding(finalProfile, initialGoal);
+      onCompleteOnboarding(onboardingProfile, initialGoal);
     } catch (err) {
       console.warn('Backend onboarding API exception:', err);
-      // Fallback completion so user flow remains responsive
       onCompleteOnboarding(onboardingProfile, initialGoal);
     } finally {
       setIsLoading(false);

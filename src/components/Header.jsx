@@ -1,7 +1,8 @@
 import React from 'react';
 import { RefreshCw, Zap } from 'lucide-react';
+import NotificationBell from './NotificationBell';
 
-export default function Header({ activeTab, onSync, onOpenImportModal, userProfile }) {
+export default function Header({ activeTab, onSync, onNavigateToWorkspace, userProfile }) {
   const getTabInfo = () => {
     switch (activeTab) {
       case 'john':
@@ -43,16 +44,7 @@ export default function Header({ activeTab, onSync, onOpenImportModal, userProfi
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        {onOpenImportModal && (
-          <button 
-            onClick={onOpenImportModal}
-            className="btn btn-secondary btn-sm"
-            style={{ color: 'var(--accent-emerald)', fontWeight: '700' }}
-            title="Import Bank Statement or CSV"
-          >
-            <span>+ Import Feed</span>
-          </button>
-        )}
+        <NotificationBell onNavigateToWorkspace={onNavigateToWorkspace} />
 
         {onSync && (
           <button 
@@ -86,3 +78,4 @@ export default function Header({ activeTab, onSync, onOpenImportModal, userProfi
     </header>
   );
 }
+

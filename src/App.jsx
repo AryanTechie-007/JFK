@@ -6,10 +6,9 @@ import SentinelWorkspace from './workspaces/sentinel/SentinelWorkspace';
 import IrisWorkspace from './workspaces/iris/IrisWorkspace';
 import AtlasWorkspace from './workspaces/atlas/AtlasWorkspace';
 import NovaWorkspace from './workspaces/nova/NovaWorkspace';
-import SettingsView from './components/SettingsView';
+import SettingsPage from './workspaces/settings/SettingsPage';
 import AuthView from './components/AuthView';
 import OnboardingView from './components/OnboardingView';
-import StatementImportModal from './components/StatementImportModal';
 import { authService } from './services/authService';
 import { api } from './services/api/v1';
 import { Target, Sparkles } from 'lucide-react';
@@ -106,7 +105,6 @@ export default function App() {
   const [goals, setGoals] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [toastMessage, setToastMessage] = useState(null);
-  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   // Theme mode: 'system' | 'light' | 'dark'
   const [themeMode, setThemeMode] = useState(() => {
@@ -142,17 +140,6 @@ export default function App() {
   const showNotification = (title, detail) => {
     setToastMessage({ title, detail });
     setTimeout(() => setToastMessage(null), 3500);
-  };
-
-  const handleImportSuccess = (importedLines, count) => {
-    if (importedLines && importedLines.length > 0) {
-      setTransactions(prev => [...importedLines, ...(prev || [])]);
-    }
-
-    showNotification(
-      'Statement Ingested Successfully',
-      `Imported ${count} transactions into live record.`
-    );
   };
 
   // Check authentication session on application startup
@@ -339,7 +326,7 @@ export default function App() {
       case 'subscriptions':
       case 'analyser':
       case 'health':
-        return <SentinelWorkspace userProfile={userProfile} onOpenImportModal={() => setIsImportModalOpen(true)} />;
+        return <SentinelWorkspace userProfile={userProfile} />;
       case 'nova':
         return <NovaWorkspace budgets={budgets} setBudgets={setBudgets} userProfile={userProfile} setUserProfile={setUserProfile} />;
       case 'atlas':
@@ -348,15 +335,12 @@ export default function App() {
         return <IrisWorkspace userProfile={userProfile} />;
       case 'settings':
         return (
-          <SettingsView 
+          <SettingsPage 
             userProfile={userProfile}
             setUserProfile={setUserProfile}
-            budgets={budgets}
-            setBudgets={setBudgets}
             showNotification={showNotification}
             themeMode={themeMode}
             setThemeMode={setThemeMode}
-            isDarkMode={isDarkMode}
           />
         );
       default:
@@ -381,20 +365,13 @@ export default function App() {
             activeTab={activeTab} 
             userProfile={userProfile}
             onSync={() => showNotification("Refreshed", "Workspace views refreshed.")} 
-            onOpenImportModal={() => setIsImportModalOpen(true)}
+            onNavigateToWorkspace={(tab) => setActiveTab(tab)}
           />
 
           <div className="content-body">
             {renderActiveView()}
           </div>
         </main>
-
-        <StatementImportModal
-          isOpen={isImportModalOpen}
-          onClose={() => setIsImportModalOpen(false)}
-          onImportSuccess={handleImportSuccess}
-          userProfile={userProfile}
-        />
 
         {toastMessage && (
           <div style={{
