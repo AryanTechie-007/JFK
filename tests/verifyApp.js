@@ -17,7 +17,7 @@ const MODULE_CHECKS = [
     type: 'Agent',
     name: 'Nova — Real-Time Budget Guardian (V4)',
     testFile: 'src/agents/nova/nova.test.js',
-    uiFile: 'src/agents/nova/NovaGuardianView.jsx'
+    uiFile: 'src/workspaces/nova/NovaWorkspace.jsx'
   },
   {
     id: 'john',
@@ -25,7 +25,7 @@ const MODULE_CHECKS = [
     type: 'Agent',
     name: 'John — Master Orchestrator & Coach',
     testFile: 'src/agents/john/john.test.js',
-    uiFile: 'src/agents/john/JohnCoachDashboard.jsx'
+    uiFile: 'src/workspaces/john/JohnWorkspace.jsx'
   },
   {
     id: 'iris',
@@ -33,7 +33,7 @@ const MODULE_CHECKS = [
     type: 'Agent',
     name: 'Iris — Subscription & Recurring Bill Specialist',
     testFile: 'src/agents/iris/iris.test.js',
-    uiFile: 'src/agents/iris/IrisAdvisorView.jsx'
+    uiFile: 'src/workspaces/iris/IrisWorkspace.jsx'
   },
   {
     id: 'atlas',
@@ -41,7 +41,7 @@ const MODULE_CHECKS = [
     type: 'Agent',
     name: 'Atlas — Long-Term Goal & Savings Strategist',
     testFile: 'src/agents/atlas/atlas.test.js',
-    uiFile: 'src/agents/atlas/AtlasStrategistView.jsx'
+    uiFile: 'src/workspaces/atlas/AtlasWorkspace.jsx'
   },
   {
     id: 'sentinel',
@@ -49,7 +49,7 @@ const MODULE_CHECKS = [
     type: 'Tool',
     name: 'Sentinel — Deterministic Calculator & Predictor',
     testFile: 'src/tools/sentinel/sentinel.test.js',
-    uiFile: 'src/tools/sentinel/SentinelPredictorView.jsx'
+    uiFile: 'src/workspaces/sentinel/SentinelWorkspace.jsx'
   },
   {
     id: 'tally',
@@ -57,7 +57,7 @@ const MODULE_CHECKS = [
     type: 'Tool',
     name: 'Tally — Categorization & Spending Analyser',
     testFile: 'src/tools/tally/tally.test.js',
-    uiFile: 'src/tools/tally/SpendingAnalyserView.jsx'
+    uiFile: 'src/workspaces/sentinel/SpendingSection.jsx'
   },
   {
     id: 'threshold-job',

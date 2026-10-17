@@ -53,6 +53,8 @@ describe('SEN-AC-01: SentinelResult@1 Envelope Conformance Across All 17 Functio
       assert.equal(res.function, name, 'function field must match called function name');
       assert.equal(res.snapshot_id, snap.snapshot_id, 'snapshot_id must match snapshot');
       assert.equal(res.model_version, MODEL_VERSION, 'model_version must match Sentinel model version');
+      assert.ok(typeof res.categorization_version === 'number', 'categorization_version must be a number');
+      assert.ok(typeof res.params_hash === 'string' && res.params_hash.length > 0, 'params_hash must be non-empty');
       assert.ok(['OK', 'PARTIAL', 'INSUFFICIENT_DATA', 'ERROR'].includes(res.status), `valid status: ${res.status}`);
       assert.ok(res.data_quality && typeof res.data_quality === 'object', 'data_quality object must be present');
       assert.ok(Array.isArray(res.warnings), 'warnings must be an array');
