@@ -3,7 +3,7 @@ import { Bell, AlertTriangle, ShieldAlert, Check, ExternalLink } from 'lucide-re
 import { api } from '../services/api/v1';
 import { formatDate } from '../lib/format';
 
-export default function NotificationBell({ onNavigateToWorkspace }) {
+export default function NotificationBell({ onNavigateToWorkspace, onExplainAlert }) {
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -157,6 +157,17 @@ export default function NotificationBell({ onNavigateToWorkspace }) {
                   </div>
 
                   <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                    <button
+                      onClick={() => {
+                        if (onExplainAlert) onExplainAlert(item.alert_id || item.id);
+                        else if (onNavigateToWorkspace) onNavigateToWorkspace('john');
+                        setIsOpen(false);
+                      }}
+                      className="btn btn-primary btn-sm"
+                      style={{ fontSize: '10px', padding: '3px 8px' }}
+                    >
+                      Explain
+                    </button>
                     <button
                       onClick={() => {
                         if (onNavigateToWorkspace) onNavigateToWorkspace('nova');

@@ -2,7 +2,7 @@ import React from 'react';
 import { RefreshCw, Zap } from 'lucide-react';
 import NotificationBell from './NotificationBell';
 
-export default function Header({ activeTab, onSync, onNavigateToWorkspace, userProfile }) {
+export default function Header({ activeTab, onSync, onNavigateToWorkspace, onExplainAlert, userProfile }) {
   const getTabInfo = () => {
     switch (activeTab) {
       case 'john':
@@ -44,7 +44,7 @@ export default function Header({ activeTab, onSync, onNavigateToWorkspace, userP
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <NotificationBell onNavigateToWorkspace={onNavigateToWorkspace} />
+        <NotificationBell onNavigateToWorkspace={onNavigateToWorkspace} onExplainAlert={onExplainAlert} />
 
         {onSync && (
           <button 

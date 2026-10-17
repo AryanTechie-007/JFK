@@ -100,6 +100,7 @@ export default function App() {
 
   // Five canonical workspaces: 'john' | 'sentinel' | 'nova' | 'atlas' | 'iris' | 'settings'
   const [activeTab, setActiveTab] = useState('john');
+  const [explainAlertId, setExplainAlertId] = useState(null);
   const [userProfile, setUserProfile] = useState(EMPTY_USER_PROFILE);
   const [budgets, setBudgets] = useState([]);
   const [goals, setGoals] = useState([]);
@@ -316,9 +317,8 @@ export default function App() {
         return (
           <JohnWorkspace 
             userProfile={userProfile}
-            goals={goals} 
-            onAcceptGoal={handleAddGoalFromJohn} 
-            setActiveTab={setActiveTab}
+            onNavigateToWorkspace={(tab) => setActiveTab(tab)}
+            explainAlertId={explainAlertId}
           />
         );
       case 'sentinel':
@@ -326,7 +326,7 @@ export default function App() {
       case 'subscriptions':
       case 'analyser':
       case 'health':
-        return <SentinelWorkspace userProfile={userProfile} />;
+        return <SentinelWorkspace userProfile={userProfile} onNavigateToWorkspace={(tab) => setActiveTab(tab)} />;
       case 'nova':
         return <NovaWorkspace budgets={budgets} setBudgets={setBudgets} userProfile={userProfile} setUserProfile={setUserProfile} />;
       case 'atlas':
@@ -347,9 +347,8 @@ export default function App() {
         return (
           <JohnWorkspace 
             userProfile={userProfile}
-            goals={goals} 
-            onAcceptGoal={handleAddGoalFromJohn} 
-            setActiveTab={setActiveTab}
+            onNavigateToWorkspace={(tab) => setActiveTab(tab)}
+            explainAlertId={explainAlertId}
           />
         );
     }
@@ -366,6 +365,10 @@ export default function App() {
             userProfile={userProfile}
             onSync={() => showNotification("Refreshed", "Workspace views refreshed.")} 
             onNavigateToWorkspace={(tab) => setActiveTab(tab)}
+            onExplainAlert={(alertId) => {
+              setExplainAlertId(alertId);
+              setActiveTab('john');
+            }}
           />
 
           <div className="content-body">

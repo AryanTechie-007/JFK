@@ -12,7 +12,8 @@ import {
   XCircle,
   Eye
 } from 'lucide-react';
-import { workspaceService, formatMinorInr } from '../../services/workspaceService';
+import { api } from '../../services/api/v1';
+import { formatMinorInr } from '../../lib/format';
 import WorkspaceChatPanel from '../../components/WorkspaceChatPanel';
 import './NovaWorkspace.css';
 
@@ -49,7 +50,7 @@ export default function NovaGuardianView({ budgets = [], userProfile }) {
   const loadNovaWorkspace = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await workspaceService.getNovaWorkspace();
+      const res = await api.getNovaWorkspace();
       if (res && res.success) {
         setWorkspace(res);
       }
@@ -72,7 +73,7 @@ export default function NovaGuardianView({ budgets = [], userProfile }) {
 
     setIsSubmitting(true);
     try {
-      const res = await workspaceService.ingestManualTransaction({
+      const res = await api.ingestManualTransaction({
         rawDescription: newDesc.trim(),
         amount: amt,
         category: newCat,
@@ -106,7 +107,7 @@ export default function NovaGuardianView({ budgets = [], userProfile }) {
     const capMinor = Math.round(amtInr * 100);
 
     try {
-      const valRes = await workspaceService.validateCapChange({
+      const valRes = await api.validateCapChange({
         category_id: capCategory,
         proposed_cap_minor: capMinor,
         scope: capScope
@@ -120,7 +121,7 @@ export default function NovaGuardianView({ budgets = [], userProfile }) {
         return;
       }
 
-      await workspaceService.executeAction({
+      await api.executeAction({
         action_type: 'ADJUST_BUDGET_CAP',
         snapshot_id: workspace.snapshot_id,
         params: {
@@ -144,7 +145,7 @@ export default function NovaGuardianView({ budgets = [], userProfile }) {
   const handleConfirmRebalanceMove = async (move, targetCategoryId) => {
     if (!workspace?.snapshot_id) return;
     try {
-      await workspaceService.executeAction({
+      await api.executeAction({
         action_type: 'APPLY_REBALANCE',
         snapshot_id: workspace.snapshot_id,
         params: {
@@ -171,7 +172,7 @@ export default function NovaGuardianView({ budgets = [], userProfile }) {
   const handleDismissAlert = async (alertId) => {
     if (!workspace?.snapshot_id) return;
     try {
-      await workspaceService.executeAction({
+      await api.executeAction({
         action_type: 'DISMISS_ALERT',
         snapshot_id: workspace.snapshot_id,
         params: { alert_id: alertId, reason: 'USER_DISMISSED' }

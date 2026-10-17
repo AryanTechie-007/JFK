@@ -13,7 +13,7 @@ import {
   ArrowUpRight,
   ArrowDownLeft,
 } from 'lucide-react';
-import { workspaceService } from '../../services/workspaceService';
+import { api } from '../../services/api/v1';
 import WorkspaceChatPanel from '../../components/WorkspaceChatPanel';
 
 function formatInrMinor(minor) {
@@ -53,7 +53,7 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
 
   const loadAtlasWorkspace = useCallback(async () => {
     try {
-      const res = await workspaceService.getAtlasWorkspace();
+      const res = await api.getAtlasWorkspace();
       setAtlasData(res);
     } catch (err) {
       console.warn('Atlas workspace fetch fallback:', err.message);
@@ -78,7 +78,7 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
     }
 
     try {
-      const res = await workspaceService.projectSip({
+      const res = await api.projectSip({
         monthly_amount_minor: monthlyMinor,
         annual_rate_bp: rateBp,
         months,
@@ -99,7 +99,7 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
     const monthlyMinor = Math.round((Number(newGoalAdd) || 0) * 100);
 
     try {
-      const valRes = await workspaceService.validateGoalAction({
+      const valRes = await api.validateGoalAction({
         operation: 'CREATE',
         name: newGoalName.trim(),
         target_minor: targetMinor,
@@ -124,7 +124,7 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
       }
 
       if (valRes.proposal) {
-        await workspaceService.executeAction({
+        await api.executeAction({
           proposal_id: valRes.proposal.proposal_id,
           confirmation_token: valRes.proposal.confirmation_token,
           action_type: 'CREATE_GOAL',
@@ -170,7 +170,7 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
       if (fundDeltaAmount && Number(fundDeltaAmount) > 0) {
         const amtMinor = Math.round(Number(fundDeltaAmount) * 100);
         const op = fundDeltaMode === 'RELEASE' ? 'RELEASE_FUNDS' : 'ADD_FUNDS';
-        const valFund = await workspaceService.validateGoalAction({
+        const valFund = await api.validateGoalAction({
           operation: op,
           goal_id: goalId,
           amount_minor: amtMinor,
@@ -190,7 +190,7 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
           return;
         }
         if (valFund.proposal) {
-          await workspaceService.executeAction({
+          await api.executeAction({
             proposal_id: valFund.proposal.proposal_id,
             confirmation_token: valFund.proposal.confirmation_token,
             action_type: op,
@@ -199,7 +199,7 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
         }
       }
 
-      const valUpdate = await workspaceService.validateGoalAction({
+      const valUpdate = await api.validateGoalAction({
         operation: 'UPDATE',
         goal_id: goalId,
         name: editName.trim(),
@@ -217,7 +217,7 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
       }
 
       if (valUpdate.proposal) {
-        await workspaceService.executeAction({
+        await api.executeAction({
           proposal_id: valUpdate.proposal.proposal_id,
           confirmation_token: valUpdate.proposal.confirmation_token,
           action_type: 'UPDATE_GOAL',
@@ -238,7 +238,7 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
     const goalId = goalObj.goal_id;
     const nextStatus = goalObj.status === 'PAUSED' ? 'ACTIVE' : 'PAUSED';
     try {
-      await workspaceService.executeAction({
+      await api.executeAction({
         action_type: 'SET_GOAL_STATUS',
         params: { goal_id: goalId, status: nextStatus },
       });
@@ -249,7 +249,7 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
   const handleDeleteGoal = async (goalObj) => {
     const goalId = goalObj.goal_id || goalObj.id;
     try {
-      await workspaceService.executeAction({
+      await api.executeAction({
         action_type: 'DELETE_GOAL',
         params: { goal_id: goalId },
         acknowledged_warnings: true,
@@ -261,7 +261,7 @@ export default function AtlasStrategistView({ goals, setGoals, userProfile }) {
 
   const handleRestoreGoal = async (goalId) => {
     try {
-      await workspaceService.executeAction({
+      await api.executeAction({
         action_type: 'RESTORE_GOAL',
         params: { goal_id: goalId },
       });

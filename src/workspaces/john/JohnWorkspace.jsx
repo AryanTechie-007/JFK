@@ -1,612 +1,326 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Bot,
-  Send,
+  Zap,
+  Calendar,
+  AlertTriangle,
+  RefreshCw,
+  Compass,
   Sparkles,
-  ChevronDown,
-  ChevronUp,
-  Target,
-  Tv,
-  CheckCircle2,
-  XCircle,
-  Plus,
-  RotateCcw,
-  ShieldCheck,
-  AlertTriangle
 } from 'lucide-react';
-import { AGENTS } from '../../lib/agents';
-import { conversationService } from '../../services/conversationService';
-import { workspaceService, formatMinorInr } from '../../services/workspaceService';
-import FormattedText from '../../components/FormattedText';
+import { api } from '../../services/api/v1';
+import { streamChat } from '../../services/api/sse';
+import { formatMinorInr } from '../../lib/format';
+import MessageList from './MessageList';
+import ThreadList from './ThreadList';
+import Composer from './Composer';
 
-export default function JohnCoachDashboard({ userProfile, goals, onAcceptGoal, setActiveTab }) {
-  const userName = userProfile?.name || 'User';
-  const surplus = userProfile?.currentSavings || (userProfile?.monthlyIncome - userProfile?.fixedExpenses) || 0;
-  const currency = userProfile?.currency || '₹';
+export default function JohnWorkspace({
+  userProfile,
+  onNavigateToWorkspace,
+  explainAlertId,
+}) {
+  const [healthStrip, setHealthStrip] = useState(null);
+  const [threads, setThreads] = useState([]);
+  const [activeThreadId, setActiveThreadId] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [partialBlocks, setPartialBlocks] = useState([]);
+  const [errorMsg, setErrorMsg] = useState('');
 
-  const [activeConversationId, setActiveConversationId] = useState(null);
-  const [conversations, setConversations] = useState([]);
+  const abortControllerRef = useRef(null);
 
-  const [messages, setMessages] = useState([
-    {
-      id: 'init-1',
-      sender: 'john',
-      text: `Hello ${userName}! I am **John (v2.0)**, your Star-Topology Financial Orchestrator.\n\nI coordinate **Sentinel v5.0** (deterministic financial truth), **Atlas v5.0** (savings goals & SIP), **Nova v5.0** (budget caps & rebalancing), and **Iris v5.0** (forward spending & bill forecasts):\n\n- **Monthly Net Income**: ${currency}${(userProfile?.monthlyIncome || 0).toLocaleString('en-IN')}\n- **Monthly Net Surplus**: ${currency}${(surplus || 0).toLocaleString('en-IN')}\n- **Financial Health Score**: **${userProfile?.healthScore || 75}/100**\n\nHow can our specialist team assist with your finances today?`,
-      hasIntervenerCard: false,
-      timestamp: 'Just now'
+  // Load John authoritative health strip (GET /api/v1/workspaces/john)
+  const loadHealthStrip = useCallback(async () => {
+    try {
+      const res = await api.getJohnHealthStrip();
+      setHealthStrip(res);
+    } catch (err) {
+      console.warn('Could not load John health strip:', err);
     }
-  ]);
-
-  const [inputQuery, setInputQuery] = useState('');
-  const [isThinking, setIsThinking] = useState(false);
-  const [expandedTraceId, setExpandedTraceId] = useState(null);
-  const [acceptedGoals, setAcceptedGoals] = useState({});
-  const [declinedGoals, setDeclinedGoals] = useState({});
-  const [executedProposals, setExecutedProposals] = useState({});
-  const [declinedProposals, setDeclinedProposals] = useState({});
-  const [lastUndoableAction, setLastUndoableAction] = useState(null);
-  const chatEndRef = useRef(null);
-
-  useEffect(() => {
-    async function loadHistory() {
-      try {
-        const res = await conversationService.getConversations();
-        if (res.success && res.conversations.length > 0) {
-          setConversations(res.conversations);
-          const latestId = res.conversations[0].id;
-          setActiveConversationId(latestId);
-
-          const convRes = await conversationService.getConversation(latestId);
-          if (convRes.success && convRes.conversation?.messages) {
-            setMessages(convRes.conversation.messages);
-          }
-        }
-      } catch (err) {
-        console.warn('Failed to load conversations from backend:', err);
-      }
-    }
-    loadHistory();
   }, []);
 
-  const scrollToBottom = () => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   useEffect(() => {
-    scrollToBottom();
-  }, [messages, isThinking]);
+    loadHealthStrip();
+  }, [loadHealthStrip]);
 
-  const handleSend = async (textToSend) => {
-    if (isThinking) return;
-    const rawVal = textToSend || inputQuery;
-    const queryText = typeof rawVal === 'string' ? rawVal : (rawVal?.query || rawVal?.label || '');
-    if (!queryText || !queryText.trim()) return;
-
-    const userMsg = {
-      id: `user-${Date.now()}`,
-      sender: 'user',
-      text: queryText,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-
-    setMessages((prev) => [...prev, userMsg]);
-    if (!textToSend) setInputQuery('');
-    setIsThinking(true);
-
-    try {
-      // Primary: Call John v2.0 Orchestrator via /api/v1/chat
-      const v1Res = await workspaceService.sendChat({
-        message: queryText,
-        thread_id: activeConversationId,
-        workspace: 'JOHN'
-      });
-
-      const johnMsg = {
-        id: `john-${Date.now()}`,
-        sender: 'john',
-        text: v1Res.reply || v1Res.text || 'Processed your request.',
-        traces: v1Res.traces || [],
-        proposals: v1Res.proposals || [],
-        questions: v1Res.questions || [],
-        blocks: v1Res.blocks || [],
-        snapshot_id: v1Res.snapshot_id,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-
-      if (v1Res.thread_id) {
-        setActiveConversationId(v1Res.thread_id);
-      }
-
-      setMessages((prev) => [...prev, johnMsg]);
-      setExpandedTraceId(johnMsg.id);
-    } catch (err) {
-      const johnMsg = {
-        id: `john-${Date.now()}`,
-        sender: 'john',
-        text: err.message || "I'm having trouble reaching the chat service right now. Please try again in a moment.",
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      setMessages((prev) => [...prev, johnMsg]);
-    } finally {
-      setIsThinking(false);
-    }
-  };
-
-  const handleConfirmProposal = async (proposal, snapshotId) => {
-    try {
-      const res = await workspaceService.executeAction({
-        proposal_id: proposal.proposal_id,
-        confirmation_token: proposal.confirmation_token,
-        action_type: proposal.action_type,
-        params: proposal.params,
-        snapshot_id: snapshotId,
-        acknowledgment: proposal.tier === 'T3'
-      });
-
-      if (res.status === 'EXECUTED') {
-        setExecutedProposals((prev) => ({
-          ...prev,
-          [proposal.proposal_id || proposal.action_ref]: res
-        }));
-        if (res.undo_expires_at) {
-          setLastUndoableAction({
-            action_id: res.action_id,
-            action_type: proposal.action_type
-          });
-        }
-      }
-    } catch (err) {
-      console.error('Failed to confirm proposal:', err);
-    }
-  };
-
-  const handleUndo = async () => {
-    if (!lastUndoableAction) return;
-    try {
-      await workspaceService.undoAction(lastUndoableAction.action_id);
-      const undoneType = lastUndoableAction.action_type;
-      setLastUndoableAction(null);
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `undo-${Date.now()}`,
-          sender: 'john',
-          text: `Reverted action **${undoneType}** within the undo window.`,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        }
-      ]);
-    } catch (err) {
-      console.error('Undo failed:', err);
-    }
-  };
-
-  const handleAcceptProposal = (msgId, proposedGoal) => {
-    const newGoalObj = {
-      id: `goal-${Date.now()}`,
-      name: proposedGoal.name,
-      priority: proposedGoal.priority || 'MEDIUM PRIORITY',
-      current: 0,
-      target: proposedGoal.target,
-      targetDate: 'Expected in 12 months',
-      category: proposedGoal.category || 'Asset',
-      iconType: proposedGoal.iconType || 'target',
-      monthlyAdd: proposedGoal.monthlyAdd || 5000
-    };
-
-    onAcceptGoal(newGoalObj);
-    setAcceptedGoals((prev) => ({ ...prev, [msgId]: true }));
-  };
-
-  const handleDeclineProposal = (msgId) => {
-    setDeclinedGoals((prev) => ({ ...prev, [msgId]: true }));
-  };
-
-  const handleNewConversation = async () => {
-    try {
-      const res = await conversationService.createConversation('New Financial Session');
-      if (res.success && res.conversation) {
-        setActiveConversationId(res.conversation.id);
-        setConversations((prev) => [res.conversation, ...prev]);
-      }
-    } catch (_) {}
+  // Initial welcome message (clean, no synthetic figures)
+  useEffect(() => {
+    const userName = userProfile?.name || userProfile?.display_name || 'Account Holder';
     setMessages([
       {
-        id: `init-${Date.now()}`,
+        id: 'init-turn',
         sender: 'john',
-        text: `Hello ${userName}! New coaching session started. How can John and the specialist team assist you?`,
-        timestamp: 'Just now'
-      }
+        specialist: 'John — Star Orchestrator',
+        blocks: [
+          {
+            kind: 'TEXT',
+            text: `Hello ${userName}! I am **John**, your Star-Topology Financial Coach.\n\nI orchestrate **Sentinel** (verified deterministic arithmetic), **Atlas** (savings targets & SIP), **Nova** (budget caps & rebalancing), and **Iris** (forward spending plans).\n\nHow can our specialist team help guide your finances today?`,
+          },
+        ],
+      },
     ]);
+  }, [userProfile]);
+
+  // Trigger alert explain if explainAlertId is passed
+  useEffect(() => {
+    if (explainAlertId) {
+      handleSendAlertExplain(explainAlertId);
+    }
+  }, [explainAlertId]);
+
+  const handleSendAlertExplain = (alertId) => {
+    handleSend('Explain this alert', {
+      trigger: { kind: 'ALERT_OPEN', alert_id: alertId },
+      ui_context: { workspace: 'NOVA', selected_alert_id: alertId },
+    });
   };
 
+  const handleSend = async (messageText, customPayload = {}) => {
+    if (isStreaming) return;
+    setErrorMsg('');
+
+    const userMessageId = `msg_${Date.now()}`;
+    const userTurn = {
+      id: userMessageId,
+      sender: 'user',
+      text: messageText,
+    };
+    setMessages((prev) => [...prev, userTurn]);
+    setIsStreaming(true);
+    setPartialBlocks([]);
+
+    const clientMsgId = `cln_${Date.now()}`;
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    const requestBody = {
+      thread_id: activeThreadId,
+      message: messageText,
+      client_message_id: clientMsgId,
+      trigger: customPayload.trigger || { kind: 'USER_MESSAGE' },
+      ui_context: customPayload.ui_context || { workspace: 'JOHN' },
+      ...customPayload,
+    };
+
+    const currentBlocks = [];
+
+    try {
+      await streamChat({
+        body: requestBody,
+        signal: controller.signal,
+        onBlock: (block) => {
+          currentBlocks.push(block);
+          setPartialBlocks([...currentBlocks]);
+        },
+        onDone: (doneEvent) => {
+          setIsStreaming(false);
+          const assistantTurn = {
+            id: doneEvent.turn_id || `turn_${Date.now()}`,
+            sender: 'john',
+            specialist: 'John (Star Orchestrator)',
+            blocks: currentBlocks.length > 0 ? currentBlocks : [{ kind: 'TEXT', text: doneEvent.raw?.reply || 'Done.' }],
+          };
+          setMessages((prev) => [...prev, assistantTurn]);
+          setPartialBlocks([]);
+          loadHealthStrip();
+        },
+        onError: (err) => {
+          setIsStreaming(false);
+          setErrorMsg(err.message || 'Stream error occurred.');
+          if (currentBlocks.length > 0) {
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: `turn_err_${Date.now()}`,
+                sender: 'john',
+                blocks: [
+                  ...currentBlocks,
+                  { kind: 'NOTICE', severity: 'WARNING', text: 'Response interrupted.' },
+                ],
+              },
+            ]);
+          }
+        },
+      });
+    } catch (err) {
+      setIsStreaming(false);
+      if (err.name !== 'AbortError') {
+        setErrorMsg(err.message || 'Communication error.');
+      }
+    }
+  };
+
+  const handleStop = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      setIsStreaming(false);
+    }
+  };
+
+  const handleAnswerQuestion = (questionId, optionId, label) => {
+    handleSend(label, {
+      answer_to: { question_id: questionId, option_id: optionId },
+    });
+  };
+
+  // Health strip fields
+  const surplusMinor = healthStrip?.surplus?.data?.expected_surplus_signed_minor ?? 0;
+  const conservativeSurplusMinor = healthStrip?.surplus?.data?.conservative_surplus_signed_minor ?? 0;
+  const upcomingBillsTotal = healthStrip?.bills?.data?.total_outlays_minor ?? 0;
+  const cashflowRisk = healthStrip?.cashflow?.data?.risk_level || 'LOW';
+
+  const consentEnabled = userProfile?.llm_processing_consent !== false;
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '720px', padding: 0 }}>
-        {/* Header */}
-        <div style={{
-          padding: '16px 24px',
-          borderBottom: '1px solid var(--border-color)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          backgroundColor: 'var(--bg-card)',
-          borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '8px',
-              backgroundColor: 'var(--accent-emerald)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#ffffff'
-            }}>
-              <Bot size={18} />
-            </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      {/* Authoritative Health Strip (S-04) */}
+      <div className="card" style={{ padding: '16px 20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
             <div>
-              <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-primary)', fontFamily: 'var(--font-serif)' }}>
-                John v2.0 — Star-Topology Financial Orchestrator
-              </h3>
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Sparkles size={11} color="#059669" /> Sentinel v5.0 • Atlas v5.0 • Nova v5.0 • Iris v5.0
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '600' }}>
+                Monthly Expected Surplus
+              </div>
+              <div className="mono" style={{ fontSize: '18px', fontWeight: '800', color: 'var(--accent-emerald)', marginTop: '2px' }}>
+                {formatMinorInr(surplusMinor)}
+              </div>
+              <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
+                Conservative: {formatMinorInr(conservativeSurplusMinor)}
+              </div>
+            </div>
+
+            <div style={{ borderLeft: '1px solid var(--border-color)', paddingLeft: '24px' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '600' }}>
+                Upcoming 30-Day Bills
+              </div>
+              <div className="mono" style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-primary)', marginTop: '2px' }}>
+                {formatMinorInr(upcomingBillsTotal)}
+              </div>
+              <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
+                Detected & declared recurring outlays
+              </div>
+            </div>
+
+            <div style={{ borderLeft: '1px solid var(--border-color)', paddingLeft: '24px' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '600' }}>
+                Cash-Flow Risk Level
+              </div>
+              <div style={{ marginTop: '4px' }}>
+                <span
+                  className="badge"
+                  style={{
+                    backgroundColor:
+                      cashflowRisk === 'HIGH'
+                        ? 'rgba(220, 38, 38, 0.15)'
+                        : cashflowRisk === 'MEDIUM'
+                        ? 'rgba(217, 119, 6, 0.15)'
+                        : 'rgba(5, 150, 105, 0.15)',
+                    color:
+                      cashflowRisk === 'HIGH'
+                        ? '#dc2626'
+                        : cashflowRisk === 'MEDIUM'
+                        ? '#d97706'
+                        : '#059669',
+                    fontWeight: '700',
+                    fontSize: '11px',
+                  }}
+                >
+                  {cashflowRisk} Risk
+                </span>
               </div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {lastUndoableAction && (
-              <button
-                onClick={handleUndo}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '5px',
-                  padding: '6px 12px',
-                  borderRadius: '6px',
-                  border: '1px solid #d97706',
-                  backgroundColor: 'rgba(217, 119, 6, 0.12)',
-                  color: '#d97706',
-                  fontSize: '11px',
-                  fontWeight: '700',
-                  cursor: 'pointer'
-                }}
-              >
-                <RotateCcw size={12} />
-                Undo {lastUndoableAction.action_type}
-              </button>
-            )}
-            <button
-              onClick={handleNewConversation}
-              className="btn btn-secondary"
-              style={{ fontSize: '12px', padding: '6px 12px' }}
-              title="Start new conversation"
-            >
-              <Plus size={14} /> New Chat
-            </button>
-            <span className="badge badge-emerald">ACTIVE SESSION</span>
-          </div>
+          <button onClick={loadHealthStrip} className="btn btn-ghost btn-sm" title="Refresh Health Strip">
+            <RefreshCw size={13} />
+          </button>
+        </div>
+      </div>
+
+      {errorMsg && (
+        <div
+          style={{
+            padding: '10px 14px',
+            borderRadius: 'var(--radius-sm)',
+            backgroundColor: 'rgba(220, 38, 38, 0.1)',
+            border: '1px solid #dc2626',
+            color: '#dc2626',
+            fontSize: '12px',
+          }}
+        >
+          {errorMsg}
+        </div>
+      )}
+
+      {/* Main Chat Grid (Thread List & Message Area) */}
+      <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', gap: '16px', minHeight: '520px' }}>
+        {/* Threads Sidebar */}
+        <div className="card" style={{ padding: '16px' }}>
+          <ThreadList
+            threads={threads}
+            activeThreadId={activeThreadId}
+            onSelectThread={(id) => setActiveThreadId(id)}
+            onNewThread={() => {
+              setActiveThreadId(null);
+              setMessages([]);
+            }}
+          />
         </div>
 
-        {/* Chat Messages Body */}
-        <div style={{
-          flex: 1,
-          overflowY: 'auto',
-          padding: '24px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '20px',
-          backgroundColor: 'var(--bg-card-subtle)'
-        }}>
-          {messages.map((msg) => {
-            const isUser = msg.sender === 'user';
-            return (
-              <div
-                key={msg.id}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: isUser ? 'flex-end' : 'flex-start',
-                  maxWidth: '85%',
-                  alignSelf: isUser ? 'flex-end' : 'flex-start'
-                }}
-              >
-                {/* Sender Label */}
-                <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  {!isUser && <Bot size={12} color="#059669" />}
-                  <span>{isUser ? 'You' : 'John (Orchestrator)'}</span>
-                  <span>•</span>
-                  <span>{msg.timestamp}</span>
-                </div>
-
-                {/* Message Bubble */}
-                <div style={{
-                  padding: '16px 20px',
-                  borderRadius: isUser ? '16px 16px 2px 16px' : '16px 16px 16px 2px',
-                  backgroundColor: isUser ? 'var(--accent-emerald)' : 'var(--bg-card)',
-                  color: isUser ? '#ffffff' : 'var(--text-primary)',
-                  boxShadow: isUser ? 'none' : '0 2px 8px rgba(0, 0, 0, 0.04)',
-                  border: isUser ? 'none' : '1px solid var(--border-color)',
-                  fontSize: '14px',
-                  lineHeight: '1.6',
-                  fontFamily: 'var(--font-sans)'
-                }}>
-                  <FormattedText text={msg.text} />
-
-                  {/* ChatResponse@1 Action Proposal Confirmation Cards */}
-                  {msg.proposals && msg.proposals.length > 0 && (
-                    <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      {msg.proposals.map((prop, pIdx) => {
-                        const key = prop.proposal_id || prop.action_ref || pIdx;
-                        const isExecuted = Boolean(executedProposals[key]);
-                        const isDeclined = Boolean(declinedProposals[key]);
-
-                        return (
-                          <div
-                            key={key}
-                            style={{
-                              padding: '12px 14px',
-                              borderRadius: '10px',
-                              backgroundColor: 'var(--bg-card-subtle)',
-                              border: '1px solid var(--border-focus)',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: '8px'
-                            }}
-                          >
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <ShieldCheck size={15} color="#059669" />
-                                <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)' }}>
-                                  Confirmation Card ({prop.tier || 'T2'}): {prop.action_type}
-                                </span>
-                              </div>
-                              <span style={{
-                                fontSize: '10px',
-                                fontWeight: '700',
-                                padding: '2px 6px',
-                                borderRadius: '4px',
-                                backgroundColor: 'var(--bg-secondary)',
-                                color: 'var(--text-secondary)'
-                              }}>
-                                Sentinel Verified
-                              </span>
-                            </div>
-
-                            {prop.preview && (
-                              <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                                <strong>{prop.preview.title}</strong>
-                                {prop.preview.Impact && <div>{prop.preview.Impact}</div>}
-                              </div>
-                            )}
-
-                            {isExecuted ? (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#059669', fontSize: '12px', fontWeight: '700' }}>
-                                <CheckCircle2 size={15} />
-                                <span>Confirmed &amp; Executed via Action Service</span>
-                              </div>
-                            ) : isDeclined ? (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)', fontSize: '12px' }}>
-                                <XCircle size={15} />
-                                <span>Proposal Declined</span>
-                              </div>
-                            ) : (
-                              <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
-                                <button
-                                  onClick={() => handleConfirmProposal(prop, msg.snapshot_id)}
-                                  style={{
-                                    padding: '6px 14px',
-                                    borderRadius: '6px',
-                                    border: 'none',
-                                    backgroundColor: '#059669',
-                                    color: '#ffffff',
-                                    fontSize: '12px',
-                                    fontWeight: '700',
-                                    cursor: 'pointer'
-                                  }}
-                                >
-                                  Confirm &amp; Execute
-                                </button>
-                                <button
-                                  onClick={() => setDeclinedProposals((prev) => ({ ...prev, [key]: true }))}
-                                  style={{
-                                    padding: '6px 12px',
-                                    borderRadius: '6px',
-                                    border: '1px solid var(--border-color)',
-                                    backgroundColor: 'transparent',
-                                    color: 'var(--text-secondary)',
-                                    fontSize: '12px',
-                                    cursor: 'pointer'
-                                  }}
-                                >
-                                  Cancel
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  {/* Clarifying Questions (NEEDS_INPUT Question@1) */}
-                  {msg.questions && msg.questions.length > 0 && (
-                    <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {msg.questions.map((q, qIdx) => (
-                        <div key={qIdx} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                          <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-secondary)' }}>
-                            {q.prompt}
-                          </div>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                            {(q.options || []).map((opt, oIdx) => (
-                              <button
-                                key={oIdx}
-                                onClick={() => handleSend(opt.label)}
-                                style={{
-                                  padding: '5px 12px',
-                                  borderRadius: '999px',
-                                  border: '1px solid var(--border-focus)',
-                                  backgroundColor: 'var(--bg-secondary)',
-                                  color: 'var(--text-primary)',
-                                  fontSize: '11px',
-                                  fontWeight: '600',
-                                  cursor: 'pointer'
-                                }}
-                              >
-                                {opt.label}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Reasoning Trace Accordion */}
-                  {msg.traces && msg.traces.length > 0 && (
-                    <div style={{ marginTop: '16px', borderTop: '1px dashed var(--border-color)', paddingTop: '12px' }}>
-                      <button
-                        onClick={() => setExpandedTraceId(expandedTraceId === msg.id ? null : msg.id)}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          color: '#059669',
-                          fontSize: '12px',
-                          fontWeight: '700',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          padding: 0
-                        }}
-                      >
-                        <Sparkles size={13} />
-                        <span>Star-Topology Specialist Trace ({msg.traces.length} Invocations)</span>
-                        {expandedTraceId === msg.id ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                      </button>
-
-                      {expandedTraceId === msg.id && (
-                        <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                          {msg.traces.map((trace, idx) => {
-                            const agentStr = typeof trace.agent === 'string' ? trace.agent : (trace.agent?.id || trace.agent?.name || 'john');
-                            const agentKey = agentStr.toLowerCase();
-                            const agentDisplay = agentStr.toUpperCase();
-                            const agentColor = AGENTS[agentKey]?.color || '#059669';
-                            return (
-                              <div
-                                key={idx}
-                                style={{
-                                  padding: '10px 12px',
-                                  backgroundColor: 'var(--bg-card-subtle)',
-                                  borderRadius: 'var(--radius-sm)',
-                                  borderLeft: `3px solid ${agentColor}`,
-                                  fontSize: '12px'
-                                }}
-                              >
-                                <div style={{ fontWeight: '700', color: agentColor, marginBottom: '2px' }}>
-                                  {agentDisplay} ({trace.role || 'Specialist'})
-                                </div>
-                                <div style={{ color: 'var(--text-secondary)' }}>{trace.thought}</div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Legacy Proposed Goal Fallback */}
-                  {msg.proposedGoal && (!msg.proposals || msg.proposals.length === 0) && (
-                    <div style={{
-                      marginTop: '16px',
-                      padding: '16px',
-                      backgroundColor: 'var(--bg-card-subtle)',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: 'var(--radius-md)',
-                      color: 'var(--text-secondary)'
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                        <Target size={18} color="#059669" />
-                        <span style={{ fontWeight: '700', fontSize: '13px', color: 'var(--text-primary)' }}>
-                          John Proposes a New Savings Objective
-                        </span>
-                      </div>
-                      <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)' }}>
-                        {msg.proposedGoal.name}
-                      </div>
-                      <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-                        Target Amount: <strong>{currency}{msg.proposedGoal.target.toLocaleString('en-IN')}</strong> • Priority: {msg.proposedGoal.priority || 'MEDIUM'}
-                      </div>
-
-                      <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
-                        {acceptedGoals[msg.id] ? (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#059669', fontWeight: '700' }}>
-                            <CheckCircle2 size={16} /> Goal Added to Atlas Strategist!
-                          </div>
-                        ) : declinedGoals[msg.id] ? (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>
-                            <XCircle size={16} /> Proposal Declined
-                          </div>
-                        ) : (
-                          <>
-                            <button
-                              onClick={() => handleAcceptProposal(msg.id, msg.proposedGoal)}
-                              className="btn btn-emerald"
-                              style={{ fontSize: '12px', padding: '6px 12px' }}
-                            >
-                              Accept &amp; Create Goal
-                            </button>
-                            <button
-                              onClick={() => handleDeclineProposal(msg.id)}
-                              className="btn btn-secondary"
-                              style={{ fontSize: '12px', padding: '6px 12px' }}
-                            >
-                              Decline
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-
-          {isThinking && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontSize: '13px' }}>
-              <Bot size={18} color="#059669" />
-              <span className="spin"></span>
-              <span>John is orchestrating Sentinel, Atlas, Nova, and Iris...</span>
-            </div>
-          )}
-          <div ref={chatEndRef} />
-        </div>
-
-        {/* Chat Input Bar */}
-        <div style={{ padding: '16px 24px', backgroundColor: 'var(--bg-card)', borderTop: '1px solid var(--border-color)' }}>
-          <form
-            onSubmit={(e) => { e.preventDefault(); handleSend(); }}
-            style={{ display: 'flex', gap: '10px' }}
-          >
-            <input
-              type="text"
-              className="input"
-              placeholder="Ask John e.g. 'Create an Emergency Fund goal of ₹1,50,000 saving ₹10,000/month' or 'Can I afford a ₹40,000 trip next month?'"
-              value={inputQuery}
-              onChange={(e) => setInputQuery(e.target.value)}
-              disabled={isThinking}
-              style={{ flex: 1 }}
+        {/* Chat Thread Panel */}
+        <div className="card" style={{ padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          {/* Scrollable message turns */}
+          <div style={{ flex: 1, overflowY: 'auto', maxHeight: '480px' }}>
+            <MessageList
+              messages={messages}
+              isStreaming={isStreaming}
+              partialBlocks={partialBlocks}
+              onNavigateToWorkspace={onNavigateToWorkspace}
+              onAnswerQuestion={handleAnswerQuestion}
+              onActionExecuted={loadHealthStrip}
             />
-            <button
-              type="submit"
-              className="btn btn-emerald"
-              disabled={isThinking || !inputQuery.trim()}
-            >
-              <Send size={16} />
-            </button>
-          </form>
+          </div>
+
+          {/* Quick Prompts Strip (Zero synthetic figures per P-AC-01) */}
+          <div
+            style={{
+              display: 'flex',
+              gap: '6px',
+              padding: '8px 0',
+              overflowX: 'auto',
+              borderTop: '1px solid var(--border-color)',
+              marginBottom: '10px',
+            }}
+          >
+            {[
+              'How healthy are my finances?',
+              'What are my upcoming bills?',
+              'Show me my active savings goals',
+              'Can I afford a new purchase this month?',
+            ].map((p, idx) => (
+              <button
+                key={idx}
+                onClick={() => handleSend(p)}
+                disabled={isStreaming || !consentEnabled}
+                className="btn btn-secondary btn-sm"
+                style={{ fontSize: '11px', whiteSpace: 'nowrap' }}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
+
+          {/* Composer */}
+          <Composer
+            onSend={(text) => handleSend(text)}
+            onStop={handleStop}
+            isStreaming={isStreaming}
+            consentEnabled={consentEnabled}
+            onOpenSettings={() => {
+              if (onNavigateToWorkspace) onNavigateToWorkspace('settings');
+            }}
+          />
         </div>
       </div>
     </div>

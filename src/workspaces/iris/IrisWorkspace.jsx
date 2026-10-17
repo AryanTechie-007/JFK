@@ -13,7 +13,8 @@ import {
   ShieldAlert,
   TrendingDown
 } from 'lucide-react';
-import { workspaceService, formatMinorInr } from '../../services/workspaceService';
+import { api } from '../../services/api/v1';
+import { formatMinorInr } from '../../lib/format';
 import WorkspaceChatPanel from '../../components/WorkspaceChatPanel';
 
 const ADJUSTABLE_CATEGORIES = [
@@ -64,7 +65,7 @@ export default function IrisAdvisorView({ userProfile }) {
   const loadWorkspace = useCallback(async (month = targetMonth) => {
     setLoading(true);
     try {
-      const res = await workspaceService.getIrisWorkspace(month);
+      const res = await api.getIrisWorkspace(month);
       if (res && res.success) {
         setWorkspaceData(res);
         setSimulationResult(res.simulation || null);
@@ -96,7 +97,7 @@ export default function IrisAdvisorView({ userProfile }) {
         date: o.date
       }));
 
-      const res = await workspaceService.simulateSpendingPlan({
+      const res = await api.simulateSpendingPlan({
         target_month: targetMonth,
         category_adjustments,
         one_off_outlays
@@ -157,7 +158,7 @@ export default function IrisAdvisorView({ userProfile }) {
         const baseMinor = existing ? existing.net_spend_minor : 500000;
         const newCapMinor = Math.max(50000, baseMinor + Math.round(Number(deltaInr) * 100));
 
-        await workspaceService.executeAction({
+        await api.executeAction({
           action_type: 'ADJUST_BUDGET_CAP',
           snapshot_id: workspaceData.snapshot_id,
           params: {

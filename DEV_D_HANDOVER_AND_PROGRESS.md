@@ -63,19 +63,69 @@
 
 ---
 
-## 3. Next Plan in Dev D's Queue: `WS-UI-P2`
+### Plan 4: `WS-UI-P2` (Sentinel Workspace & Settings Integration) — ✅ COMPLETED & MERGED (PR #6, commit `e26da14`)
+- **Sentinel Workspace Sections (`src/workspaces/sentinel/`)**:
+  - `BalancesSection.jsx`: Live connected balances, credit card liabilities, un-earmarked liquid balance, expected surplus, P80 conservative surplus, and 4-pillar health score.
+  - `SpendingSection.jsx`: Category breakdown with parent rollups, top merchants, and deterministic timeseries chart with accessible table toggle.
+  - `ForecastSection.jsx`: 30/60/90-day upcoming bill outlays, cash-flow risk radar, and non-parametric 3x MAD spending anomalies.
+  - `TransactionList.jsx`: Versioned transaction ledger with search, movement/category filters, server paging (50/page), inline category correction via T1 with `UndoBar`, merchant-scoped proposal (T2), and S-09 detail drawer.
+  - `ReviewList.jsx`: Needs-review queue items with reason tags, leaf category picker, inline confirmation (T1) with `UndoBar`, and deferred actions marked via `DisabledControl`.
+  - `BillsPanel.jsx`: Declared bills list, `CREATE_DECLARED_BILL` (T1) form, `DELETE_DECLARED_BILL` (T1), with `UPDATE_DECLARED_BILL` marked as `DisabledControl`.
+  - `DemoLoader.jsx`: Gated behind `demo_controls: true` from `/health`, labelled synthetic, ingests JSON/CSV feeds.
+  - `SentinelWorkspace.jsx`: Root modular container integrating `WorkspaceChatPanel`.
+- **Settings Page (`src/workspaces/settings/SettingsPage.jsx`)**:
+  - Replaced legacy `SettingsView.jsx`.
+  - Identity & declared income (`UPDATE_USER_PROFILE`).
+  - Risk comfort, protected categories, and AI consent toggle (`UPDATE_USER_PREFERENCES`) with `UndoBar`.
+  - Deterministic category rules (read-only list).
+  - John assistant memory facts (list, add, delete).
+- **Notification Bell (`src/components/NotificationBell.jsx`)**:
+  - Mounted in `Header.jsx` with unread badge, polling every 5s while window is focused.
+- **Legacy Views & Services Deleted**:
+  - Deleted: `HomeDashboardView.jsx`, `SubscriptionsView.jsx`, `StatementImportModal.jsx`, `FinancialHealthView.jsx`, `SettingsView.jsx`, `SpendingAnalyserView.jsx`.
+  - Deleted: `goalService.js`, `profileService.js`, `subscriptionService.js`, `transactionService.js`.
+  - **Grep Gate Clean**: 0 references to legacy endpoints across `src/`.
+- **Merged into `kathir/main`**: PR #6 squash-merged at commit `e26da14`.
 
-Per the implementation plan roadmap (`docs/implementation-plan/workstream-assignments.md`), Dev D's sequence is:
+---
+
+### Plan 5: `WS-UI-P3` (Chat UX, SSE Streaming, Workspace Panels, Alert Explain & Verification) — ✅ COMPLETED
+- **SSE Stream Client & Parser (`src/services/api/sse.js`)**:
+  - Implemented `parseSseBuffer` and `streamChat` supporting both `text/event-stream` chunks (`block`, `done`, `error`) and JSON envelopes (`ChatResponse@1`).
+  - Added request cancellation via `AbortController` (`onStop`).
+  - Unit tests in `src/services/api/sse.test.mjs` (4/4 passing).
+- **John Star Orchestrator Interface (`src/workspaces/john/`)**:
+  - `BlockRenderer.jsx`: Renders all canonical block kinds: `TEXT`, `NOTICE`, `CARD` (`ProposalCard`), `CHIP` (`ActionChip`), `QUESTION`, `UNDO` (`UndoBar`), and `LINK`.
+  - `Composer.jsx`: Real-time query input, Enter-to-send, in-flight stop button, and user AI consent gating (`llm_processing_consent`).
+  - `MessageList.jsx`: Turns display with role badges, streaming partial blocks indicator, and auto-scroll to latest turn.
+  - `ThreadList.jsx`: Interactive consultation session switch and "New Consultation" creation.
+  - `JohnWorkspace.jsx`: Star-topology orchestrator view wired to authoritative health strip (`GET /api/v1/workspaces/john`), prompt suggestions with zero mock data (P-AC-01), and alert explanation handler.
+- **Embedded Workspace Chat Panels (`src/components/WorkspaceChatPanel.jsx`)**:
+  - Rebuilt to stream via `streamChat` using `ui_context: { workspace }`.
+  - Full block rendering for in-context proposal confirmations and actions.
+- **Alert "Explain" Flow**:
+  - Alert notification bell in `Header.jsx` routes directly to John workspace with `explainAlertId` and auto-sends `ALERT_OPEN` trigger.
+- **Legacy Service Clean-up**:
+  - Deleted `src/services/workspaceService.js` and `src/services/conversationService.js`.
+  - Added workspace domain helper methods directly into `src/services/api/v1.js`.
+  - Grep gate clean: 0 references to `geminiService`, `askGeminiJohn`, `conversationService`, or `workspaceService` in `src/`.
+- **Build & Quality Gates**:
+  - `npm run build`: Success in < 1s (0 errors).
+  - `npx oxlint`: 0 errors.
+  - Backend tests: 107/107 passing.
+  - v1 specs verification: 7/7 passing.
+  - SSE unit tests: 4/4 passing.
+
+---
+
+## 3. Dev D Roadmap Status
+
+Per the implementation plan roadmap (`docs/implementation-plan/workstream-assignments.md`), all of Dev D's plans are now completed:
 1. `WS-UI-P1` (Done ✅)
 2. `WS-SEN-P1` (Done ✅)
 3. `WS-SEN-P2` (Done ✅)
-4. **`WS-UI-P2` (Sentinel Workspace & Settings Integration)**:
-   - Wire Sentinel workspace sections to `/workspaces/sentinel/{overview, spending, timeseries, forecast}`.
-   - Transaction list with category chips and inline correction via `/actions` (`RECATEGORIZE_TRANSACTION`).
-   - Needs-review queue actions (`CONFIRM_CATEGORY`, `DISMISS_REVIEW_ITEM`).
-   - Bills panel (declared bills CRUD).
-   - Settings page (`src/workspaces/settings/SettingsPage.jsx`).
-   - Delete legacy views and legacy services (`profileService`, `goalService`, `transactionService`, `subscriptionService`).
+4. `WS-UI-P2` (Done ✅)
+5. `WS-UI-P3` (Done ✅)
 
 ---
 
@@ -85,6 +135,13 @@ Per the implementation plan roadmap (`docs/implementation-plan/workstream-assign
 # Run full test suite (107 tests passing)
 npm --prefix backend test
 
-# Run volume performance benchmarks (7,200 txns)
-$env:RUN_PERF="1"; node --test backend/test/sentinel/perf.test.js
+# Run specification verification suite (7/7 suites passing)
+node backend/test-v1-specs.js
+
+# Build frontend with Vite (< 1s)
+npm run build
+
+# Grep gate for legacy endpoints (must return empty)
+git grep -n -e "/api/goals" -e "/api/budget" -e "/api/transactions" -e "/api/subscriptions" -e "/api/insights" -e "/api/coach" -- src/workspaces src/components src/App.jsx src/services
 ```
+

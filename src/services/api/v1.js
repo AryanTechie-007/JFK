@@ -77,8 +77,18 @@ export const api = {
     });
   },
 
-  /* Workspace Read Routes */
+  /* Workspace Read & Operation Routes */
   getWorkspace: (name, params = {}) => api.get(`/workspaces/${name}`, params),
+  getAtlasWorkspace: () => api.getWorkspace('atlas'),
+  getArchivedGoals: () => api.get('/workspaces/atlas/archived'),
+  validateGoalAction: (payload) => api.post('/workspaces/atlas/validate', payload),
+  projectSip: (params) => api.post('/workspaces/atlas/sip', params),
+  getNovaWorkspace: (period) => api.getWorkspace('nova', period ? { period } : {}),
+  validateCapChange: (payload) => api.post('/workspaces/nova/validate-cap', payload),
+  simulateRebalance: (payload) => api.post('/workspaces/nova/rebalance', payload),
+  getIrisWorkspace: (targetMonth) => api.getWorkspace('iris', targetMonth ? { target_month: targetMonth } : {}),
+  simulateSpendingPlan: (payload) => api.post('/workspaces/iris/simulate', payload),
+  getSentinelWorkspace: (params = {}) => api.getWorkspace('sentinel', params),
   getSentinelOverview: () => api.get('/workspaces/sentinel/overview'),
   getSentinelSpending: (params = {}) => api.get('/workspaces/sentinel/spending', params),
   getSentinelTimeseries: (params = {}) => api.get('/workspaces/sentinel/timeseries', params),
@@ -89,6 +99,7 @@ export const api = {
   getTaxonomy: () => api.get('/categorizer/taxonomy'),
   getReviewQueue: () => api.get('/categorizer/review-queue'),
   getCategorizerStatus: () => api.get('/categorizer/status'),
+  getDataQuality: () => api.get('/categorizer/status'),
 
   /* Proposals (T2/T3 forms) */
   submitProposal: ({ action, params }) => api.post('/actions/propose', { action_type: action, params }),
@@ -96,9 +107,23 @@ export const api = {
     api.post('/actions/execute', { proposal_id: proposalId, params_hash, ack }),
   declineProposal: (proposalId) => api.post('/actions/execute', { proposal_id: proposalId, status: 'DECLINED' }),
 
-  /* Instant Actions (T1 taps) */
-  executeAction: ({ action, params, idempotency_key = (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'act_' + Date.now()) }) =>
-    api.post('/actions/execute', { action_type: action, params, idempotency_key }),
+  /* Actions Execution & Reversal */
+  executeAction: (payload = {}) => {
+    const { action, action_type, params, proposal_id, confirmation_token, params_hash, ack, ...rest } = payload;
+    const body = {
+      action_type: action || action_type,
+      params,
+      ...(proposal_id ? { proposal_id } : {}),
+      ...(confirmation_token ? { confirmation_token } : {}),
+      ...(params_hash ? { params_hash } : {}),
+      ...(ack !== undefined ? { ack } : {}),
+      ...rest,
+    };
+    if (!body.idempotency_key && !body.proposal_id) {
+      body.idempotency_key = (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'act_' + Date.now());
+    }
+    return api.post('/actions/execute', body);
+  },
   undoAction: (actionId) => api.post(`/actions/${actionId}/undo`),
 
   /* Settings, Profile & Memory Facts */
@@ -113,6 +138,7 @@ export const api = {
   /* Ingestion */
   ingestBatch: (data) => api.post('/ingest/batch', data),
   ingestManual: (data) => api.post('/ingest/manual', data),
+  ingestManualTransaction: (data) => api.post('/ingest/manual', data),
 
   /* System & Context */
   getHealth: () => api.get('/health'),
